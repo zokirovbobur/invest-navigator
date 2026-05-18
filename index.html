@@ -183,11 +183,11 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   border: 1px solid var(--line);
   font-weight: 500;
   transition: all 0.15s ease;
-  margin-right: 8px;
+  margin-bottom: 16px;
 }
 .back-link:hover { background: rgba(255,255,255,0.08); color: var(--fg-0); border-color: var(--line-2); }
 .back-link[hidden] { display: none !important; }
-.back-link:not([hidden]) { display: inline-flex; }
+.back-link:not([hidden]) { display: flex; width: fit-content; }
 
 .detail-eyebrow {
   display: inline-flex;
@@ -760,7 +760,6 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 
 <div class="sticky-area">
   <header class="topbar">
-    <button class="back-link" id="back-link" hidden></button>
     <div class="brand" id="brand">
       <div class="mark"></div>
       <div class="wordmark">Invest<span>·</span>Navigator</div>
@@ -777,6 +776,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   <section class="page-head">
     <div class="mesh" aria-hidden="true"></div>
     <div class="page-head-left">
+      <button class="back-link" id="back-link" hidden></button>
       <div class="eyebrow detail-eyebrow" id="detail-eyebrow" hidden></div>
       <h1 id="page-title"></h1>
     </div>
