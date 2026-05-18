@@ -673,24 +673,21 @@ function applyI18nTextOnly() {
     b.setAttribute("aria-pressed", b.dataset.lang === state.lang ? "true" : "false")
   );
 
-  // page title + detail eyebrow
+  // page title + nav title
   const titleEl = $("#page-title");
-  const eyebrowEl = $("#detail-eyebrow");
+  const navTitleEl = $("#nav-title");
+  const pageHeadSection = $("#page-head-section");
   const backEl = $("#back-link");
   if (state.route === "home") {
-    titleEl.innerHTML = t("head.title");
-    eyebrowEl.hidden = true;
+    navTitleEl.innerHTML = t("head.title");
+    navTitleEl.hidden = false;
+    pageHeadSection.hidden = true;
     backEl.hidden = true;
   } else {
     const inst = INSTRUMENTS.find((i) => i.id === state.detailId);
-    const offers = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
+    navTitleEl.hidden = true;
+    pageHeadSection.hidden = false;
     titleEl.textContent = inst ? inst.name[state.lang] : state.detailId;
-    eyebrowEl.hidden = false;
-    eyebrowEl.innerHTML = "";
-    eyebrowEl.appendChild(el("span", { class: "dot" }));
-    eyebrowEl.appendChild(document.createTextNode(
-      (inst ? inst.sub[state.lang] : "") + ((offers && offers.items) ? "  ·  " + offers.items.length + " " + t("detail.offers") : "")
-    ));
     backEl.hidden = false;
     backEl.textContent = t("back");
   }

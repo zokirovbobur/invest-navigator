@@ -171,6 +171,19 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   flex-wrap: wrap;
 }
 
+.nav-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--fg-1);
+  padding: 0 16px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nav-title em { font-style: normal; color: var(--accent); }
+.nav-title[hidden] { display: none !important; }
+
 .back-link {
   display: none;
   align-items: center;
@@ -765,6 +778,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
       <div class="mark"></div>
       <div class="wordmark">Invest<span>·</span>Navigator</div>
     </div>
+    <div class="nav-title" id="nav-title" hidden></div>
     <div class="topbar-right">
       <div class="lang-switch" id="lang-switch">
         <button data-lang="uz" aria-pressed="true">UZ</button>
@@ -774,11 +788,10 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
     </div>
   </header>
 
-  <section class="page-head">
+  <section class="page-head" id="page-head-section" hidden>
     <div class="mesh" aria-hidden="true"></div>
     <div class="page-head-left">
       <button class="back-link" id="back-link" hidden></button>
-      <div class="eyebrow detail-eyebrow" id="detail-eyebrow" hidden></div>
       <h1 id="page-title"></h1>
     </div>
   </section>
