@@ -1,0 +1,27 @@
+{
+  "name": "invest-navigator",
+  "version": "1.0.0",
+  "description": "Investment navigator catalog for Uzbekistan",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zokirovbobur/invest-navigator.git"
+  },
+  "keywords": [
+    "investment",
+    "navigator",
+    "uzbekistan"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zokirovbobur/invest-navigator/issues"
+  },
+  "homepage": "https://github.com/zokirovbobur/invest-navigator#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
+}
