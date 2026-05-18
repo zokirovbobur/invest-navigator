@@ -674,7 +674,6 @@ function applyI18nTextOnly() {
   );
 
   // page title + nav title
-  const titleEl = $("#page-title");
   const navTitleEl = $("#nav-title");
   const pageHeadSection = $("#page-head-section");
   const backEl = $("#back-link");
@@ -685,9 +684,9 @@ function applyI18nTextOnly() {
     backEl.hidden = true;
   } else {
     const inst = INSTRUMENTS.find((i) => i.id === state.detailId);
-    navTitleEl.hidden = true;
+    navTitleEl.textContent = inst ? inst.name[state.lang] : state.detailId;
+    navTitleEl.hidden = false;
     pageHeadSection.hidden = false;
-    titleEl.textContent = inst ? inst.name[state.lang] : state.detailId;
     backEl.hidden = false;
     backEl.textContent = t("back");
   }
