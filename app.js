@@ -2641,12 +2641,12 @@ function buildSkinCard(o) {
   const changeCls = o.change30d > 0 ? "up" : o.change30d < 0 ? "down" : "flat";
   const changeStr = (o.change30d > 0 ? "+" : "") + o.change30d.toFixed(1) + "%";
   const gameLabel = t("game." + o.game) || o.game;
-  const wearLabel = t("wear." + o.wear) || o.wear;
+  const wearLabel = o.wear ? (t("wear." + o.wear) || o.wear) : null;
 
   const tags = el("div", { class: "otags" });
   tags.appendChild(el("span", { class: "tag" }, gameLabel));
-  tags.appendChild(el("span", { class: "tag" }, wearLabel));
-  if (o.float != null) tags.appendChild(el("span", { class: "tag" }, t("skin.float") + ": " + o.float.toFixed(4)));
+  if (wearLabel) tags.appendChild(el("span", { class: "tag" }, wearLabel));
+  if (o.float != null) tags.appendChild(el("span", { class: "tag" }, t("skin.float") + ": " + parseFloat(o.float).toFixed(4)));
 
   return el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
@@ -2657,7 +2657,7 @@ function buildSkinCard(o) {
             el("span", { class: "ticker" }, gameLabel),
             el("span", { class: "change-badge " + changeCls }, changeStr)
           ),
-          el("div", { class: "pcat" }, wearLabel + " · " + o.platform)
+          el("div", { class: "pcat" }, (wearLabel ? wearLabel + " · " : "") + o.platform)
         )
       )
     ),
