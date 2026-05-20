@@ -4,15 +4,15 @@
 
 const I18N = {
   uz: {
-    "head.eyebrow": "Yo'nalish · MVP",
-    "head.title": "Investitsiya instrumentlari <em>yo'nalishlari</em>",
-    "head.stat.count": "Yo'nalishlar soni",
+    "head.eyebrow": "Kategoriya · MVP",
+    "head.title": "Investitsiya instrumentlari <em>kategoriyalari</em>",
+    "head.stat.count": "Kategoriyalar soni",
     "head.stat.markets": "Bozorlar",
     "head.stat.markets.v": "Lokal · Xalqaro",
     "head.stat.minentry": "Eng past kirish",
     "head.stat.minentry.v": "$ 50",
 
-    "search.ph": "Yo'nalish nomi yoki kalit so'z…",
+    "search.ph": "Kategoriya nomi yoki kalit so'z…",
 
     "sort.relevance": "Tartib: Tavsiya etilgan",
     "sort.return.desc": "Daromad: yuqoridan pastga",
@@ -52,7 +52,7 @@ const I18N = {
     "tog.yes":        "Ha",
     "tog.no":         "Yo'q",
 
-    "catalog.title": "Yo'nalish",
+    "catalog.title": "Kategoriya",
     "catalog.clear": "Filtrlarni tozalash",
     "catalog.count": "ta",
     "catalog.empty.title": "Mos instrument topilmadi",
@@ -92,13 +92,13 @@ const I18N = {
     "card.close": "Yopish",
 
     "compare.toggle": "Solishtirish",
-    "compare.eyebrow": "Yo'nalishlar solishtiruvi",
-    "compare.title.n": "{n} yo'nalish solishtirilmoqda",
+    "compare.eyebrow": "Kategoriyalar solishtiruvi",
+    "compare.title.n": "{n} kategoriya solishtirilmoqda",
     "compare.clear": "Bekor qilish",
-    "compare.hintOne": "Yana 1 yo'nalishni «Solishtirish» tugmasi bilan tanlang — grafik shu yerda paydo bo'ladi",
+    "compare.hintOne": "Yana 1 kategoriyani «Solishtirish» tugmasi bilan tanlang — grafik shu yerda paydo bo'ladi",
     "compare.legend": "Liniyalar",
 
-    "expand.eyebrow": "Yo'nalish dinamikasi",
+    "expand.eyebrow": "Kategoriya dinamikasi",
     "expand.past": "Tarixiy o'sish (24 oy)",
     "expand.forecast": "Tahmin (12 oy)",
     "expand.volatility": "Volatillik",
@@ -121,19 +121,19 @@ const I18N = {
     "disclaimer.title": "Bu moliyaviy maslahat emas",
     "disclaimer.body": "Katalog faqat ta'lim va informatsion maqsadda taqdim etilgan. Investitsiya qarorlarini qabul qilishdan oldin mustaqil tahlil qiling yoki litsenziyalangan mutaxassis bilan maslahat qiling.",
     "footer.note": "© 2026 Invest Navigator · O'zbekiston",
-    "footer.version": "Yo'nalish v0.1 · MVP",
+    "footer.version": "Kategoriya v0.1 · MVP",
   },
 
   ru: {
-    "head.eyebrow": "Направления · MVP",
-    "head.title": "Направления инвестиционных <em>инструментов</em>",
-    "head.stat.count": "Количество направлений",
+    "head.eyebrow": "Категории · MVP",
+    "head.title": "Категории инвестиционных <em>инструментов</em>",
+    "head.stat.count": "Количество категорий",
     "head.stat.markets": "Рынки",
     "head.stat.markets.v": "Локальный · Международный",
     "head.stat.minentry": "Минимальный вход",
     "head.stat.minentry.v": "$ 50",
 
-    "search.ph": "Название направления или ключевое слово…",
+    "search.ph": "Название категории или ключевое слово…",
 
     "sort.relevance": "Сортировка: Рекомендованное",
     "sort.return.desc": "Доходность: по убыванию",
@@ -173,7 +173,7 @@ const I18N = {
     "tog.yes":        "Да",
     "tog.no":         "Нет",
 
-    "catalog.title": "Направления",
+    "catalog.title": "Категории",
     "catalog.clear": "Сбросить фильтры",
     "catalog.count": "шт.",
     "catalog.empty.title": "Подходящих инструментов не найдено",
@@ -212,13 +212,13 @@ const I18N = {
     "card.close": "Закрыть",
 
     "compare.toggle": "Сравнить",
-    "compare.eyebrow": "Сравнение направлений",
-    "compare.title.n": "Сравнение {n} направлений",
+    "compare.eyebrow": "Сравнение категорий",
+    "compare.title.n": "Сравнение {n} категорий",
     "compare.clear": "Отменить",
-    "compare.hintOne": "Выберите ещё 1 направление кнопкой «Сравнить» — график появится здесь",
+    "compare.hintOne": "Выберите ещё 1 категорию кнопкой «Сравнить» — график появится здесь",
     "compare.legend": "Линии",
 
-    "expand.eyebrow": "Динамика направления",
+    "expand.eyebrow": "Динамика категории",
     "expand.past": "Рост за 24 мес",
     "expand.forecast": "Прогноз 12 мес",
     "expand.volatility": "Волатильность",
@@ -241,19 +241,19 @@ const I18N = {
     "disclaimer.title": "Это не финансовая консультация",
     "disclaimer.body": "Каталог предоставлен исключительно в образовательных и информационных целях. Перед принятием инвестрешений проведите самостоятельный анализ или проконсультируйтесь с лицензированным специалистом.",
     "footer.note": "© 2026 Invest Navigator · Узбекистан",
-    "footer.version": "Направления v0.1 · MVP",
+    "footer.version": "Категории v0.1 · MVP",
   },
 
   en: {
-    "head.eyebrow": "Directions · MVP",
-    "head.title": "Investment instrument <em>directions</em>",
-    "head.stat.count": "Directions listed",
+    "head.eyebrow": "Categories · MVP",
+    "head.title": "Investment instrument <em>categories</em>",
+    "head.stat.count": "Categories listed",
     "head.stat.markets": "Markets",
     "head.stat.markets.v": "Local · International",
     "head.stat.minentry": "Lowest entry",
     "head.stat.minentry.v": "$ 50",
 
-    "search.ph": "Direction name or keyword…",
+    "search.ph": "Category name or keyword…",
 
     "sort.relevance": "Sort: Recommended",
     "sort.return.desc": "Return: high to low",
@@ -293,7 +293,7 @@ const I18N = {
     "tog.yes":        "Yes",
     "tog.no":         "No",
 
-    "catalog.title": "Directions",
+    "catalog.title": "Categories",
     "catalog.clear": "Clear filters",
     "catalog.count": "items",
     "catalog.empty.title": "No matching instruments",
@@ -333,13 +333,13 @@ const I18N = {
     "card.close": "Close",
 
     "compare.toggle": "Compare",
-    "compare.eyebrow": "Direction comparison",
-    "compare.title.n": "Comparing {n} directions",
+    "compare.eyebrow": "Category comparison",
+    "compare.title.n": "Comparing {n} categories",
     "compare.clear": "Clear",
-    "compare.hintOne": "Toggle «Compare» on one more direction — the chart will appear here",
+    "compare.hintOne": "Toggle «Compare» on one more category — the chart will appear here",
     "compare.legend": "Lines",
 
-    "expand.eyebrow": "Direction performance",
+    "expand.eyebrow": "Category performance",
     "expand.past": "24mo growth",
     "expand.forecast": "12mo forecast",
     "expand.volatility": "Volatility",
@@ -362,7 +362,7 @@ const I18N = {
     "disclaimer.title": "This is not financial advice",
     "disclaimer.body": "The catalog is provided for educational and informational purposes only. Do your own research or consult a licensed professional before making investment decisions.",
     "footer.note": "© 2026 Invest Navigator · Uzbekistan",
-    "footer.version": "Directions v0.1 · MVP",
+    "footer.version": "Categories v0.1 · MVP",
   },
 };
 
