@@ -301,15 +301,74 @@ const GAMING_OFFERS = [
 ];
 
 /* ----------------------------------------------------------
+   PRECIOUS METALS — TOP 10
+   fields: metal, symbol, priceUSD, unit ("oz"|"tonne"), change1y, liq, category
+   category: "precious" | "industrial"
+---------------------------------------------------------- */
+const PRECIOUS_METALS_OFFERS = [
+  { id: "metal-gold",
+    name: { uz: "Oltin", ru: "Золото", en: "Gold" },
+    metal: "gold", symbol: "Au", priceUSD: 2050, unit: "oz",
+    change1y: 12.5, liq: "hi", category: "precious",
+    url: "https://www.kitco.com/charts/gold" },
+  { id: "metal-silver",
+    name: { uz: "Kumush", ru: "Серебро", en: "Silver" },
+    metal: "silver", symbol: "Ag", priceUSD: 24.8, unit: "oz",
+    change1y: 8.2, liq: "hi", category: "precious",
+    url: "https://www.kitco.com/charts/silver" },
+  { id: "metal-platinum",
+    name: { uz: "Platina", ru: "Платина", en: "Platinum" },
+    metal: "platinum", symbol: "Pt", priceUSD: 952, unit: "oz",
+    change1y: -5.3, liq: "mid", category: "precious",
+    url: "https://www.kitco.com/charts/platinum" },
+  { id: "metal-palladium",
+    name: { uz: "Palladiy", ru: "Палладий", en: "Palladium" },
+    metal: "palladium", symbol: "Pd", priceUSD: 1024, unit: "oz",
+    change1y: -18.4, liq: "mid", category: "precious",
+    url: "https://www.kitco.com/charts/palladium" },
+  { id: "metal-rhodium",
+    name: { uz: "Rodiy", ru: "Родий", en: "Rhodium" },
+    metal: "rhodium", symbol: "Rh", priceUSD: 4500, unit: "oz",
+    change1y: -22.0, liq: "low", category: "precious",
+    url: "https://www.kitco.com/charts/rhodium" },
+  { id: "metal-copper",
+    name: { uz: "Mis (Bronza asosi)", ru: "Медь (основа бронзы)", en: "Copper (Bronze base)" },
+    metal: "copper", symbol: "Cu", priceUSD: 8750, unit: "tonne",
+    change1y: 6.8, liq: "hi", category: "industrial",
+    url: "https://www.lme.com/en/metals/non-ferrous/lme-copper" },
+  { id: "metal-aluminum",
+    name: { uz: "Alyumin", ru: "Алюминий", en: "Aluminum" },
+    metal: "aluminum", symbol: "Al", priceUSD: 2280, unit: "tonne",
+    change1y: 3.2, liq: "hi", category: "industrial",
+    url: "https://www.lme.com/en/metals/non-ferrous/lme-aluminium" },
+  { id: "metal-nickel",
+    name: { uz: "Nikel", ru: "Никель", en: "Nickel" },
+    metal: "nickel", symbol: "Ni", priceUSD: 17500, unit: "tonne",
+    change1y: -8.4, liq: "mid", category: "industrial",
+    url: "https://www.lme.com/en/metals/non-ferrous/lme-nickel" },
+  { id: "metal-titanium",
+    name: { uz: "Titan", ru: "Титан", en: "Titanium" },
+    metal: "titanium", symbol: "Ti", priceUSD: 11000, unit: "tonne",
+    change1y: 4.1, liq: "low", category: "industrial",
+    url: "https://www.metalary.com/titanium-price" },
+  { id: "metal-cobalt",
+    name: { uz: "Kobalt", ru: "Кобальт", en: "Cobalt" },
+    metal: "cobalt", symbol: "Co", priceUSD: 33000, unit: "tonne",
+    change1y: -12.6, liq: "mid", category: "industrial",
+    url: "https://www.lme.com/en/metals/ev-battery-materials/lme-cobalt" },
+];
+
+/* ----------------------------------------------------------
    REGISTRY
 ---------------------------------------------------------- */
 const OFFERS = {
-  "deposit-uzs": { kind: "deposit", currency: "UZS", items: DEPOSIT_UZS_OFFERS },
-  "deposit-usd": { kind: "deposit", currency: "USD", items: DEPOSIT_USD_OFFERS },
-  "tse":         { kind: "stock",   currency: "UZS", items: TSE_OFFERS },
-  "crypto":      { kind: "crypto",  currency: "USD", items: CRYPTO_OFFERS },
-  "gems":        { kind: "gems",    currency: "USD", items: GEMS_OFFERS },
-  "gaming":      { kind: "gaming",  currency: "USD", items: GAMING_OFFERS },
+  "deposit-uzs":    { kind: "deposit",         currency: "UZS", items: DEPOSIT_UZS_OFFERS },
+  "deposit-usd":    { kind: "deposit",         currency: "USD", items: DEPOSIT_USD_OFFERS },
+  "tse":            { kind: "stock",           currency: "UZS", items: TSE_OFFERS },
+  "crypto":         { kind: "crypto",          currency: "USD", items: CRYPTO_OFFERS },
+  "precious-metals":{ kind: "precious-metals", currency: "USD", items: PRECIOUS_METALS_OFFERS },
+  "gems":           { kind: "gems",            currency: "USD", items: GEMS_OFFERS },
+  "gaming":         { kind: "gaming",          currency: "USD", items: GAMING_OFFERS },
 };
 
 /* ----------------------------------------------------------
@@ -373,6 +432,20 @@ const OFFERS_I18N = {
     "net.solana":"Solana", "net.ripple":"Ripple", "net.cardano":"Cardano",
     "net.avalanche":"Avalanche", "net.polkadot":"Polkadot", "net.ton":"TON",
     "head.stat.bestToken":"Eng ko'p o'sgan",
+
+    /* ---- precious metals ---- */
+    "metal.search.ph":"Metall nomi yoki kimyoviy belgi…",
+    "metal.sort.price.desc":"Narx: yuqoridan pastga", "metal.sort.price.asc":"Narx: pastdan yuqoriga",
+    "metal.sort.change.desc":"1y o'zgarish: yuqoridan", "metal.sort.change.asc":"1y o'zgarish: pastdan",
+    "metal.filter.cat.all":"Tur: barchasi",
+    "metal.price":"Narx (USD)", "metal.change":"1 yil", "metal.symbol":"Belgi",
+    "metal.category":"Tur", "metal.unit.oz":"troy oz", "metal.unit.tonne":"tonna",
+    "metal.tog.liq":"Likvidlik", "metal.tog.all":"Barchasi",
+    "metal.tog.liq.hi":"Yuqori", "metal.tog.liq.mid":"O'rta", "metal.tog.liq.low":"Past",
+    "metal.tog.cat":"Tur", "metal.tog.cat.all":"Barchasi",
+    "metal.cat.precious":"Qimmatbaho metall", "metal.cat.industrial":"Sanoat metalli",
+    "go.metal":"Batafsil ma'lumot",
+    "head.stat.bestMetal":"Eng ko'p o'sgan",
 
     /* ---- gems ---- */
     "gem.search.ph":"Tosh turi yoki nom…",
@@ -474,6 +547,20 @@ const OFFERS_I18N = {
     "net.avalanche":"Avalanche", "net.polkadot":"Polkadot", "net.ton":"TON",
     "head.stat.bestToken":"Лучший рост",
 
+    /* ---- precious metals ---- */
+    "metal.search.ph":"Название металла или символ…",
+    "metal.sort.price.desc":"Цена: по убыванию", "metal.sort.price.asc":"Цена: по возрастанию",
+    "metal.sort.change.desc":"1г изм.: по убыванию", "metal.sort.change.asc":"1г изм.: по возрастанию",
+    "metal.filter.cat.all":"Тип: все",
+    "metal.price":"Цена (USD)", "metal.change":"1 год", "metal.symbol":"Символ",
+    "metal.category":"Тип", "metal.unit.oz":"тр. унц.", "metal.unit.tonne":"тонна",
+    "metal.tog.liq":"Ликвидность", "metal.tog.all":"Все",
+    "metal.tog.liq.hi":"Высокая", "metal.tog.liq.mid":"Средняя", "metal.tog.liq.low":"Низкая",
+    "metal.tog.cat":"Тип", "metal.tog.cat.all":"Все",
+    "metal.cat.precious":"Драгоценный металл", "metal.cat.industrial":"Промышленный металл",
+    "go.metal":"Подробнее",
+    "head.stat.bestMetal":"Лучший рост",
+
     /* ---- gems ---- */
     "gem.search.ph":"Тип камня или название…",
     "gem.sort.price.desc":"Цена: по убыванию", "gem.sort.price.asc":"Цена: по возрастанию",
@@ -572,6 +659,20 @@ const OFFERS_I18N = {
     "net.solana":"Solana", "net.ripple":"Ripple", "net.cardano":"Cardano",
     "net.avalanche":"Avalanche", "net.polkadot":"Polkadot", "net.ton":"TON",
     "head.stat.bestToken":"Best performer",
+
+    /* ---- precious metals ---- */
+    "metal.search.ph":"Metal name or symbol…",
+    "metal.sort.price.desc":"Price: high to low", "metal.sort.price.asc":"Price: low to high",
+    "metal.sort.change.desc":"1yr change: high to low", "metal.sort.change.asc":"1yr change: low to high",
+    "metal.filter.cat.all":"Type: all",
+    "metal.price":"Price (USD)", "metal.change":"1 year", "metal.symbol":"Symbol",
+    "metal.category":"Type", "metal.unit.oz":"troy oz", "metal.unit.tonne":"tonne",
+    "metal.tog.liq":"Liquidity", "metal.tog.all":"All",
+    "metal.tog.liq.hi":"High", "metal.tog.liq.mid":"Medium", "metal.tog.liq.low":"Low",
+    "metal.tog.cat":"Type", "metal.tog.cat.all":"All",
+    "metal.cat.precious":"Precious metal", "metal.cat.industrial":"Industrial metal",
+    "go.metal":"Learn more",
+    "head.stat.bestMetal":"Best performer",
 
     /* ---- gems ---- */
     "gem.search.ph":"Stone type or name…",

@@ -581,19 +581,40 @@ const INSTRUMENTS = [
     },
   },
   {
+    id: "precious-metals",
+    name: { uz: "Qimmatbaho metallar", ru: "Драгоценные металлы", en: "Precious Metals" },
+    sub:  { uz: "Oltin · Kumush · Platina · USD", ru: "Золото · Серебро · Платина · USD", en: "Gold · Silver · Platinum · USD" },
+    risk: "low", cap: "mid", liq: "mid",
+    income: "passive", market: "intl", currency: "USD", online: "yes", tangible: "yes",
+    sharia: "compliant",
+    retMid: 7.5, retLabel: { uz: "5–12% yillik", ru: "5–12% годовых", en: "5–12% annual" },
+    minCapUSD: 50, minCapLabel: { uz: "$ 50", ru: "$ 50", en: "$ 50" },
+    complexity: "low",
+    pros: {
+      uz: ["Inflyatsiyadan himoya", "Asrlik aktiv", "Real aktiv qo'lda"],
+      ru: ["Защита от инфляции", "Вековой актив", "Реальный актив на руках"],
+      en: ["Inflation hedge", "Time-tested asset", "Tangible asset"],
+    },
+    cons: {
+      uz: ["Daromad bermaydi (faqat qiymat o'sishi)", "Saqlash xarajatlari"],
+      ru: ["Нет купонного дохода", "Расходы на хранение"],
+      en: ["No yield (price growth only)", "Storage costs"],
+    },
+  },
+  {
     id: "gems",
     name: { uz: "Qimmatbaho toshlar", ru: "Драгоценные камни", en: "Precious Stones" },
-    sub:  { uz: "Olmoslar · Rubinlar · USD", ru: "Бриллианты · Рубины · USD", en: "Diamonds · Rubies · USD" },
-    risk: "low", cap: "mid", liq: "mid",
+    sub:  { uz: "Olmoslar · Aleksandrit · USD", ru: "Бриллианты · Александрит · USD", en: "Diamonds · Alexandrite · USD" },
+    risk: "mid", cap: "mid", liq: "low",
     income: "passive", market: "intl", currency: "USD", online: "no", tangible: "yes",
     sharia: "compliant",
-    retMid: 7.5, retLabel: { uz: "5–10% yillik", ru: "5–10% годовых", en: "5–10% annual" },
-    minCapUSD: 160, minCapLabel: { uz: "$ 160", ru: "$ 160", en: "$ 160" },
-    complexity: "mid",
+    retMid: 22, retLabel: { uz: "10–35% yillik", ru: "10–35% годовых", en: "10–35% annual" },
+    minCapUSD: 500, minCapLabel: { uz: "$ 500", ru: "$ 500", en: "$ 500" },
+    complexity: "hi",
     pros: {
-      uz: ["Inflyatsiyadan himoya", "Noyob va cheklangan resurs", "Real aktiv qo'lda"],
-      ru: ["Защита от инфляции", "Редкий и ограниченный ресурс", "Реальный актив на руках"],
-      en: ["Inflation hedge", "Rare and limited resource", "Tangible asset"],
+      uz: ["Yuqori potentsial o'sish", "Noyob va cheklangan resurs", "Real aktiv qo'lda"],
+      ru: ["Высокий потенциал роста", "Редкий и ограниченный ресурс", "Реальный актив на руках"],
+      en: ["High growth potential", "Rare and limited resource", "Tangible asset"],
     },
     cons: {
       uz: ["Autentifikatsiya xarajatlari", "Past likvidlik", "Ekspertiza talab qiladi"],
@@ -701,6 +722,12 @@ const state = {
       sort: "cap.desc",
       network: "all",
       staking: "all",
+    },
+    "precious-metals": {
+      search: "",
+      sort: "price.desc",
+      category: "all",
+      liq: "all",
     },
     gems: {
       search: "",
@@ -853,6 +880,7 @@ function buildFilterUI() {
     if (meta && meta.kind === "deposit") buildDepositFilterUI(wrap);
     else if (meta && meta.kind === "stock") buildStockFilterUI(wrap);
     else if (meta && meta.kind === "crypto") buildCryptoFilterUI(wrap);
+    else if (meta && meta.kind === "precious-metals") buildMetalFilterUI(wrap);
     else if (meta && meta.kind === "gems") buildGemFilterUI(wrap);
     else if (meta && meta.kind === "gaming") buildGamingFilterUI(wrap);
     else buildHomeFilterUI(wrap); // fallback
@@ -1080,6 +1108,31 @@ function buildCryptoFilterUI(wrap) {
   wrap.appendChild(toggles);
 }
 
+/* ---------- Precious metals filter UI ---------- */
+function buildMetalFilterUI(wrap) {
+  const f = state.detailFilters["precious-metals"];
+
+  wrap.appendChild(makeSearchInput(f.search, t("metal.search.ph")));
+  wrap.appendChild(makeSelect("sort", [
+    ["price.desc",  t("metal.sort.price.desc")],
+    ["price.asc",   t("metal.sort.price.asc")],
+    ["change.desc", t("metal.sort.change.desc")],
+    ["change.asc",  t("metal.sort.change.asc")],
+  ], f.sort, (v) => { f.sort = v; render(); }, true));
+  wrap.appendChild(makeSelect("filter-cat", [
+    ["all",        t("metal.filter.cat.all")],
+    ["precious",   t("metal.cat.precious")],
+    ["industrial", t("metal.cat.industrial")],
+  ], f.category, (v) => { f.category = v; render(); }));
+
+  const toggles = el("div", { class: "toggles", style: "width: 100%" },
+    makeToggleGroup(t("metal.tog.liq"), "liq", f.liq, [
+      ["all", t("metal.tog.all")], ["hi", t("metal.tog.liq.hi")], ["mid", t("metal.tog.liq.mid")], ["low", t("metal.tog.liq.low")],
+    ]),
+  );
+  wrap.appendChild(toggles);
+}
+
 /* ---------- Gems filter UI ---------- */
 function buildGemFilterUI(wrap) {
   const f = state.detailFilters.gems;
@@ -1237,6 +1290,24 @@ function filterAndSortCrypto(items) {
   else if (s === "change.desc")  list.sort((a, b) => b.change30d - a.change30d);
   else if (s === "change.asc")   list.sort((a, b) => a.change30d - b.change30d);
   else if (s === "staking.desc") list.sort((a, b) => b.stakingAPY - a.stakingAPY);
+  return list;
+}
+
+function filterAndSortMetals(items) {
+  const f = state.detailFilters["precious-metals"];
+  let list = items.slice();
+  if (f.search) {
+    const q = f.search.toLowerCase().trim();
+    list = list.filter((o) => [o.name[state.lang], o.symbol, o.metal].join(" ").toLowerCase().includes(q));
+  }
+  if (f.category !== "all") list = list.filter((o) => o.category === f.category);
+  if (f.liq     !== "all") list = list.filter((o) => o.liq === f.liq);
+
+  const s = f.sort;
+  if (s === "price.desc")   list.sort((a, b) => b.priceUSD - a.priceUSD);
+  else if (s === "price.asc")    list.sort((a, b) => a.priceUSD - b.priceUSD);
+  else if (s === "change.desc")  list.sort((a, b) => b.change1y - a.change1y);
+  else if (s === "change.asc")   list.sort((a, b) => a.change1y - b.change1y);
   return list;
 }
 
@@ -1682,6 +1753,16 @@ function pickTopOffers(inst) {
       top: items.slice(0, 3).map((o) => ({
         label: o.ticker,
         value: (o.change30d >= 0 ? "+" : "") + o.change30d.toFixed(1) + "%",
+      })),
+    };
+  }
+  if (meta.kind === "precious-metals") {
+    items.sort((a, b) => b.change1y - a.change1y);
+    return {
+      kind: "precious-metals",
+      top: items.slice(0, 3).map((o) => ({
+        label: o.symbol,
+        value: (o.change1y >= 0 ? "+" : "") + o.change1y.toFixed(1) + "%",
       })),
     };
   }
@@ -2235,6 +2316,17 @@ function renderDetail() {
     } else {
       list.forEach((o) => grid.appendChild(buildStockCard(o)));
     }
+  } else if (meta.kind === "precious-metals") {
+    const list = filterAndSortMetals(meta.items);
+    renderLiveStatsMetals(list);
+    if (list.length === 0) {
+      grid.appendChild(el("div", { class: "empty" },
+        el("h3", null, t("catalog.empty.title")),
+        el("p", null, t("catalog.empty.body"))
+      ));
+    } else {
+      list.forEach((o) => grid.appendChild(buildMetalCard(o)));
+    }
   } else if (meta.kind === "crypto") {
     const list = filterAndSortCrypto(meta.items);
     renderLiveStatsCrypto(list);
@@ -2357,6 +2449,41 @@ function renderLiveStatsStock(list) {
   wrap.appendChild(el("div", { class: "live-stat" },
     el("div", { class: "k" }, t("head.stat.bestChange")),
     el("div", { class: "v" }, (bestChange.change30d > 0 ? "+" : "") + bestChange.change30d.toFixed(1) + "%")
+  ));
+}
+
+function renderLiveStatsMetals(list) {
+  const wrap = $("#live-stats");
+  wrap.innerHTML = "";
+
+  const countV = el("div", { class: "v" });
+  countV.appendChild(el("span", { class: "acc" }, String(list.length)));
+  if (list.length === 0) countV.classList.add("empty");
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.offers")),
+    countV
+  ));
+
+  if (list.length === 0) {
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestMetal")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestChange")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    return;
+  }
+
+  const bestChange = list.reduce((m, o) => o.change1y > m.change1y ? o : m, list[0]);
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestMetal")),
+    el("div", { class: "v" }, bestChange.symbol + " · " + bestChange.name[state.lang])
+  ));
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestChange")),
+    el("div", { class: "v" }, (bestChange.change1y > 0 ? "+" : "") + bestChange.change1y.toFixed(1) + "%")
   ));
 }
 
@@ -2548,6 +2675,50 @@ function buildStockCard(o) {
   );
 }
 
+function buildMetalCard(o) {
+  const changeCls = o.change1y > 0 ? "up" : o.change1y < 0 ? "down" : "flat";
+  const changeStr = (o.change1y > 0 ? "+" : "") + o.change1y.toFixed(1) + "%";
+  const unitLabel = t("metal.unit." + o.unit) || o.unit;
+  const priceLabel = "$ " + o.priceUSD.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  const catLabel = t("metal.cat." + o.category) || o.category;
+
+  const tags = el("div", { class: "otags" });
+  tags.appendChild(el("span", { class: "tag" }, catLabel));
+  tags.appendChild(el("span", { class: "tag" }, unitLabel));
+  tags.appendChild(el("span", { class: "tag" }, t("metal.tog.liq") + ": " + t("liq." + o.liq)));
+
+  return el("div", { class: "card offer-card interactive" },
+    el("div", { class: "top" },
+      el("div", { class: "provider" },
+        el("div", { class: "pavatar" }, o.symbol),
+        el("div", null,
+          el("div", { class: "ticker-row" },
+            el("span", { class: "ticker" }, o.symbol),
+            el("span", { class: "change-badge " + changeCls }, changeStr)
+          ),
+          el("div", { class: "pcat" }, catLabel + " · " + unitLabel)
+        )
+      )
+    ),
+    el("div", { class: "oname" }, o.name[state.lang]),
+    el("div", { class: "rate-strip" },
+      el("span", { class: "lbl" }, t("metal.price") + " / " + unitLabel),
+      el("span", { class: "val" }, priceLabel)
+    ),
+    el("div", { class: "metrics" },
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("metal.symbol")), el("div", { class: "v" }, o.symbol)),
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("metal.change")), el("div", { class: "v " + changeCls }, changeStr))
+    ),
+    tags,
+    el("div", { class: "ofoot" },
+      el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
+        t("go.metal"),
+        el("span", null, "↗")
+      )
+    )
+  );
+}
+
 function buildCryptoCard(o) {
   const changeCls = o.change30d > 0 ? "up" : o.change30d < 0 ? "down" : "flat";
   const changeStr = (o.change30d > 0 ? "+" : "") + o.change30d.toFixed(1) + "%";
@@ -2720,6 +2891,11 @@ function renderActiveFilters() {
       if (f.ipo !== "all")    chips.push(["ipo", t("stk.tog.ipo.yes")]);
       if (f.sort !== "div.desc") chips.push(["sort", t("stk.sort." + f.sort)]);
       if (f.search) chips.push(["search", "« " + f.search + " »"]);
+    } else if (meta.kind === "precious-metals") {
+      if (f.category !== "all") chips.push(["category", t("metal.cat." + f.category)]);
+      if (f.liq !== "all")      chips.push(["liq", t("metal.tog.liq") + ": " + t("metal.tog.liq." + f.liq)]);
+      if (f.sort !== "price.desc") chips.push(["sort", t("metal.sort." + f.sort)]);
+      if (f.search) chips.push(["search", "« " + f.search + " »"]);
     } else if (meta.kind === "crypto") {
       if (f.network !== "all") chips.push(["network", t("crypt.network") + ": " + (t("net." + f.network) || f.network)]);
       if (f.staking !== "all") chips.push(["staking", t("crypt.tog.staking") + ": " + t("crypt.tog.staking." + f.staking)]);
@@ -2756,7 +2932,7 @@ function clearOne(key) {
     else f[key] = "all";
   } else {
     const meta = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
-    const defaultSortMap = { deposit: "rate.desc", stock: "div.desc", crypto: "cap.desc", gems: "price.desc", gaming: "price.desc" };
+    const defaultSortMap = { deposit: "rate.desc", stock: "div.desc", crypto: "cap.desc", "precious-metals": "price.desc", gems: "price.desc", gaming: "price.desc" };
     const defaultSort = (meta && defaultSortMap[meta.kind]) || "relevance";
     if (key === "sort") f.sort = defaultSort;
     else if (key === "search") { f.search = ""; }
@@ -2789,6 +2965,8 @@ function clearAll() {
       };
     } else if (meta.kind === "crypto") {
       state.detailFilters.crypto = { search: "", sort: "cap.desc", network: "all", staking: "all" };
+    } else if (meta.kind === "precious-metals") {
+      state.detailFilters["precious-metals"] = { search: "", sort: "price.desc", category: "all", liq: "all" };
     } else if (meta.kind === "gems") {
       state.detailFilters.gems = { search: "", sort: "price.desc", stone: "all", liq: "all" };
     } else if (meta.kind === "gaming") {
