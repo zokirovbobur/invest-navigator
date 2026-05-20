@@ -297,7 +297,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
    PAGE HEAD
 ============================================================ */
 .page-head {
-  max-width: 1280px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 44px 32px 24px;
   position: relative;
@@ -373,7 +373,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
    FILTER BAR
 ============================================================ */
 .section {
-  max-width: 1280px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 32px 32px;
 }
@@ -567,7 +567,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 
 .instr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 16px;
 }
 
@@ -1243,7 +1243,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   margin-top: 64px;
 }
 .footer-inner {
-  max-width: 1280px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 .disclaimer-card {
@@ -1281,7 +1281,18 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 /* ============================================================
    RESPONSIVE
 ============================================================ */
+
+/* Tablet: 2 columns for the grid (721px–1023px) */
+@media (min-width: 721px) and (max-width: 1023px) {
+  .instr-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Mobile: disable sticky header, single-column grid, smaller padding */
 @media (max-width: 720px) {
+  /* Unstick the header/filter area — on small screens it eats too much space */
+  .sticky-area { position: relative; top: auto; }
+  .sticky-area::after { display: none; }
+
   .topbar { padding: 12px 18px; }
   .page-head { padding: 28px 18px 14px; }
   .section { padding: 0 18px 24px; }
