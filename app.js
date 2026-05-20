@@ -566,7 +566,7 @@ const INSTRUMENTS = [
     risk: "hi", cap: "low", liq: "hi",
     income: "active", market: "intl", currency: "USD", online: "yes", tangible: "no",
     sharia: "absent",
-    retMid: 30, retLabel: { uz: "±50%+ volatil", ru: "±50%+ волатильно", en: "±50%+ volatile" },
+    retMid: 65, retLabel: { uz: "±50%+ volatil", ru: "±50%+ волатильно", en: "±50%+ volatile" },
     minCapUSD: 50, minCapLabel: { uz: "$ 50", ru: "$ 50", en: "$ 50" },
     complexity: "hi",
     pros: {
@@ -581,24 +581,45 @@ const INSTRUMENTS = [
     },
   },
   {
-    id: "gold",
-    name: { uz: "Oltin", ru: "Золото", en: "Gold" },
-    sub:  { uz: "Metall hisobi · USD", ru: "Металл. счёт · USD", en: "Metal account · USD" },
+    id: "gems",
+    name: { uz: "Qimmatbaho toshlar", ru: "Драгоценные камни", en: "Precious Stones" },
+    sub:  { uz: "Olmoslar · Rubinlar · USD", ru: "Бриллианты · Рубины · USD", en: "Diamonds · Rubies · USD" },
     risk: "low", cap: "mid", liq: "mid",
-    income: "passive", market: "local", currency: "USD", online: "yes", tangible: "yes",
+    income: "passive", market: "intl", currency: "USD", online: "no", tangible: "yes",
     sharia: "compliant",
     retMid: 7.5, retLabel: { uz: "5–10% yillik", ru: "5–10% годовых", en: "5–10% annual" },
-    minCapUSD: 160, minCapLabel: { uz: "2 mln so'm", ru: "2 млн сум", en: "2M UZS" },
-    complexity: "low",
+    minCapUSD: 160, minCapLabel: { uz: "$ 160", ru: "$ 160", en: "$ 160" },
+    complexity: "mid",
     pros: {
-      uz: ["Inflyatsiyadan himoya", "Asrlik aktiv", "Real aktiv qo'lda"],
-      ru: ["Защита от инфляции", "Вековой актив", "Реальный актив на руках"],
-      en: ["Inflation hedge", "Time-tested asset", "Tangible asset"],
+      uz: ["Inflyatsiyadan himoya", "Noyob va cheklangan resurs", "Real aktiv qo'lda"],
+      ru: ["Защита от инфляции", "Редкий и ограниченный ресурс", "Реальный актив на руках"],
+      en: ["Inflation hedge", "Rare and limited resource", "Tangible asset"],
     },
     cons: {
-      uz: ["Daromad bermaydi (faqat qiymat o'sishi)", "Sotuv-sotib olish spred"],
-      ru: ["Нет купонного дохода", "Спред при покупке-продаже"],
-      en: ["No yield (only price growth)", "Buy-sell spread"],
+      uz: ["Autentifikatsiya xarajatlari", "Past likvidlik", "Ekspertiza talab qiladi"],
+      ru: ["Затраты на аутентификацию", "Низкая ликвидность", "Требует экспертизы"],
+      en: ["Authentication costs", "Low liquidity", "Requires expertise"],
+    },
+  },
+  {
+    id: "gaming",
+    name: { uz: "O'yin aktivlari (Skinlar)", ru: "Игровые активы (Скины)", en: "Gaming Assets (Skins)" },
+    sub:  { uz: "CS2 · Dota 2 · TF2 · Rust", ru: "CS2 · Dota 2 · TF2 · Rust", en: "CS2 · Dota 2 · TF2 · Rust" },
+    risk: "hi", cap: "low", liq: "mid",
+    income: "active", market: "intl", currency: "USD", online: "yes", tangible: "no",
+    sharia: "absent",
+    retMid: 35, retLabel: { uz: "±30%+ volatil", ru: "±30%+ волатильно", en: "±30%+ volatile" },
+    minCapUSD: 50, minCapLabel: { uz: "$ 50", ru: "$ 50", en: "$ 50" },
+    complexity: "hi",
+    pros: {
+      uz: ["Past kirish summasi", "Yuqori likvidlik (Steam)", "Global bozor"],
+      ru: ["Низкий порог входа", "Высокая ликвидность (Steam)", "Глобальный рынок"],
+      en: ["Low entry threshold", "High liquidity (Steam)", "Global market"],
+    },
+    cons: {
+      uz: ["Yuqori volatillik", "Platform riski (Steam)", "Spekulyativ xarakter"],
+      ru: ["Высокая волатильность", "Риск платформы (Steam)", "Спекулятивный характер"],
+      en: ["High volatility", "Platform risk (Steam)", "Speculative nature"],
     },
   },
   {
@@ -674,6 +695,24 @@ const state = {
       dividend: "all",
       movement: "all",
       ipo: "all",
+    },
+    crypto: {
+      search: "",
+      sort: "cap.desc",
+      network: "all",
+      staking: "all",
+    },
+    gems: {
+      search: "",
+      sort: "price.desc",
+      stone: "all",
+      liq: "all",
+    },
+    gaming: {
+      search: "",
+      sort: "price.desc",
+      game: "all",
+      wear: "all",
     },
   },
 };
@@ -813,6 +852,9 @@ function buildFilterUI() {
     const meta = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
     if (meta && meta.kind === "deposit") buildDepositFilterUI(wrap);
     else if (meta && meta.kind === "stock") buildStockFilterUI(wrap);
+    else if (meta && meta.kind === "crypto") buildCryptoFilterUI(wrap);
+    else if (meta && meta.kind === "gems") buildGemFilterUI(wrap);
+    else if (meta && meta.kind === "gaming") buildGamingFilterUI(wrap);
     else buildHomeFilterUI(wrap); // fallback
   }
   // bind toggle pill listeners
@@ -867,8 +909,9 @@ function makeToggleGroup(label, group, currentVal, options) {
 
 function getActiveFilters() {
   if (state.route === "home") return state.filters;
-  const meta = OFFERS[state.detailId];
-  return state.detailFilters[meta ? meta.kind : "deposit"];
+  const meta = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
+  if (!meta) return state.detailFilters.deposit;
+  return state.detailFilters[meta.kind] || state.detailFilters.deposit;
 }
 
 /* ---------- Home filter UI ---------- */
@@ -1007,6 +1050,87 @@ function buildStockFilterUI(wrap) {
   wrap.appendChild(toggles);
 }
 
+/* ---------- Crypto filter UI ---------- */
+function buildCryptoFilterUI(wrap) {
+  const f = state.detailFilters.crypto;
+  const items = OFFERS[state.detailId].items;
+  const networks = Array.from(new Set(items.map((i) => i.network)));
+  networks.sort();
+
+  wrap.appendChild(makeSearchInput(f.search, t("crypt.search.ph")));
+  wrap.appendChild(makeSelect("sort", [
+    ["cap.desc",    t("crypt.sort.cap.desc")],
+    ["cap.asc",     t("crypt.sort.cap.asc")],
+    ["price.desc",  t("crypt.sort.price.desc")],
+    ["price.asc",   t("crypt.sort.price.asc")],
+    ["change.desc", t("crypt.sort.change.desc")],
+    ["change.asc",  t("crypt.sort.change.asc")],
+    ["staking.desc",t("crypt.sort.staking.desc")],
+  ], f.sort, (v) => { f.sort = v; render(); }, true));
+  wrap.appendChild(makeSelect("filter-network", [
+    ["all", t("crypt.filter.network.all")],
+    ...networks.map((n) => [n, t("net." + n) || n]),
+  ], f.network, (v) => { f.network = v; render(); }));
+
+  const toggles = el("div", { class: "toggles", style: "width: 100%" },
+    makeToggleGroup(t("crypt.tog.staking"), "staking", f.staking, [
+      ["all", t("crypt.tog.all")], ["yes", t("crypt.tog.staking.yes")], ["no", t("crypt.tog.staking.no")],
+    ]),
+  );
+  wrap.appendChild(toggles);
+}
+
+/* ---------- Gems filter UI ---------- */
+function buildGemFilterUI(wrap) {
+  const f = state.detailFilters.gems;
+  const items = OFFERS[state.detailId].items;
+  const stones = Array.from(new Set(items.map((i) => i.stone)));
+  stones.sort();
+
+  wrap.appendChild(makeSearchInput(f.search, t("gem.search.ph")));
+  wrap.appendChild(makeSelect("sort", [
+    ["price.desc",  t("gem.sort.price.desc")],
+    ["price.asc",   t("gem.sort.price.asc")],
+    ["change.desc", t("gem.sort.change.desc")],
+    ["change.asc",  t("gem.sort.change.asc")],
+  ], f.sort, (v) => { f.sort = v; render(); }, true));
+  wrap.appendChild(makeSelect("filter-stone", [
+    ["all", t("gem.filter.stone.all")],
+    ...stones.map((s) => [s, t("stone." + s) || s]),
+  ], f.stone, (v) => { f.stone = v; render(); }));
+
+  const toggles = el("div", { class: "toggles", style: "width: 100%" },
+    makeToggleGroup(t("gem.tog.liq"), "liq", f.liq, [
+      ["all", t("gem.tog.all")], ["hi", t("gem.tog.liq.hi")], ["mid", t("gem.tog.liq.mid")], ["low", t("gem.tog.liq.low")],
+    ]),
+  );
+  wrap.appendChild(toggles);
+}
+
+/* ---------- Gaming filter UI ---------- */
+function buildGamingFilterUI(wrap) {
+  const f = state.detailFilters.gaming;
+
+  wrap.appendChild(makeSearchInput(f.search, t("skin.search.ph")));
+  wrap.appendChild(makeSelect("sort", [
+    ["price.desc",  t("skin.sort.price.desc")],
+    ["price.asc",   t("skin.sort.price.asc")],
+    ["change.desc", t("skin.sort.change.desc")],
+    ["change.asc",  t("skin.sort.change.asc")],
+  ], f.sort, (v) => { f.sort = v; render(); }, true));
+
+  const toggles = el("div", { class: "toggles", style: "width: 100%" },
+    makeToggleGroup(t("skin.tog.game"), "game", f.game, [
+      ["all", t("skin.tog.all")], ["cs2", t("skin.tog.cs2")], ["other", t("skin.tog.other")],
+    ]),
+    makeToggleGroup(t("skin.tog.wear"), "wear", f.wear, [
+      ["all", t("skin.tog.all")],
+      ["fn", t("wear.fn")], ["mw", t("wear.mw")], ["ft", t("wear.ft")],
+    ]),
+  );
+  wrap.appendChild(toggles);
+}
+
 /* ============================================================
    FILTER + SORT — HOME (directions)
 ============================================================ */
@@ -1092,6 +1216,66 @@ function filterAndSortStocks(items) {
   else if (s === "cap.asc")    list.sort((a, b) => a.marketCapB - b.marketCapB);
   else if (s === "price.desc") list.sort((a, b) => b.priceUZS - a.priceUZS);
   else if (s === "price.asc")  list.sort((a, b) => a.priceUZS - b.priceUZS);
+  return list;
+}
+
+function filterAndSortCrypto(items) {
+  const f = state.detailFilters.crypto;
+  let list = items.slice();
+  if (f.search) {
+    const q = f.search.toLowerCase().trim();
+    list = list.filter((o) => [o.ticker, o.name[state.lang], o.network].join(" ").toLowerCase().includes(q));
+  }
+  if (f.network !== "all") list = list.filter((o) => o.network === f.network);
+  if (f.staking !== "all") list = list.filter((o) => (f.staking === "yes" ? o.stakingAPY > 0 : o.stakingAPY === 0));
+
+  const s = f.sort;
+  if (s === "cap.desc")     list.sort((a, b) => b.marketCapB - a.marketCapB);
+  else if (s === "cap.asc") list.sort((a, b) => a.marketCapB - b.marketCapB);
+  else if (s === "price.desc")   list.sort((a, b) => b.priceUSD - a.priceUSD);
+  else if (s === "price.asc")    list.sort((a, b) => a.priceUSD - b.priceUSD);
+  else if (s === "change.desc")  list.sort((a, b) => b.change30d - a.change30d);
+  else if (s === "change.asc")   list.sort((a, b) => a.change30d - b.change30d);
+  else if (s === "staking.desc") list.sort((a, b) => b.stakingAPY - a.stakingAPY);
+  return list;
+}
+
+function filterAndSortGems(items) {
+  const f = state.detailFilters.gems;
+  let list = items.slice();
+  if (f.search) {
+    const q = f.search.toLowerCase().trim();
+    list = list.filter((o) => [o.name[state.lang], o.stone].join(" ").toLowerCase().includes(q));
+  }
+  if (f.stone !== "all") list = list.filter((o) => o.stone === f.stone);
+  if (f.liq   !== "all") list = list.filter((o) => o.liq === f.liq);
+
+  const s = f.sort;
+  if (s === "price.desc")   list.sort((a, b) => b.priceUSD - a.priceUSD);
+  else if (s === "price.asc")    list.sort((a, b) => a.priceUSD - b.priceUSD);
+  else if (s === "change.desc")  list.sort((a, b) => b.change1y - a.change1y);
+  else if (s === "change.asc")   list.sort((a, b) => a.change1y - b.change1y);
+  return list;
+}
+
+function filterAndSortGaming(items) {
+  const f = state.detailFilters.gaming;
+  let list = items.slice();
+  if (f.search) {
+    const q = f.search.toLowerCase().trim();
+    list = list.filter((o) => [o.name[state.lang], o.game].join(" ").toLowerCase().includes(q));
+  }
+  if (f.game !== "all") {
+    if (f.game === "cs2") list = list.filter((o) => o.game === "cs2");
+    else list = list.filter((o) => o.game !== "cs2");
+  }
+  if (f.wear !== "all") list = list.filter((o) => o.wear === f.wear);
+
+  const s = f.sort;
+  if (s === "price.desc")   list.sort((a, b) => b.priceUSD - a.priceUSD);
+  else if (s === "price.asc")    list.sort((a, b) => a.priceUSD - b.priceUSD);
+  else if (s === "change.desc")  list.sort((a, b) => b.change30d - a.change30d);
+  else if (s === "change.asc")   list.sort((a, b) => a.change30d - b.change30d);
   return list;
 }
 
@@ -1488,6 +1672,36 @@ function pickTopOffers(inst) {
       top: items.slice(0, 3).map((o) => ({
         label: o.ticker,
         value: (o.divYield > 0 ? o.divYield.toFixed(1) + "%" : ((o.change30d > 0 ? "+" : "") + o.change30d.toFixed(1) + "%")),
+      })),
+    };
+  }
+  if (meta.kind === "crypto") {
+    items.sort((a, b) => b.change30d - a.change30d);
+    return {
+      kind: "crypto",
+      top: items.slice(0, 3).map((o) => ({
+        label: o.ticker,
+        value: (o.change30d >= 0 ? "+" : "") + o.change30d.toFixed(1) + "%",
+      })),
+    };
+  }
+  if (meta.kind === "gems") {
+    items.sort((a, b) => b.change1y - a.change1y);
+    return {
+      kind: "gems",
+      top: items.slice(0, 3).map((o) => ({
+        label: o.name[state.lang].split(" ")[0],
+        value: (o.change1y >= 0 ? "+" : "") + o.change1y.toFixed(1) + "%",
+      })),
+    };
+  }
+  if (meta.kind === "gaming") {
+    items.sort((a, b) => b.change30d - a.change30d);
+    return {
+      kind: "gaming",
+      top: items.slice(0, 3).map((o) => ({
+        label: o.name[state.lang].split(" ").slice(0, 2).join(" "),
+        value: (o.change30d >= 0 ? "+" : "") + o.change30d.toFixed(1) + "%",
       })),
     };
   }
@@ -2021,6 +2235,39 @@ function renderDetail() {
     } else {
       list.forEach((o) => grid.appendChild(buildStockCard(o)));
     }
+  } else if (meta.kind === "crypto") {
+    const list = filterAndSortCrypto(meta.items);
+    renderLiveStatsCrypto(list);
+    if (list.length === 0) {
+      grid.appendChild(el("div", { class: "empty" },
+        el("h3", null, t("catalog.empty.title")),
+        el("p", null, t("catalog.empty.body"))
+      ));
+    } else {
+      list.forEach((o) => grid.appendChild(buildCryptoCard(o)));
+    }
+  } else if (meta.kind === "gems") {
+    const list = filterAndSortGems(meta.items);
+    renderLiveStatsGems(list);
+    if (list.length === 0) {
+      grid.appendChild(el("div", { class: "empty" },
+        el("h3", null, t("catalog.empty.title")),
+        el("p", null, t("catalog.empty.body"))
+      ));
+    } else {
+      list.forEach((o) => grid.appendChild(buildGemCard(o)));
+    }
+  } else if (meta.kind === "gaming") {
+    const list = filterAndSortGaming(meta.items);
+    renderLiveStatsGaming(list);
+    if (list.length === 0) {
+      grid.appendChild(el("div", { class: "empty" },
+        el("h3", null, t("catalog.empty.title")),
+        el("p", null, t("catalog.empty.body"))
+      ));
+    } else {
+      list.forEach((o) => grid.appendChild(buildSkinCard(o)));
+    }
   }
 }
 
@@ -2113,6 +2360,111 @@ function renderLiveStatsStock(list) {
   ));
 }
 
+function renderLiveStatsCrypto(list) {
+  const wrap = $("#live-stats");
+  wrap.innerHTML = "";
+
+  const countV = el("div", { class: "v" });
+  countV.appendChild(el("span", { class: "acc" }, String(list.length)));
+  if (list.length === 0) countV.classList.add("empty");
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.offers")),
+    countV
+  ));
+
+  if (list.length === 0) {
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestToken")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestChange")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    return;
+  }
+
+  const bestChange = list.reduce((m, o) => o.change30d > m.change30d ? o : m, list[0]);
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestToken")),
+    el("div", { class: "v" }, bestChange.ticker)
+  ));
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestChange")),
+    el("div", { class: "v" }, (bestChange.change30d > 0 ? "+" : "") + bestChange.change30d.toFixed(1) + "%")
+  ));
+}
+
+function renderLiveStatsGems(list) {
+  const wrap = $("#live-stats");
+  wrap.innerHTML = "";
+
+  const countV = el("div", { class: "v" });
+  countV.appendChild(el("span", { class: "acc" }, String(list.length)));
+  if (list.length === 0) countV.classList.add("empty");
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.offers")),
+    countV
+  ));
+
+  if (list.length === 0) {
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestGem")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestChange")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    return;
+  }
+
+  const bestChange = list.reduce((m, o) => o.change1y > m.change1y ? o : m, list[0]);
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestGem")),
+    el("div", { class: "v" }, bestChange.name[state.lang].split(" ")[0])
+  ));
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestChange")),
+    el("div", { class: "v" }, (bestChange.change1y > 0 ? "+" : "") + bestChange.change1y.toFixed(1) + "%")
+  ));
+}
+
+function renderLiveStatsGaming(list) {
+  const wrap = $("#live-stats");
+  wrap.innerHTML = "";
+
+  const countV = el("div", { class: "v" });
+  countV.appendChild(el("span", { class: "acc" }, String(list.length)));
+  if (list.length === 0) countV.classList.add("empty");
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.offers")),
+    countV
+  ));
+
+  if (list.length === 0) {
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestSkin")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestChange")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    return;
+  }
+
+  const bestChange = list.reduce((m, o) => o.change30d > m.change30d ? o : m, list[0]);
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestSkin")),
+    el("div", { class: "v" }, bestChange.name[state.lang].split(" ").slice(0, 2).join(" "))
+  ));
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestChange")),
+    el("div", { class: "v" }, (bestChange.change30d > 0 ? "+" : "") + bestChange.change30d.toFixed(1) + "%")
+  ));
+}
+
 /* ---------- Offer cards ---------- */
 function buildDepositCard(o, meta) {
   const termLabel = o.term + " " + t("dep.month");
@@ -2196,6 +2548,138 @@ function buildStockCard(o) {
   );
 }
 
+function buildCryptoCard(o) {
+  const changeCls = o.change30d > 0 ? "up" : o.change30d < 0 ? "down" : "flat";
+  const changeStr = (o.change30d > 0 ? "+" : "") + o.change30d.toFixed(1) + "%";
+  const capLabel = o.marketCapB >= 1000
+    ? "$ " + (o.marketCapB / 1000).toFixed(1) + "T"
+    : "$ " + o.marketCapB.toFixed(0) + "B";
+
+  const tags = el("div", { class: "otags" });
+  tags.appendChild(el("span", { class: "tag" }, t("crypt.network") + ": " + (t("net." + o.network) || o.network)));
+  tags.appendChild(el("span", { class: "tag" }, "#" + o.rank));
+  if (o.stakingAPY > 0) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(217,184,113,0.30); background: rgba(217,184,113,0.08)" },
+    t("crypt.staking") + " " + o.stakingAPY.toFixed(1) + "%"
+  ));
+
+  return el("div", { class: "card offer-card interactive" },
+    el("div", { class: "top" },
+      el("div", { class: "provider" },
+        el("div", { class: "pavatar" }, o.ticker.slice(0, 2)),
+        el("div", null,
+          el("div", { class: "ticker-row" },
+            el("span", { class: "ticker" }, o.ticker),
+            el("span", { class: "change-badge " + changeCls }, changeStr)
+          ),
+          el("div", { class: "pcat" }, t("crypt.network") + " · " + (t("net." + o.network) || o.network))
+        )
+      )
+    ),
+    el("div", { class: "oname" }, o.name[state.lang]),
+    el("div", { class: "rate-strip" },
+      el("span", { class: "lbl" }, t("crypt.price")),
+      el("span", { class: "val" }, "$ " + (o.priceUSD >= 1000
+        ? o.priceUSD.toLocaleString("en-US", { maximumFractionDigits: 0 })
+        : o.priceUSD.toFixed(2)))
+    ),
+    el("div", { class: "metrics" },
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("crypt.cap")),    el("div", { class: "v" }, capLabel)),
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("crypt.change")), el("div", { class: "v " + changeCls }, changeStr))
+    ),
+    tags,
+    el("div", { class: "ofoot" },
+      el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
+        t("go.crypto"),
+        el("span", null, "↗")
+      )
+    )
+  );
+}
+
+function buildGemCard(o) {
+  const changeCls = o.change1y > 0 ? "up" : o.change1y < 0 ? "down" : "flat";
+  const changeStr = (o.change1y > 0 ? "+" : "") + o.change1y.toFixed(1) + "%";
+
+  const tags = el("div", { class: "otags" });
+  tags.appendChild(el("span", { class: "tag" }, t("stone." + o.stone) || o.stone));
+  tags.appendChild(el("span", { class: "tag" }, t("gem.grade") + ": " + o.grade));
+  tags.appendChild(el("span", { class: "tag" }, t("gem.tog.liq") + ": " + t("liq." + o.liq)));
+
+  return el("div", { class: "card offer-card interactive" },
+    el("div", { class: "top" },
+      el("div", { class: "provider" },
+        el("div", { class: "pavatar" }, o.stone.slice(0, 2).toUpperCase()),
+        el("div", null,
+          el("div", { class: "ticker-row" },
+            el("span", { class: "ticker" }, o.stone.toUpperCase()),
+            el("span", { class: "change-badge " + changeCls }, changeStr)
+          ),
+          el("div", { class: "pcat" }, t("stone." + o.stone) + " · " + o.color)
+        )
+      )
+    ),
+    el("div", { class: "oname" }, o.name[state.lang]),
+    el("div", { class: "rate-strip" },
+      el("span", { class: "lbl" }, t("gem.price")),
+      el("span", { class: "val" }, "$ " + o.priceUSD.toLocaleString("en-US", { maximumFractionDigits: 0 }))
+    ),
+    el("div", { class: "metrics" },
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("gem.weight")),  el("div", { class: "v" }, o.weightLabel)),
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("gem.change")),  el("div", { class: "v " + changeCls }, changeStr))
+    ),
+    tags,
+    el("div", { class: "ofoot" },
+      el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
+        t("go.gems"),
+        el("span", null, "↗")
+      )
+    )
+  );
+}
+
+function buildSkinCard(o) {
+  const changeCls = o.change30d > 0 ? "up" : o.change30d < 0 ? "down" : "flat";
+  const changeStr = (o.change30d > 0 ? "+" : "") + o.change30d.toFixed(1) + "%";
+  const gameLabel = t("game." + o.game) || o.game;
+  const wearLabel = t("wear." + o.wear) || o.wear;
+
+  const tags = el("div", { class: "otags" });
+  tags.appendChild(el("span", { class: "tag" }, gameLabel));
+  tags.appendChild(el("span", { class: "tag" }, wearLabel));
+  if (o.float != null) tags.appendChild(el("span", { class: "tag" }, t("skin.float") + ": " + o.float.toFixed(4)));
+
+  return el("div", { class: "card offer-card interactive" },
+    el("div", { class: "top" },
+      el("div", { class: "provider" },
+        el("div", { class: "pavatar" }, o.game.slice(0, 2).toUpperCase()),
+        el("div", null,
+          el("div", { class: "ticker-row" },
+            el("span", { class: "ticker" }, gameLabel),
+            el("span", { class: "change-badge " + changeCls }, changeStr)
+          ),
+          el("div", { class: "pcat" }, wearLabel + " · " + o.platform)
+        )
+      )
+    ),
+    el("div", { class: "oname" }, o.name[state.lang]),
+    el("div", { class: "rate-strip" },
+      el("span", { class: "lbl" }, t("skin.price")),
+      el("span", { class: "val" }, "$ " + o.priceUSD.toFixed(2))
+    ),
+    el("div", { class: "metrics" },
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("skin.game")),   el("div", { class: "v" }, gameLabel)),
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("skin.change")), el("div", { class: "v " + changeCls }, changeStr))
+    ),
+    tags,
+    el("div", { class: "ofoot" },
+      el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
+        t("go.skin"),
+        el("span", null, "↗")
+      )
+    )
+  );
+}
+
 /* ============================================================
    ACTIVE FILTER CHIPS
 ============================================================ */
@@ -2236,6 +2720,21 @@ function renderActiveFilters() {
       if (f.ipo !== "all")    chips.push(["ipo", t("stk.tog.ipo.yes")]);
       if (f.sort !== "div.desc") chips.push(["sort", t("stk.sort." + f.sort)]);
       if (f.search) chips.push(["search", "« " + f.search + " »"]);
+    } else if (meta.kind === "crypto") {
+      if (f.network !== "all") chips.push(["network", t("crypt.network") + ": " + (t("net." + f.network) || f.network)]);
+      if (f.staking !== "all") chips.push(["staking", t("crypt.tog.staking") + ": " + t("crypt.tog.staking." + f.staking)]);
+      if (f.sort !== "cap.desc") chips.push(["sort", t("crypt.sort." + f.sort)]);
+      if (f.search) chips.push(["search", "« " + f.search + " »"]);
+    } else if (meta.kind === "gems") {
+      if (f.stone !== "all") chips.push(["stone", t("stone." + f.stone) || f.stone]);
+      if (f.liq !== "all")   chips.push(["liq", t("gem.tog.liq") + ": " + t("gem.tog.liq." + f.liq)]);
+      if (f.sort !== "price.desc") chips.push(["sort", t("gem.sort." + f.sort)]);
+      if (f.search) chips.push(["search", "« " + f.search + " »"]);
+    } else if (meta.kind === "gaming") {
+      if (f.game !== "all") chips.push(["game", t("skin.tog.game") + ": " + (f.game === "cs2" ? t("skin.tog.cs2") : t("skin.tog.other"))]);
+      if (f.wear !== "all") chips.push(["wear", t("wear." + f.wear) || f.wear]);
+      if (f.sort !== "price.desc") chips.push(["sort", t("skin.sort." + f.sort)]);
+      if (f.search) chips.push(["search", "« " + f.search + " »"]);
     }
   }
 
@@ -2256,8 +2755,9 @@ function clearOne(key) {
     else if (key === "search") { f.search = ""; }
     else f[key] = "all";
   } else {
-    const meta = OFFERS[state.detailId];
-    const defaultSort = meta.kind === "deposit" ? "rate.desc" : "div.desc";
+    const meta = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
+    const defaultSortMap = { deposit: "rate.desc", stock: "div.desc", crypto: "cap.desc", gems: "price.desc", gaming: "price.desc" };
+    const defaultSort = (meta && defaultSortMap[meta.kind]) || "relevance";
     if (key === "sort") f.sort = defaultSort;
     else if (key === "search") { f.search = ""; }
     else f[key] = "all";
@@ -2287,6 +2787,12 @@ function clearAll() {
         sector: "all", liq: "all", div: "all",
         dividend: "all", movement: "all", ipo: "all",
       };
+    } else if (meta.kind === "crypto") {
+      state.detailFilters.crypto = { search: "", sort: "cap.desc", network: "all", staking: "all" };
+    } else if (meta.kind === "gems") {
+      state.detailFilters.gems = { search: "", sort: "price.desc", stone: "all", liq: "all" };
+    } else if (meta.kind === "gaming") {
+      state.detailFilters.gaming = { search: "", sort: "price.desc", game: "all", wear: "all" };
     }
   }
   buildFilterUI();
