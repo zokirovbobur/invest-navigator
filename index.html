@@ -567,7 +567,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 
 .instr-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
 }
 
@@ -1281,11 +1281,6 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 /* ============================================================
    RESPONSIVE
 ============================================================ */
-
-/* Tablet: 2 columns for the grid (721px–1023px) */
-@media (min-width: 721px) and (max-width: 1023px) {
-  .instr-grid { grid-template-columns: repeat(2, 1fr); }
-}
 
 /* Mobile: disable sticky header, single-column grid, smaller padding */
 @media (max-width: 720px) {
