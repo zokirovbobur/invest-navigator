@@ -112,6 +112,12 @@ const I18N = {
     "expand.month": "oy",
     "expand.disclaimer": "Tahmin tarixiy o'rtacha asosida modellashtirilgan, kafolat emas.",
 
+    "chart.amount":     "Investitsiya summasi",
+    "chart.date":       "Kiritish sanasi",
+    "chart.date.today": "Bugun",
+    "chart.date.1yr":   "1 yil oldin",
+    "chart.date.2yr":   "2 yil oldin",
+
     "disclaimer.title": "Bu moliyaviy maslahat emas",
     "disclaimer.body": "Katalog faqat ta'lim va informatsion maqsadda taqdim etilgan. Investitsiya qarorlarini qabul qilishdan oldin mustaqil tahlil qiling yoki litsenziyalangan mutaxassis bilan maslahat qiling.",
     "footer.note": "© 2026 Invest Navigator · O'zbekiston",
@@ -225,6 +231,12 @@ const I18N = {
     "expand.axis.today": "Сегодня",
     "expand.month": "мес",
     "expand.disclaimer": "Прогноз построен на исторических средних, не является гарантией.",
+
+    "chart.amount":     "Сумма инвестиции",
+    "chart.date":       "Дата входа",
+    "chart.date.today": "Сегодня",
+    "chart.date.1yr":   "1 год назад",
+    "chart.date.2yr":   "2 года назад",
 
     "disclaimer.title": "Это не финансовая консультация",
     "disclaimer.body": "Каталог предоставлен исключительно в образовательных и информационных целях. Перед принятием инвестрешений проведите самостоятельный анализ или проконсультируйтесь с лицензированным специалистом.",
@@ -340,6 +352,12 @@ const I18N = {
     "expand.axis.today": "Today",
     "expand.month": "mo",
     "expand.disclaimer": "Forecast modeled from historical averages, not a guarantee.",
+
+    "chart.amount":     "Investment amount",
+    "chart.date":       "Entry date",
+    "chart.date.today": "Today",
+    "chart.date.1yr":   "1 yr ago",
+    "chart.date.2yr":   "2 yrs ago",
 
     "disclaimer.title": "This is not financial advice",
     "disclaimer.body": "The catalog is provided for educational and informational purposes only. Do your own research or consult a licensed professional before making investment decisions.",
@@ -624,6 +642,7 @@ const state = {
   detailId: null,
   expandedId: null, // currently-expanded direction card on home
   compareIds: [],   // direction ids toggled into the comparison view
+  chartParams: { amount: 100, startOffset: 0 }, // 0=today 12=1yr 24=2yr
   filters: {
     search: "",
     sort: "relevance",
@@ -699,6 +718,16 @@ function fmtUZSFull(v, lang) {
 function fmtUSD(v) {
   if (v >= 1000) return "$ " + (v / 1000).toFixed(v % 1000 === 0 ? 0 : 1) + "K";
   return "$ " + v;
+}
+// Y-axis compact label  ($120, $1.4K, $12K)
+function fmtUSDChart(v) {
+  if (Math.abs(v) >= 10000) return "$" + (v / 1000).toFixed(0) + "K";
+  if (Math.abs(v) >= 1000)  return "$" + (v / 1000).toFixed(1) + "K";
+  return "$" + Math.round(v);
+}
+// Hover tooltip precise label
+function fmtUSDExact(v) {
+  return "$ " + v.toFixed(v >= 100 ? 0 : 1);
 }
 
 /* ============================================================
@@ -1230,43 +1259,62 @@ function generateSeries(inst) {
   return { hist, fut, bench, PAST, FUT };
 }
 
-function buildChart(inst) {
+function buildChart(inst, chartParams) {
+  const cp = chartParams || state.chartParams;
+  const { amount, startOffset } = cp;
   const { hist, fut, bench, PAST, FUT } = generateSeries(inst);
-  const N = PAST + FUT; // 36 intervals → 37 indices
-  const W = 900, H = 220;
-  const pad = { l: 56, r: 16, t: 18, b: 32 };
-  const cw = W - pad.l - pad.r;
-  const ch = H - pad.t - pad.b;
+  const N = PAST + FUT; // 36
 
-  // combined value range
-  const all = hist.concat(fut, bench);
-  let yMin = Math.min(...all);
-  let yMax = Math.max(...all);
-  // ensure 0 line is visible and add padding
-  yMin = Math.min(yMin, 0);
+  // Entry index: 0 = invested 2yr ago, 12 = 1yr ago, 24 = today
+  const entryIdx = PAST - startOffset;
+
+  // Full combined series: hist[0..24] + fut[1..12] → 37 points (index 0..36)
+  const fullSeries = hist.concat(fut.slice(1));
+  const entryPct   = fullSeries[entryIdx];
+
+  // Dollar value at each index
+  const valueAt = (i) => amount * (1 + (fullSeries[i] - entryPct) / 100);
+  const benchAt = (i) => amount * (1 + (bench[i]      - bench[entryIdx]) / 100);
+
+  // Y range in dollars
+  let yMin = Infinity, yMax = -Infinity;
+  for (let i = 0; i <= N; i++) {
+    const v = valueAt(i), b = benchAt(i);
+    if (v < yMin) yMin = v;
+    if (v > yMax) yMax = v;
+    if (b < yMin) yMin = b;
+    if (b > yMax) yMax = b;
+  }
+  yMin = Math.min(yMin, amount * 0.92);
   const span = Math.max(yMax - yMin, 1);
   yMin -= span * 0.08;
   yMax += span * 0.12;
 
+  const W = 900, H = 220;
+  const pad = { l: 68, r: 16, t: 18, b: 32 };
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
   const xAt = (i) => pad.l + (i / N) * cw;
   const yAt = (v) => pad.t + ch - ((v - yMin) / (yMax - yMin)) * ch;
 
-  const toPath = (vals, offset = 0) =>
-    vals.map((v, i) => (i === 0 ? "M" : "L") + xAt(i + offset).toFixed(1) + "," + yAt(v).toFixed(1)).join(" ");
-
-  const histPath = toPath(hist, 0);                  // indices 0..PAST
-  const futPath  = toPath(fut, PAST);                // indices PAST..PAST+FUT
-  const benchPath = toPath(bench, 0);                // 0..N
-
-  // filled area under historical+forecast
-  const lineVals = hist.concat(fut.slice(1));        // 37 points
-  const areaPath = lineVals.map((v, i) =>
-    (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(v).toFixed(1)
+  // Path builders (dollar values)
+  const histPath = hist.map((_, i) =>
+    (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(valueAt(i)).toFixed(1)
+  ).join(" ");
+  const futPath = fut.map((_, i) =>
+    (i === 0 ? "M" : "L") + xAt(i + PAST).toFixed(1) + "," + yAt(valueAt(i + PAST)).toFixed(1)
+  ).join(" ");
+  const benchPath = bench.map((_, i) =>
+    (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(benchAt(i)).toFixed(1)
+  ).join(" ");
+  const areaPath = fullSeries.map((_, i) =>
+    (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(valueAt(i)).toFixed(1)
   ).join(" ")
     + " L" + xAt(N).toFixed(1) + "," + yAt(yMin).toFixed(1)
-    + " L" + xAt(0).toFixed(1) + "," + yAt(yMin).toFixed(1) + " Z";
+    + " L" + xAt(0).toFixed(1)  + "," + yAt(yMin).toFixed(1) + " Z";
 
-  // gridlines: 4 horizontal
+  // Y-axis grid (dollar labels)
   const grid = [];
   for (let g = 0; g <= 4; g++) {
     const v = yMin + (g / 4) * (yMax - yMin);
@@ -1276,18 +1324,18 @@ function buildChart(inst) {
       stroke: "rgba(255,255,255,0.05)", "stroke-width": 1,
     }));
     grid.push(svgEl("text", {
-      x: pad.l - 10, y: y + 3.5, "text-anchor": "end",
+      x: pad.l - 8, y: y + 3.5, "text-anchor": "end",
       fill: "rgba(255,255,255,0.32)",
       "font-family": "JetBrains Mono, monospace",
       "font-size": 10,
-    }, (v >= 0 ? "+" : "") + v.toFixed(0) + "%"));
+    }, fmtUSDChart(v)));
   }
 
-  // x-axis labels
+  // X-axis labels
   const xLabels = [
-    { i: 0,        text: "−24" + t("expand.month") },
-    { i: PAST / 2, text: "−12" + t("expand.month") },
-    { i: PAST,     text: t("expand.axis.today") },
+    { i: 0,          text: "−24" + t("expand.month") },
+    { i: PAST / 2,   text: "−12" + t("expand.month") },
+    { i: PAST,       text: t("expand.axis.today") },
     { i: PAST + FUT, text: "+12" + t("expand.month") },
   ];
   const xLabelNodes = xLabels.map((lb) =>
@@ -1295,27 +1343,49 @@ function buildChart(inst) {
       x: xAt(lb.i), y: H - pad.b + 18, "text-anchor": "middle",
       fill: "rgba(255,255,255,0.36)",
       "font-family": "JetBrains Mono, monospace",
-      "font-size": 10,
-      "letter-spacing": "0.05em",
+      "font-size": 10, "letter-spacing": "0.05em",
     }, lb.text)
   );
 
-  // today marker (vertical dashed line)
+  // Today marker
   const todayX = xAt(PAST);
   const todayLine = svgEl("line", {
     x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b,
-    stroke: "rgba(217,184,113,0.45)",
-    "stroke-width": 1,
-    "stroke-dasharray": "3 4",
+    stroke: "rgba(217,184,113,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4",
   });
   const todayDot = svgEl("circle", {
-    cx: todayX, cy: yAt(hist[hist.length - 1]), r: 4.5,
-    fill: "#D9B871",
-    stroke: "rgba(217,184,113,0.25)",
-    "stroke-width": 4,
+    cx: todayX, cy: yAt(valueAt(PAST)), r: 4.5,
+    fill: "#D9B871", stroke: "rgba(217,184,113,0.25)", "stroke-width": 4,
   });
 
-  // gradient defs
+  // Entry marker (green dot + line when entry ≠ today)
+  let entryMarkerEl = null;
+  if (entryIdx !== PAST) {
+    const ex = xAt(entryIdx);
+    entryMarkerEl = svgEl("g", {});
+    entryMarkerEl.appendChild(svgEl("line", {
+      x1: ex, x2: ex, y1: pad.t, y2: H - pad.b,
+      stroke: "rgba(111,207,151,0.55)", "stroke-width": 1, "stroke-dasharray": "3 4",
+    }));
+    entryMarkerEl.appendChild(svgEl("circle", {
+      cx: ex, cy: yAt(amount), r: 4,
+      fill: "#6FCF97", stroke: "rgba(111,207,151,0.25)", "stroke-width": 4,
+    }));
+  }
+
+  // Hover crosshair elements (hidden until mousemove)
+  const hoverLine = svgEl("line", {
+    x1: 0, x2: 0, y1: pad.t, y2: H - pad.b,
+    stroke: "rgba(255,255,255,0.28)", "stroke-width": 1, "stroke-dasharray": "2 3",
+    visibility: "hidden",
+  });
+  const hoverDot = svgEl("circle", {
+    cx: 0, cy: 0, r: 4,
+    fill: "#D9B871", stroke: "#0E1014", "stroke-width": 2,
+    visibility: "hidden",
+  });
+
+  // Gradient def
   const defs = svgEl("defs");
   defs.appendChild(svgEl("linearGradient", { id: "ep-grad-" + inst.id, x1: 0, y1: 0, x2: 0, y2: 1 },
     svgEl("stop", { offset: "0%",   "stop-color": "#D9B871", "stop-opacity": 0.28 }),
@@ -1327,43 +1397,73 @@ function buildChart(inst) {
     viewBox: "0 0 " + W + " " + H,
     preserveAspectRatio: "none",
     role: "img",
+    style: "cursor: crosshair;",
   });
   svg.appendChild(defs);
   grid.forEach((g) => svg.appendChild(g));
-  // benchmark line
   svg.appendChild(svgEl("path", {
-    d: benchPath,
-    fill: "none",
-    stroke: "rgba(255,255,255,0.32)",
-    "stroke-width": 1.5,
-    "stroke-dasharray": "2 3",
+    d: benchPath, fill: "none",
+    stroke: "rgba(255,255,255,0.32)", "stroke-width": 1.5, "stroke-dasharray": "2 3",
   }));
-  // area under main line
   svg.appendChild(svgEl("path", { d: areaPath, fill: "url(#ep-grad-" + inst.id + ")" }));
-  // historical
   svg.appendChild(svgEl("path", {
-    d: histPath, fill: "none",
-    stroke: "#D9B871", "stroke-width": 2,
+    d: histPath, fill: "none", stroke: "#D9B871", "stroke-width": 2,
     "stroke-linejoin": "round", "stroke-linecap": "round",
   }));
-  // forecast (dashed)
   svg.appendChild(svgEl("path", {
-    d: futPath, fill: "none",
-    stroke: "#D9B871", "stroke-width": 2,
-    "stroke-dasharray": "5 5",
-    "stroke-linejoin": "round", "stroke-linecap": "round",
+    d: futPath, fill: "none", stroke: "#D9B871", "stroke-width": 2,
+    "stroke-dasharray": "5 5", "stroke-linejoin": "round", "stroke-linecap": "round",
     opacity: 0.85,
   }));
+  if (entryMarkerEl) svg.appendChild(entryMarkerEl);
   svg.appendChild(todayLine);
   svg.appendChild(todayDot);
+  svg.appendChild(hoverLine);
+  svg.appendChild(hoverDot);
   xLabelNodes.forEach((n) => svg.appendChild(n));
 
-  // expose computed values to caller
+  // Month label helper
+  function monthLabel(i) {
+    const m = i - PAST;
+    if (m === 0) return t("expand.axis.today");
+    if (m < 0)   return m + " " + t("expand.month");
+    return "+" + m + " " + t("expand.month");
+  }
+
+  // Expose hover-setup so callers can bind the tooltip
+  function setupHover(tooltipEl) {
+    svg.addEventListener("mousemove", (e) => {
+      const svgRect = svg.getBoundingClientRect();
+      const rawX = (e.clientX - svgRect.left) / svgRect.width * W;
+      const i = Math.max(0, Math.min(N, Math.round((rawX - pad.l) / cw * N)));
+      const val = valueAt(i);
+      hoverLine.setAttribute("x1", xAt(i)); hoverLine.setAttribute("x2", xAt(i));
+      hoverLine.setAttribute("visibility", "visible");
+      hoverDot.setAttribute("cx", xAt(i)); hoverDot.setAttribute("cy", yAt(val));
+      hoverDot.setAttribute("visibility", "visible");
+      tooltipEl.innerHTML =
+        `<span class="ep-tip-date">${monthLabel(i)}</span>` +
+        `<span class="ep-tip-val">${fmtUSDExact(val)}</span>`;
+      const wrapRect = tooltipEl.parentElement.getBoundingClientRect();
+      let left = e.clientX - wrapRect.left + 14;
+      if (left + 140 > tooltipEl.parentElement.offsetWidth) left = e.clientX - wrapRect.left - 150;
+      tooltipEl.style.left = left + "px";
+      tooltipEl.style.top  = Math.max(4, e.clientY - wrapRect.top - 48) + "px";
+      tooltipEl.classList.add("visible");
+    });
+    svg.addEventListener("mouseleave", () => {
+      hoverLine.setAttribute("visibility", "hidden");
+      hoverDot.setAttribute("visibility", "hidden");
+      tooltipEl.classList.remove("visible");
+    });
+  }
+
   return {
     svg,
-    pastGrowth: hist[hist.length - 1],
+    setupHover,
+    pastGrowth:    hist[hist.length - 1],
     forecastDelta: fut[fut.length - 1] - hist[hist.length - 1],
-    benchTotal: bench[bench.length - 1] - bench[0],
+    benchTotal:    bench[bench.length - 1] - bench[0],
   };
 }
 
@@ -1394,13 +1494,52 @@ function pickTopOffers(inst) {
   return null;
 }
 
+function buildChartControls() {
+  // Amount input
+  const amtInput = el("input", {
+    type: "number", min: "1", max: "1000000", step: "10",
+    value: state.chartParams.amount,
+  });
+  amtInput.addEventListener("change", (e) => {
+    const v = parseFloat(e.target.value);
+    if (v > 0) { state.chartParams.amount = v; render(); }
+  });
+  const amtWrap = el("div", { class: "ep-amount-wrap" },
+    el("span", { class: "ep-amount-currency" }, "$"),
+    amtInput
+  );
+
+  // Date pills
+  const datePills = el("div", { class: "ep-date-pills" });
+  [{ v: 0, k: "chart.date.today" }, { v: 12, k: "chart.date.1yr" }, { v: 24, k: "chart.date.2yr" }]
+    .forEach(({ v, k }) => {
+      const b = el("button", { "aria-pressed": state.chartParams.startOffset === v ? "true" : "false" }, t(k));
+      b.addEventListener("click", () => { state.chartParams.startOffset = v; render(); });
+      datePills.appendChild(b);
+    });
+
+  return el("div", { class: "ep-controls" },
+    el("div", { class: "ep-control-group" },
+      el("div", { class: "ep-ctrl-label" }, t("chart.amount")),
+      amtWrap
+    ),
+    el("div", { class: "ep-control-group" },
+      el("div", { class: "ep-ctrl-label" }, t("chart.date")),
+      datePills
+    )
+  );
+}
+
 function buildExpandedPanel(inst) {
-  const { svg, pastGrowth, forecastDelta, benchTotal } = buildChart(inst);
+  const { svg, setupHover, pastGrowth, forecastDelta, benchTotal } = buildChart(inst, state.chartParams);
   const topOffers = pickTopOffers(inst);
 
   const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
   const isPositive = pastGrowth >= 0;
   const isForecastUp = forecastDelta >= 0;
+
+  // controls row
+  const controls = buildChartControls();
 
   // header / stats
   const header = el("div", { class: "ep-header" },
@@ -1408,6 +1547,7 @@ function buildExpandedPanel(inst) {
       el("div", { class: "ep-eyebrow eyebrow" }, t("expand.eyebrow")),
       el("h3", null, inst.name[state.lang])
     ),
+    controls,
     el("div", { class: "ep-stats" },
       el("div", { class: "ep-stat" },
         el("div", { class: "k" }, t("expand.past")),
@@ -1441,8 +1581,11 @@ function buildExpandedPanel(inst) {
     )
   );
 
+  const tooltipEl = el("div", { class: "ep-hover-tooltip" });
   const chartWrap = el("div", { class: "ep-chart-wrap" });
   chartWrap.appendChild(svg);
+  chartWrap.appendChild(tooltipEl);
+  setupHover(tooltipEl);
 
   // bottom pills row
   const pills = el("div", { class: "ep-pills" });
@@ -1488,40 +1631,53 @@ const COMPARE_COLORS = [
   "oklch(0.78 0.10 260)",    // periwinkle
 ];
 
-function buildCompareChart(insts) {
-  const seriesList = insts.map((inst) => ({ inst, s: generateSeries(inst) }));
+function buildCompareChart(insts, chartParams) {
+  const cp = chartParams || state.chartParams;
+  const { amount, startOffset } = cp;
+
+  const seriesList = insts.map((inst) => {
+    const s = generateSeries(inst);
+    const entryIdx   = s.PAST - startOffset;
+    const fullSeries = s.hist.concat(s.fut.slice(1));
+    const entryPct   = fullSeries[entryIdx];
+    const valueAt    = (i) => amount * (1 + (fullSeries[i] - entryPct) / 100);
+    return { inst, s, valueAt, entryIdx, fullSeries };
+  });
+
   const PAST = seriesList[0].s.PAST;
   const FUT  = seriesList[0].s.FUT;
   const N    = PAST + FUT;
   const W = 900, H = 260;
-  const pad = { l: 56, r: 16, t: 18, b: 32 };
+  const pad = { l: 68, r: 16, t: 18, b: 32 };
   const cw = W - pad.l - pad.r;
   const ch = H - pad.t - pad.b;
 
+  // Y range in dollars
   let yMin = Infinity, yMax = -Infinity;
-  seriesList.forEach(({ s }) => {
-    s.hist.concat(s.fut).forEach((v) => {
+  seriesList.forEach(({ valueAt }) => {
+    for (let i = 0; i <= N; i++) {
+      const v = valueAt(i);
       if (v < yMin) yMin = v;
       if (v > yMax) yMax = v;
-    });
+    }
   });
-  yMin = Math.min(yMin, 0);
+  yMin = Math.min(yMin, amount * 0.92);
   const span = Math.max(yMax - yMin, 1);
   yMin -= span * 0.08;
   yMax += span * 0.12;
 
   const xAt = (i) => pad.l + (i / N) * cw;
   const yAt = (v) => pad.t + ch - ((v - yMin) / (yMax - yMin)) * ch;
-  const toPath = (vals, offset = 0) =>
-    vals.map((v, i) => (i === 0 ? "M" : "L") + xAt(i + offset).toFixed(1) + "," + yAt(v).toFixed(1)).join(" ");
 
   const svg = svgEl("svg", {
     class: "ep-chart cp-chart",
     viewBox: "0 0 " + W + " " + H,
     preserveAspectRatio: "none",
     role: "img",
+    style: "cursor: crosshair;",
   });
 
+  // Grid / Y-labels (dollar)
   for (let g = 0; g <= 4; g++) {
     const v = yMin + (g / 4) * (yMax - yMin);
     const y = yAt(v);
@@ -1530,69 +1686,143 @@ function buildCompareChart(insts) {
       stroke: "rgba(255,255,255,0.05)", "stroke-width": 1,
     }));
     svg.appendChild(svgEl("text", {
-      x: pad.l - 10, y: y + 3.5, "text-anchor": "end",
+      x: pad.l - 8, y: y + 3.5, "text-anchor": "end",
       fill: "rgba(255,255,255,0.32)",
       "font-family": "JetBrains Mono, monospace",
       "font-size": 10,
-    }, (v >= 0 ? "+" : "") + v.toFixed(0) + "%"));
+    }, fmtUSDChart(v)));
   }
 
-  seriesList.forEach(({ s }, idx) => {
+  // Entry marker line (if not today)
+  const entryIdx = PAST - startOffset;
+  if (entryIdx !== PAST) {
+    const ex = xAt(entryIdx);
+    svg.appendChild(svgEl("line", {
+      x1: ex, x2: ex, y1: pad.t, y2: H - pad.b,
+      stroke: "rgba(111,207,151,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4",
+    }));
+  }
+
+  // Hover crosshair elements
+  const hoverLine = svgEl("line", {
+    x1: 0, x2: 0, y1: pad.t, y2: H - pad.b,
+    stroke: "rgba(255,255,255,0.28)", "stroke-width": 1, "stroke-dasharray": "2 3",
+    visibility: "hidden",
+  });
+  const hoverDots = seriesList.map((_, idx) =>
+    svgEl("circle", {
+      cx: 0, cy: 0, r: 4,
+      fill: COMPARE_COLORS[idx % COMPARE_COLORS.length],
+      stroke: "#0E1014", "stroke-width": 2,
+      visibility: "hidden",
+    })
+  );
+
+  // Draw series
+  seriesList.forEach(({ s, valueAt }, idx) => {
     const c = COMPARE_COLORS[idx % COMPARE_COLORS.length];
     svg.appendChild(svgEl("path", {
-      d: toPath(s.hist, 0), fill: "none",
-      stroke: c, "stroke-width": 2,
+      d: s.hist.map((_, i) => (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(valueAt(i)).toFixed(1)).join(" "),
+      fill: "none", stroke: c, "stroke-width": 2,
       "stroke-linejoin": "round", "stroke-linecap": "round",
     }));
     svg.appendChild(svgEl("path", {
-      d: toPath(s.fut, PAST), fill: "none",
-      stroke: c, "stroke-width": 2,
-      "stroke-dasharray": "5 5",
-      "stroke-linejoin": "round", "stroke-linecap": "round",
-      opacity: 0.85,
+      d: s.fut.map((_, i) => (i === 0 ? "M" : "L") + xAt(i + PAST).toFixed(1) + "," + yAt(valueAt(i + PAST)).toFixed(1)).join(" "),
+      fill: "none", stroke: c, "stroke-width": 2, "stroke-dasharray": "5 5",
+      "stroke-linejoin": "round", "stroke-linecap": "round", opacity: 0.85,
     }));
     svg.appendChild(svgEl("circle", {
-      cx: xAt(N), cy: yAt(s.fut[s.fut.length - 1]),
-      r: 3.5, fill: c,
+      cx: xAt(N), cy: yAt(valueAt(N)), r: 3.5, fill: c,
       stroke: "rgba(14,16,20,0.85)", "stroke-width": 2,
     }));
   });
 
-  // today marker
+  // Today marker
   const todayX = xAt(PAST);
   svg.appendChild(svgEl("line", {
     x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b,
-    stroke: "rgba(255,255,255,0.18)",
-    "stroke-width": 1,
-    "stroke-dasharray": "3 4",
+    stroke: "rgba(255,255,255,0.18)", "stroke-width": 1, "stroke-dasharray": "3 4",
   }));
 
+  svg.appendChild(hoverLine);
+  hoverDots.forEach((d) => svg.appendChild(d));
+
   const xLabels = [
-    { i: 0,          text: "−24" + t("expand.month") },
-    { i: PAST / 2,   text: "−12" + t("expand.month") },
-    { i: PAST,       text: t("expand.axis.today") },
-    { i: PAST + FUT, text: "+12" + t("expand.month") },
+    { i: 0,        text: "−24" + t("expand.month") },
+    { i: PAST / 2, text: "−12" + t("expand.month") },
+    { i: PAST,     text: t("expand.axis.today") },
+    { i: N,        text: "+12" + t("expand.month") },
   ];
   xLabels.forEach((lb) => svg.appendChild(svgEl("text", {
     x: xAt(lb.i), y: H - pad.b + 18, "text-anchor": "middle",
     fill: "rgba(255,255,255,0.36)",
     "font-family": "JetBrains Mono, monospace",
-    "font-size": 10,
-    "letter-spacing": "0.05em",
+    "font-size": 10, "letter-spacing": "0.05em",
   }, lb.text)));
 
-  return { svg, seriesList };
+  function monthLabel(i) {
+    const m = i - PAST;
+    if (m === 0) return t("expand.axis.today");
+    if (m < 0)   return m + " " + t("expand.month");
+    return "+" + m + " " + t("expand.month");
+  }
+
+  function setupHover(tooltipEl) {
+    svg.addEventListener("mousemove", (e) => {
+      const svgRect = svg.getBoundingClientRect();
+      const rawX = (e.clientX - svgRect.left) / svgRect.width * W;
+      const i = Math.max(0, Math.min(N, Math.round((rawX - pad.l) / cw * N)));
+      hoverLine.setAttribute("x1", xAt(i)); hoverLine.setAttribute("x2", xAt(i));
+      hoverLine.setAttribute("visibility", "visible");
+      seriesList.forEach(({ valueAt }, idx) => {
+        const val = valueAt(i);
+        hoverDots[idx].setAttribute("cx", xAt(i));
+        hoverDots[idx].setAttribute("cy", yAt(val));
+        hoverDots[idx].setAttribute("visibility", "visible");
+      });
+      let html = `<span class="ep-tip-date">${monthLabel(i)}</span>`;
+      seriesList.forEach(({ inst, valueAt }, idx) => {
+        const c = COMPARE_COLORS[idx % COMPARE_COLORS.length];
+        html += `<span class="ep-tip-row">` +
+          `<span class="ep-tip-dot" style="background:${c}"></span>` +
+          `<span class="ep-tip-name">${inst.name[state.lang]}</span>` +
+          `<span class="ep-tip-val">${fmtUSDExact(valueAt(i))}</span></span>`;
+      });
+      tooltipEl.innerHTML = html;
+      const wrapRect = tooltipEl.parentElement.getBoundingClientRect();
+      let left = e.clientX - wrapRect.left + 14;
+      if (left + 200 > tooltipEl.parentElement.offsetWidth) left = e.clientX - wrapRect.left - 215;
+      tooltipEl.style.left = left + "px";
+      tooltipEl.style.top  = Math.max(4, e.clientY - wrapRect.top - 48) + "px";
+      tooltipEl.classList.add("visible");
+    });
+    svg.addEventListener("mouseleave", () => {
+      hoverLine.setAttribute("visibility", "hidden");
+      hoverDots.forEach((d) => d.setAttribute("visibility", "hidden"));
+      tooltipEl.classList.remove("visible");
+    });
+  }
+
+  return { svg, seriesList, setupHover };
 }
 
 function buildComparePanel(insts) {
-  const { svg, seriesList } = buildCompareChart(insts);
+  const { svg, seriesList, setupHover } = buildCompareChart(insts, state.chartParams);
+  const { amount } = state.chartParams;
+  const PAST = seriesList[0].s.PAST;
+  const FUT  = seriesList[0].s.FUT;
+  const N    = PAST + FUT;
+
   const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
+
+  const controls = buildChartControls();
 
   const header = el("div", { class: "cp-header" },
     el("div", { class: "cp-title" },
       el("div", { class: "ep-eyebrow eyebrow" }, t("compare.eyebrow")),
       el("h3", null, t("compare.title.n").replace("{n}", insts.length))
     ),
+    controls,
     el("button", {
       class: "cp-clear",
       onclick: () => { state.compareIds = []; render(); },
@@ -1600,18 +1830,18 @@ function buildComparePanel(insts) {
   );
 
   const legend = el("div", { class: "cp-legend" });
-  seriesList.forEach(({ inst, s }, idx) => {
+  seriesList.forEach(({ inst, s, valueAt }, idx) => {
     const c = COMPARE_COLORS[idx % COMPARE_COLORS.length];
-    const past = s.hist[s.hist.length - 1];
-    const fwd  = s.fut[s.fut.length - 1] - s.hist[s.hist.length - 1];
+    const valToday    = fmtUSDExact(valueAt(PAST));
+    const valForecast = fmtUSDExact(valueAt(N));
     legend.appendChild(el("div", { class: "cp-leg-item" },
       el("span", { class: "dot", style: "background:" + c }),
       el("div", { class: "lg-meta" },
         el("div", { class: "lg-name" }, inst.name[state.lang]),
         el("div", { class: "lg-vals" },
-          el("span", { class: "v-past" }, fmtPct(past)),
+          el("span", { class: "v-past" }, valToday),
           el("span", { class: "sep" }, "·"),
-          el("span", { class: "v-fwd muted" }, fmtPct(fwd))
+          el("span", { class: "v-fwd muted" }, valForecast)
         )
       ),
       el("button", {
@@ -1627,8 +1857,11 @@ function buildComparePanel(insts) {
     ));
   });
 
+  const tooltipEl = el("div", { class: "ep-hover-tooltip ep-hover-tooltip--multi" });
   const chartWrap = el("div", { class: "ep-chart-wrap cp-chart-wrap" });
   chartWrap.appendChild(svg);
+  chartWrap.appendChild(tooltipEl);
+  setupHover(tooltipEl);
 
   const legendSub = el("div", { class: "ep-legend" },
     el("span", { class: "lg-item" },
