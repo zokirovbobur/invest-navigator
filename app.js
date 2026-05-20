@@ -372,7 +372,7 @@ const I18N = {
 const INSTRUMENTS = [
   {
     id: "deposit-uzs",
-    name: { uz: "Bank depoziti (UZS)", ru: "Банковский депозит (UZS)", en: "Bank deposit (UZS)" },
+    name: { uz: "Bank depoziti (UZS)", ru: "Депозит (UZS)", en: "Bank deposit (UZS)" },
     sub:  { uz: "Mahalliy banklar · UZS", ru: "Местные банки · UZS", en: "Local banks · UZS" },
     risk: "low", cap: "low", liq: "mid",
     income: "passive", market: "local", currency: "UZS", online: "yes", tangible: "no",
@@ -393,7 +393,7 @@ const INSTRUMENTS = [
   },
   {
     id: "deposit-usd",
-    name: { uz: "Bank depoziti (USD)", ru: "Банковский депозит (USD)", en: "Bank deposit (USD)" },
+    name: { uz: "Bank depoziti (USD)", ru: "Депозит (USD)", en: "Bank deposit (USD)" },
     sub:  { uz: "Mahalliy banklar · USD", ru: "Местные банки · USD", en: "Local banks · USD" },
     risk: "low", cap: "low", liq: "mid",
     income: "passive", market: "local", currency: "USD", online: "yes", tangible: "no",
@@ -414,7 +414,7 @@ const INSTRUMENTS = [
   },
   {
     id: "ozbonds",
-    name: { uz: "Davlat obligatsiyalari", ru: "Государственные облигации", en: "Government bonds" },
+    name: { uz: "Davlat obligatsiyalari", ru: "Гос. облигации", en: "Government bonds" },
     sub:  { uz: "Moliya vazirligi · UZS", ru: "Минфин · UZS", en: "Ministry of Finance · UZS" },
     risk: "low", cap: "low", liq: "mid",
     income: "passive", market: "local", currency: "UZS", online: "yes", tangible: "no",
@@ -456,7 +456,7 @@ const INSTRUMENTS = [
   },
   {
     id: "tse",
-    name: { uz: "Toshkent fond birjasi", ru: "Ташкентская фондовая биржа", en: "Tashkent Stock Exchange" },
+    name: { uz: "Toshkent fond birjasi", ru: "Биржа (TSE)", en: "Stock Exchange (TSE)" },
     sub:  { uz: "Mahalliy aksiyalar · UZS", ru: "Локальные акции · UZS", en: "Local equities · UZS" },
     risk: "mid", cap: "low", liq: "mid",
     income: "active", market: "local", currency: "UZS", online: "yes", tangible: "no",
@@ -498,7 +498,7 @@ const INSTRUMENTS = [
   },
   {
     id: "etf",
-    name: { uz: "Indeks ETF (S&P 500)", ru: "Индексные ETF (S&P 500)", en: "Index ETF (S&P 500)" },
+    name: { uz: "Indeks ETF (S&P 500)", ru: "ETF (S&P 500)", en: "Index ETF (S&P 500)" },
     sub:  { uz: "Indeks fondlari · USD", ru: "Индексные фонды · USD", en: "Index funds · USD" },
     risk: "mid", cap: "mid", liq: "hi",
     income: "passive", market: "intl", currency: "USD", online: "yes", tangible: "no",
@@ -624,7 +624,7 @@ const INSTRUMENTS = [
   },
   {
     id: "gaming",
-    name: { uz: "O'yin aktivlari (Skinlar)", ru: "Игровые активы (Скины)", en: "Gaming Assets (Skins)" },
+    name: { uz: "O'yin aktivlari", ru: "Игровые активы", en: "Gaming Assets" },
     sub:  { uz: "CS2 · Dota 2 · TF2 · Rust", ru: "CS2 · Dota 2 · TF2 · Rust", en: "CS2 · Dota 2 · TF2 · Rust" },
     risk: "hi", cap: "low", liq: "mid",
     income: "active", market: "intl", currency: "USD", online: "yes", tangible: "no",
@@ -2273,7 +2273,7 @@ function buildInstrCard(inst) {
       el("div", { class: "card-title-row" },
         iavatar,
         el("div", null,
-          el("div", { class: "name" }, inst.name[state.lang]),
+          el("div", { class: "name", title: inst.name[state.lang] }, inst.name[state.lang]),
           el("div", { class: "sub" }, inst.sub[state.lang])
         )
       ),
