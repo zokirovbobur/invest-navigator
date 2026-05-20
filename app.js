@@ -89,6 +89,28 @@ const I18N = {
     "cx.hi":    "Murakkab",
 
     "card.detail": "Batafsil",
+    "card.close": "Yopish",
+
+    "compare.toggle": "Solishtirish",
+    "compare.eyebrow": "Yo'nalishlar solishtiruvi",
+    "compare.title.n": "{n} yo'nalish solishtirilmoqda",
+    "compare.clear": "Bekor qilish",
+    "compare.hintOne": "Yana 1 yo'nalishni «Solishtirish» tugmasi bilan tanlang — grafik shu yerda paydo bo'ladi",
+    "compare.legend": "Liniyalar",
+
+    "expand.eyebrow": "Yo'nalish dinamikasi",
+    "expand.past": "Tarixiy o'sish (24 oy)",
+    "expand.forecast": "Tahmin (12 oy)",
+    "expand.volatility": "Volatillik",
+    "expand.benchmark": "Inflyatsiya",
+    "expand.topOffers": "Top takliflar",
+    "expand.allOffers": "Barcha takliflar",
+    "expand.noOffers": "Takliflar hali tayyorlanmoqda",
+    "expand.axis.past": "Tarixiy",
+    "expand.axis.future": "Tahmin",
+    "expand.axis.today": "Bugun",
+    "expand.month": "oy",
+    "expand.disclaimer": "Tahmin tarixiy o'rtacha asosida modellashtirilgan, kafolat emas.",
 
     "disclaimer.title": "Bu moliyaviy maslahat emas",
     "disclaimer.body": "Katalog faqat ta'lim va informatsion maqsadda taqdim etilgan. Investitsiya qarorlarini qabul qilishdan oldin mustaqil tahlil qiling yoki litsenziyalangan mutaxassis bilan maslahat qiling.",
@@ -181,6 +203,28 @@ const I18N = {
     "cx.hi":    "Сложно",
 
     "card.detail": "Подробнее",
+    "card.close": "Закрыть",
+
+    "compare.toggle": "Сравнить",
+    "compare.eyebrow": "Сравнение направлений",
+    "compare.title.n": "Сравнение {n} направлений",
+    "compare.clear": "Отменить",
+    "compare.hintOne": "Выберите ещё 1 направление кнопкой «Сравнить» — график появится здесь",
+    "compare.legend": "Линии",
+
+    "expand.eyebrow": "Динамика направления",
+    "expand.past": "Рост за 24 мес",
+    "expand.forecast": "Прогноз 12 мес",
+    "expand.volatility": "Волатильность",
+    "expand.benchmark": "Инфляция",
+    "expand.topOffers": "Топ предложений",
+    "expand.allOffers": "Все предложения",
+    "expand.noOffers": "Предложения готовятся",
+    "expand.axis.past": "Историч.",
+    "expand.axis.future": "Прогноз",
+    "expand.axis.today": "Сегодня",
+    "expand.month": "мес",
+    "expand.disclaimer": "Прогноз построен на исторических средних, не является гарантией.",
 
     "disclaimer.title": "Это не финансовая консультация",
     "disclaimer.body": "Каталог предоставлен исключительно в образовательных и информационных целях. Перед принятием инвестрешений проведите самостоятельный анализ или проконсультируйтесь с лицензированным специалистом.",
@@ -274,6 +318,28 @@ const I18N = {
     "cx.hi":    "Complex",
 
     "card.detail": "View details",
+    "card.close": "Close",
+
+    "compare.toggle": "Compare",
+    "compare.eyebrow": "Direction comparison",
+    "compare.title.n": "Comparing {n} directions",
+    "compare.clear": "Clear",
+    "compare.hintOne": "Toggle «Compare» on one more direction — the chart will appear here",
+    "compare.legend": "Lines",
+
+    "expand.eyebrow": "Direction performance",
+    "expand.past": "24mo growth",
+    "expand.forecast": "12mo forecast",
+    "expand.volatility": "Volatility",
+    "expand.benchmark": "Inflation",
+    "expand.topOffers": "Top offers",
+    "expand.allOffers": "All offers",
+    "expand.noOffers": "Offers in preparation",
+    "expand.axis.past": "Historical",
+    "expand.axis.future": "Forecast",
+    "expand.axis.today": "Today",
+    "expand.month": "mo",
+    "expand.disclaimer": "Forecast modeled from historical averages, not a guarantee.",
 
     "disclaimer.title": "This is not financial advice",
     "disclaimer.body": "The catalog is provided for educational and informational purposes only. Do your own research or consult a licensed professional before making investment decisions.",
@@ -556,6 +622,8 @@ const state = {
   lang: "uz",
   route: "home",   // "home" | "detail"
   detailId: null,
+  expandedId: null, // currently-expanded direction card on home
+  compareIds: [],   // direction ids toggled into the comparison view
   filters: {
     search: "",
     sort: "relevance",
@@ -648,6 +716,7 @@ function syncRouteFromHash() {
   const { route, detailId } = parseHash();
   state.route = route;
   state.detailId = detailId;
+  state.expandedId = null; // collapse any open panel on route change
   buildFilterUI();
   applyI18nTextOnly();
   render();
@@ -673,20 +742,24 @@ function applyI18nTextOnly() {
     b.setAttribute("aria-pressed", b.dataset.lang === state.lang ? "true" : "false")
   );
 
-  // page title + nav title
-  const navTitleEl = $("#nav-title");
-  const pageHeadSection = $("#page-head-section");
+  // page title + detail eyebrow
+  const titleEl = $("#page-title");
+  const eyebrowEl = $("#detail-eyebrow");
   const backEl = $("#back-link");
   if (state.route === "home") {
-    navTitleEl.innerHTML = t("head.title");
-    navTitleEl.hidden = false;
-    pageHeadSection.hidden = true;
+    titleEl.innerHTML = t("head.title");
+    eyebrowEl.hidden = true;
     backEl.hidden = true;
   } else {
     const inst = INSTRUMENTS.find((i) => i.id === state.detailId);
-    navTitleEl.textContent = inst ? inst.name[state.lang] : state.detailId;
-    navTitleEl.hidden = false;
-    pageHeadSection.hidden = false;
+    const offers = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
+    titleEl.textContent = inst ? inst.name[state.lang] : state.detailId;
+    eyebrowEl.hidden = false;
+    eyebrowEl.innerHTML = "";
+    eyebrowEl.appendChild(el("span", { class: "dot" }));
+    eyebrowEl.appendChild(document.createTextNode(
+      (inst ? inst.sub[state.lang] : "") + ((offers && offers.items) ? "  ·  " + offers.items.length + " " + t("detail.offers") : "")
+    ));
     backEl.hidden = false;
     backEl.textContent = t("back");
   }
@@ -1027,7 +1100,33 @@ function renderHome() {
     ));
     return;
   }
-  list.forEach((i) => grid.appendChild(buildInstrCard(i)));
+
+  // partition: compared (in click-order) on top, others below
+  const visibleIds = new Set(list.map((i) => i.id));
+  const comparedIds = state.compareIds.filter((id) => visibleIds.has(id));
+  const compared = comparedIds.map((id) => list.find((i) => i.id === id)).filter(Boolean);
+  const others = list.filter((i) => !comparedIds.includes(i.id));
+
+  // When ANY card is being compared, individual expand panels are suppressed
+  // so the screen has at most one chart visible.
+  const compareActive = comparedIds.length > 0;
+
+  const renderCard = (i) => {
+    grid.appendChild(buildInstrCard(i));
+    if (!compareActive && state.expandedId === i.id) {
+      grid.appendChild(buildExpandedPanel(i));
+    }
+  };
+
+  compared.forEach(renderCard);
+
+  if (compared.length >= 2) {
+    grid.appendChild(buildComparePanel(compared));
+  } else if (compared.length === 1) {
+    grid.appendChild(el("div", { class: "compare-hint" }, t("compare.hintOne")));
+  }
+
+  others.forEach(renderCard);
 }
 
 function renderLiveStatsHome(list) {
@@ -1073,6 +1172,482 @@ function renderLiveStatsHome(list) {
   ));
 }
 
+/* ============================================================
+   EXPANDED PANEL — chart + top offers
+============================================================ */
+const SVG_NS = "http://www.w3.org/2000/svg";
+function svgEl(tag, attrs, ...children) {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v != null && v !== false) node.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c == null) continue;
+    node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  }
+  return node;
+}
+
+function seededRand(seed) {
+  let x = 2166136261 >>> 0;
+  for (let i = 0; i < seed.length; i++) {
+    x ^= seed.charCodeAt(i);
+    x = Math.imul(x, 16777619) >>> 0;
+  }
+  return () => {
+    x ^= x << 13; x >>>= 0;
+    x ^= x >>> 17;
+    x ^= x << 5;  x >>>= 0;
+    return (x >>> 0) / 4294967295;
+  };
+}
+
+function generateSeries(inst) {
+  const rand = seededRand(inst.id);
+  const monthly = inst.retMid / 12;
+  // volatility (monthly stddev of returns, in % points)
+  const vol = { low: 0.4, mid: 2.2, hi: 7 }[inst.risk] || 2;
+  const PAST = 24, FUT = 12;
+
+  // historical: start at 0, accumulate noisy monthly returns
+  const hist = [0];
+  for (let i = 1; i <= PAST; i++) {
+    const noise = (rand() - 0.5) * 2 * vol;
+    hist.push(hist[i - 1] + monthly + noise);
+  }
+  // forecast: continues from last historical value, tighter band, slight curvature
+  const fut = [hist[hist.length - 1]];
+  for (let i = 1; i <= FUT; i++) {
+    const noise = (rand() - 0.5) * vol * 0.5;
+    fut.push(fut[i - 1] + monthly + noise);
+  }
+  // benchmark: inflation comparison line — flat ramp, no noise
+  const benchAnnual = inst.currency === "USD" ? 3 : 10;
+  const benchMonthly = benchAnnual / 12;
+  const bench = [];
+  for (let i = 0; i <= PAST + FUT; i++) bench.push(i * benchMonthly);
+
+  return { hist, fut, bench, PAST, FUT };
+}
+
+function buildChart(inst) {
+  const { hist, fut, bench, PAST, FUT } = generateSeries(inst);
+  const N = PAST + FUT; // 36 intervals → 37 indices
+  const W = 900, H = 220;
+  const pad = { l: 56, r: 16, t: 18, b: 32 };
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  // combined value range
+  const all = hist.concat(fut, bench);
+  let yMin = Math.min(...all);
+  let yMax = Math.max(...all);
+  // ensure 0 line is visible and add padding
+  yMin = Math.min(yMin, 0);
+  const span = Math.max(yMax - yMin, 1);
+  yMin -= span * 0.08;
+  yMax += span * 0.12;
+
+  const xAt = (i) => pad.l + (i / N) * cw;
+  const yAt = (v) => pad.t + ch - ((v - yMin) / (yMax - yMin)) * ch;
+
+  const toPath = (vals, offset = 0) =>
+    vals.map((v, i) => (i === 0 ? "M" : "L") + xAt(i + offset).toFixed(1) + "," + yAt(v).toFixed(1)).join(" ");
+
+  const histPath = toPath(hist, 0);                  // indices 0..PAST
+  const futPath  = toPath(fut, PAST);                // indices PAST..PAST+FUT
+  const benchPath = toPath(bench, 0);                // 0..N
+
+  // filled area under historical+forecast
+  const lineVals = hist.concat(fut.slice(1));        // 37 points
+  const areaPath = lineVals.map((v, i) =>
+    (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(v).toFixed(1)
+  ).join(" ")
+    + " L" + xAt(N).toFixed(1) + "," + yAt(yMin).toFixed(1)
+    + " L" + xAt(0).toFixed(1) + "," + yAt(yMin).toFixed(1) + " Z";
+
+  // gridlines: 4 horizontal
+  const grid = [];
+  for (let g = 0; g <= 4; g++) {
+    const v = yMin + (g / 4) * (yMax - yMin);
+    const y = yAt(v);
+    grid.push(svgEl("line", {
+      x1: pad.l, x2: W - pad.r, y1: y, y2: y,
+      stroke: "rgba(255,255,255,0.05)", "stroke-width": 1,
+    }));
+    grid.push(svgEl("text", {
+      x: pad.l - 10, y: y + 3.5, "text-anchor": "end",
+      fill: "rgba(255,255,255,0.32)",
+      "font-family": "JetBrains Mono, monospace",
+      "font-size": 10,
+    }, (v >= 0 ? "+" : "") + v.toFixed(0) + "%"));
+  }
+
+  // x-axis labels
+  const xLabels = [
+    { i: 0,        text: "−24" + t("expand.month") },
+    { i: PAST / 2, text: "−12" + t("expand.month") },
+    { i: PAST,     text: t("expand.axis.today") },
+    { i: PAST + FUT, text: "+12" + t("expand.month") },
+  ];
+  const xLabelNodes = xLabels.map((lb) =>
+    svgEl("text", {
+      x: xAt(lb.i), y: H - pad.b + 18, "text-anchor": "middle",
+      fill: "rgba(255,255,255,0.36)",
+      "font-family": "JetBrains Mono, monospace",
+      "font-size": 10,
+      "letter-spacing": "0.05em",
+    }, lb.text)
+  );
+
+  // today marker (vertical dashed line)
+  const todayX = xAt(PAST);
+  const todayLine = svgEl("line", {
+    x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b,
+    stroke: "rgba(217,184,113,0.45)",
+    "stroke-width": 1,
+    "stroke-dasharray": "3 4",
+  });
+  const todayDot = svgEl("circle", {
+    cx: todayX, cy: yAt(hist[hist.length - 1]), r: 4.5,
+    fill: "#D9B871",
+    stroke: "rgba(217,184,113,0.25)",
+    "stroke-width": 4,
+  });
+
+  // gradient defs
+  const defs = svgEl("defs");
+  defs.appendChild(svgEl("linearGradient", { id: "ep-grad-" + inst.id, x1: 0, y1: 0, x2: 0, y2: 1 },
+    svgEl("stop", { offset: "0%",   "stop-color": "#D9B871", "stop-opacity": 0.28 }),
+    svgEl("stop", { offset: "100%", "stop-color": "#D9B871", "stop-opacity": 0 })
+  ));
+
+  const svg = svgEl("svg", {
+    class: "ep-chart",
+    viewBox: "0 0 " + W + " " + H,
+    preserveAspectRatio: "none",
+    role: "img",
+  });
+  svg.appendChild(defs);
+  grid.forEach((g) => svg.appendChild(g));
+  // benchmark line
+  svg.appendChild(svgEl("path", {
+    d: benchPath,
+    fill: "none",
+    stroke: "rgba(255,255,255,0.32)",
+    "stroke-width": 1.5,
+    "stroke-dasharray": "2 3",
+  }));
+  // area under main line
+  svg.appendChild(svgEl("path", { d: areaPath, fill: "url(#ep-grad-" + inst.id + ")" }));
+  // historical
+  svg.appendChild(svgEl("path", {
+    d: histPath, fill: "none",
+    stroke: "#D9B871", "stroke-width": 2,
+    "stroke-linejoin": "round", "stroke-linecap": "round",
+  }));
+  // forecast (dashed)
+  svg.appendChild(svgEl("path", {
+    d: futPath, fill: "none",
+    stroke: "#D9B871", "stroke-width": 2,
+    "stroke-dasharray": "5 5",
+    "stroke-linejoin": "round", "stroke-linecap": "round",
+    opacity: 0.85,
+  }));
+  svg.appendChild(todayLine);
+  svg.appendChild(todayDot);
+  xLabelNodes.forEach((n) => svg.appendChild(n));
+
+  // expose computed values to caller
+  return {
+    svg,
+    pastGrowth: hist[hist.length - 1],
+    forecastDelta: fut[fut.length - 1] - hist[hist.length - 1],
+    benchTotal: bench[bench.length - 1] - bench[0],
+  };
+}
+
+function pickTopOffers(inst) {
+  const meta = (typeof OFFERS !== "undefined") ? OFFERS[inst.id] : null;
+  if (!meta) return null;
+  const items = meta.items.slice();
+  if (meta.kind === "deposit") {
+    items.sort((a, b) => b.rate - a.rate);
+    return {
+      kind: "deposit",
+      top: items.slice(0, 3).map((o) => ({
+        label: o.provider,
+        value: o.rate + "%",
+      })),
+    };
+  }
+  if (meta.kind === "stock") {
+    items.sort((a, b) => (b.divYield || 0) - (a.divYield || 0));
+    return {
+      kind: "stock",
+      top: items.slice(0, 3).map((o) => ({
+        label: o.ticker,
+        value: (o.divYield > 0 ? o.divYield.toFixed(1) + "%" : ((o.change30d > 0 ? "+" : "") + o.change30d.toFixed(1) + "%")),
+      })),
+    };
+  }
+  return null;
+}
+
+function buildExpandedPanel(inst) {
+  const { svg, pastGrowth, forecastDelta, benchTotal } = buildChart(inst);
+  const topOffers = pickTopOffers(inst);
+
+  const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
+  const isPositive = pastGrowth >= 0;
+  const isForecastUp = forecastDelta >= 0;
+
+  // header / stats
+  const header = el("div", { class: "ep-header" },
+    el("div", { class: "ep-title" },
+      el("div", { class: "ep-eyebrow eyebrow" }, t("expand.eyebrow")),
+      el("h3", null, inst.name[state.lang])
+    ),
+    el("div", { class: "ep-stats" },
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t("expand.past")),
+        el("div", { class: "v " + (isPositive ? "up" : "down") }, fmtPct(pastGrowth))
+      ),
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t("expand.forecast")),
+        el("div", { class: "v " + (isForecastUp ? "up" : "down") }, fmtPct(forecastDelta))
+      ),
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t("expand.benchmark")),
+        el("div", { class: "v bench" }, fmtPct(benchTotal))
+      ),
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t("expand.volatility")),
+        el("div", { class: "v" }, t("risk." + inst.risk))
+      )
+    )
+  );
+
+  // legend
+  const legend = el("div", { class: "ep-legend" },
+    el("span", { class: "lg-item" },
+      el("span", { class: "lg-sw solid" }), t("expand.axis.past")
+    ),
+    el("span", { class: "lg-item" },
+      el("span", { class: "lg-sw dashed" }), t("expand.axis.future")
+    ),
+    el("span", { class: "lg-item" },
+      el("span", { class: "lg-sw bench" }), t("expand.benchmark")
+    )
+  );
+
+  const chartWrap = el("div", { class: "ep-chart-wrap" });
+  chartWrap.appendChild(svg);
+
+  // bottom pills row
+  const pills = el("div", { class: "ep-pills" });
+  if (topOffers && topOffers.top.length > 0) {
+    pills.appendChild(el("div", { class: "ep-pills-label" }, t("expand.topOffers")));
+    topOffers.top.forEach((o) => {
+      pills.appendChild(el("div", { class: "ep-pill" },
+        el("span", { class: "pl-name" }, o.label),
+        el("span", { class: "pl-val" }, o.value)
+      ));
+    });
+    const ctaWrap = el("a", {
+      class: "ep-pill ep-pill-cta",
+      href: "#detail/" + inst.id,
+    }, t("expand.allOffers"), el("span", { class: "arr" }, "→"));
+    ctaWrap.addEventListener("click", (e) => {
+      e.stopPropagation();
+    });
+    pills.appendChild(ctaWrap);
+  } else {
+    pills.appendChild(el("div", { class: "ep-empty" }, t("expand.noOffers")));
+  }
+
+  const panel = el("div", { class: "expand-panel" },
+    header,
+    legend,
+    chartWrap,
+    pills,
+    el("div", { class: "ep-foot" }, t("expand.disclaimer"))
+  );
+  return panel;
+}
+
+/* ============================================================
+   COMPARE PANEL — multi-direction overlay chart
+============================================================ */
+const COMPARE_COLORS = [
+  "#D9B871",                 // gold (accent)
+  "oklch(0.78 0.10 200)",    // teal
+  "oklch(0.78 0.10 320)",    // magenta
+  "oklch(0.78 0.10 140)",    // green
+  "oklch(0.78 0.10 30)",     // peach
+  "oklch(0.78 0.10 260)",    // periwinkle
+];
+
+function buildCompareChart(insts) {
+  const seriesList = insts.map((inst) => ({ inst, s: generateSeries(inst) }));
+  const PAST = seriesList[0].s.PAST;
+  const FUT  = seriesList[0].s.FUT;
+  const N    = PAST + FUT;
+  const W = 900, H = 260;
+  const pad = { l: 56, r: 16, t: 18, b: 32 };
+  const cw = W - pad.l - pad.r;
+  const ch = H - pad.t - pad.b;
+
+  let yMin = Infinity, yMax = -Infinity;
+  seriesList.forEach(({ s }) => {
+    s.hist.concat(s.fut).forEach((v) => {
+      if (v < yMin) yMin = v;
+      if (v > yMax) yMax = v;
+    });
+  });
+  yMin = Math.min(yMin, 0);
+  const span = Math.max(yMax - yMin, 1);
+  yMin -= span * 0.08;
+  yMax += span * 0.12;
+
+  const xAt = (i) => pad.l + (i / N) * cw;
+  const yAt = (v) => pad.t + ch - ((v - yMin) / (yMax - yMin)) * ch;
+  const toPath = (vals, offset = 0) =>
+    vals.map((v, i) => (i === 0 ? "M" : "L") + xAt(i + offset).toFixed(1) + "," + yAt(v).toFixed(1)).join(" ");
+
+  const svg = svgEl("svg", {
+    class: "ep-chart cp-chart",
+    viewBox: "0 0 " + W + " " + H,
+    preserveAspectRatio: "none",
+    role: "img",
+  });
+
+  for (let g = 0; g <= 4; g++) {
+    const v = yMin + (g / 4) * (yMax - yMin);
+    const y = yAt(v);
+    svg.appendChild(svgEl("line", {
+      x1: pad.l, x2: W - pad.r, y1: y, y2: y,
+      stroke: "rgba(255,255,255,0.05)", "stroke-width": 1,
+    }));
+    svg.appendChild(svgEl("text", {
+      x: pad.l - 10, y: y + 3.5, "text-anchor": "end",
+      fill: "rgba(255,255,255,0.32)",
+      "font-family": "JetBrains Mono, monospace",
+      "font-size": 10,
+    }, (v >= 0 ? "+" : "") + v.toFixed(0) + "%"));
+  }
+
+  seriesList.forEach(({ s }, idx) => {
+    const c = COMPARE_COLORS[idx % COMPARE_COLORS.length];
+    svg.appendChild(svgEl("path", {
+      d: toPath(s.hist, 0), fill: "none",
+      stroke: c, "stroke-width": 2,
+      "stroke-linejoin": "round", "stroke-linecap": "round",
+    }));
+    svg.appendChild(svgEl("path", {
+      d: toPath(s.fut, PAST), fill: "none",
+      stroke: c, "stroke-width": 2,
+      "stroke-dasharray": "5 5",
+      "stroke-linejoin": "round", "stroke-linecap": "round",
+      opacity: 0.85,
+    }));
+    svg.appendChild(svgEl("circle", {
+      cx: xAt(N), cy: yAt(s.fut[s.fut.length - 1]),
+      r: 3.5, fill: c,
+      stroke: "rgba(14,16,20,0.85)", "stroke-width": 2,
+    }));
+  });
+
+  // today marker
+  const todayX = xAt(PAST);
+  svg.appendChild(svgEl("line", {
+    x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b,
+    stroke: "rgba(255,255,255,0.18)",
+    "stroke-width": 1,
+    "stroke-dasharray": "3 4",
+  }));
+
+  const xLabels = [
+    { i: 0,          text: "−24" + t("expand.month") },
+    { i: PAST / 2,   text: "−12" + t("expand.month") },
+    { i: PAST,       text: t("expand.axis.today") },
+    { i: PAST + FUT, text: "+12" + t("expand.month") },
+  ];
+  xLabels.forEach((lb) => svg.appendChild(svgEl("text", {
+    x: xAt(lb.i), y: H - pad.b + 18, "text-anchor": "middle",
+    fill: "rgba(255,255,255,0.36)",
+    "font-family": "JetBrains Mono, monospace",
+    "font-size": 10,
+    "letter-spacing": "0.05em",
+  }, lb.text)));
+
+  return { svg, seriesList };
+}
+
+function buildComparePanel(insts) {
+  const { svg, seriesList } = buildCompareChart(insts);
+  const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
+
+  const header = el("div", { class: "cp-header" },
+    el("div", { class: "cp-title" },
+      el("div", { class: "ep-eyebrow eyebrow" }, t("compare.eyebrow")),
+      el("h3", null, t("compare.title.n").replace("{n}", insts.length))
+    ),
+    el("button", {
+      class: "cp-clear",
+      onclick: () => { state.compareIds = []; render(); },
+    }, "✕  " + t("compare.clear"))
+  );
+
+  const legend = el("div", { class: "cp-legend" });
+  seriesList.forEach(({ inst, s }, idx) => {
+    const c = COMPARE_COLORS[idx % COMPARE_COLORS.length];
+    const past = s.hist[s.hist.length - 1];
+    const fwd  = s.fut[s.fut.length - 1] - s.hist[s.hist.length - 1];
+    legend.appendChild(el("div", { class: "cp-leg-item" },
+      el("span", { class: "dot", style: "background:" + c }),
+      el("div", { class: "lg-meta" },
+        el("div", { class: "lg-name" }, inst.name[state.lang]),
+        el("div", { class: "lg-vals" },
+          el("span", { class: "v-past" }, fmtPct(past)),
+          el("span", { class: "sep" }, "·"),
+          el("span", { class: "v-fwd muted" }, fmtPct(fwd))
+        )
+      ),
+      el("button", {
+        class: "lg-remove",
+        title: t("compare.toggle"),
+        onclick: (e) => {
+          e.stopPropagation();
+          const i = state.compareIds.indexOf(inst.id);
+          if (i >= 0) state.compareIds.splice(i, 1);
+          render();
+        },
+      }, "✕")
+    ));
+  });
+
+  const chartWrap = el("div", { class: "ep-chart-wrap cp-chart-wrap" });
+  chartWrap.appendChild(svg);
+
+  const legendSub = el("div", { class: "ep-legend" },
+    el("span", { class: "lg-item" },
+      el("span", { class: "lg-sw solid" }), t("expand.axis.past")
+    ),
+    el("span", { class: "lg-item" },
+      el("span", { class: "lg-sw dashed" }), t("expand.axis.future")
+    )
+  );
+
+  return el("div", { class: "expand-panel compare-panel" },
+    header,
+    legend,
+    legendSub,
+    chartWrap,
+    el("div", { class: "ep-foot" }, t("expand.disclaimer"))
+  );
+}
+
 function buildInstrCard(inst) {
   const riskBadge   = el("span", { class: "badge risk-" + inst.risk }, t("risk." + inst.risk));
   const onlineBadge = el("span", { class: "badge " + (inst.online === "yes" ? "online" : "offline") },
@@ -1083,9 +1658,15 @@ function buildInstrCard(inst) {
     el("span", { class: "val" }, inst.retLabel[state.lang])
   );
 
-  const metrics = el("div", { class: "metrics" },
+  const metrics = el("div", { class: "metrics three" },
     el("div", { class: "metric" }, el("div", { class: "k" }, t("metric.mincap")), el("div", { class: "v" }, inst.minCapLabel[state.lang])),
-    el("div", { class: "metric" }, el("div", { class: "k" }, t("metric.liq")),    el("div", { class: "v" }, t("liq." + inst.liq)))
+    el("div", { class: "metric" }, el("div", { class: "k" }, t("metric.liq")),    el("div", { class: "v" }, t("liq." + inst.liq))),
+    el("div", { class: "metric" }, el("div", { class: "k" }, t("metric.cx")),    el("div", { class: "v cx" }, (function(){
+      const dots = el("span", { class: "dots" });
+      const lvl = { low: 1, mid: 2, hi: 3 }[inst.complexity];
+      for (let i = 0; i < 3; i++) dots.appendChild(el("i", { class: i < lvl ? "on" : "" }));
+      return dots;
+    })()))
   );
 
   const tags = el("div", { class: "tags" });
@@ -1102,7 +1683,40 @@ function buildInstrCard(inst) {
   for (let i = 0; i < 3; i++) cxDots.appendChild(el("i", { class: i < cxLevel ? "on" : "" }));
 
   const hasOffers = (typeof OFFERS !== "undefined") && !!OFFERS[inst.id];
-  const cardCls = "card instr-card interactive" + (hasOffers ? " clickable" : "");
+  const isExpanded = state.expandedId === inst.id;
+  const isCompared = state.compareIds.includes(inst.id);
+  const cardCls = "card instr-card interactive clickable"
+    + (isExpanded ? " expanded" : "")
+    + (isCompared ? " compared" : "");
+
+  const arrowGlyph = isExpanded ? "↑" : "↓";
+  const linkText = isExpanded ? t("card.close") : t("card.detail");
+
+  const detailLink = el("a",
+    { class: "link", href: "#", "data-role": "toggle-expand" },
+    linkText,
+    el("span", null, arrowGlyph)
+  );
+
+  // Compare switch
+  const cmpSwitch = el("button", {
+    class: "cmp-switch",
+    "aria-pressed": isCompared ? "true" : "false",
+    title: t("compare.toggle"),
+    "data-role": "compare-toggle",
+  },
+    el("span", { class: "ct-track" }, el("span", { class: "ct-thumb" })),
+    el("span", { class: "ct-lbl" }, t("compare.toggle"))
+  );
+  cmpSwitch.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const idx = state.compareIds.indexOf(inst.id);
+    if (idx >= 0) state.compareIds.splice(idx, 1);
+    else state.compareIds.push(inst.id);
+    render();
+  });
+
   const card = el("div", { class: cardCls },
     el("div", { class: "top" },
       el("div", null,
@@ -1115,20 +1729,24 @@ function buildInstrCard(inst) {
     metrics,
     tags,
     pros,
-    el("div", { class: "instr-foot" },
-      el("a", { class: "link", href: hasOffers ? "#detail/" + inst.id : "#" },
-        hasOffers ? t("card.detail") : t("detail.empty.title"),
-        el("span", null, "→")
-      ),
-      el("span", { class: "complexity-pill" }, t("metric.cx") + ":", cxDots)
-    )
+    el("div", { class: "instr-foot" }, detailLink, cmpSwitch)
   );
-  if (hasOffers) {
-    card.addEventListener("click", (e) => {
-      if (e.target.tagName === "A" || e.target.closest("a")) return;
-      navigate("detail/" + inst.id);
-    });
-  }
+
+  const toggleExpand = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    state.expandedId = state.expandedId === inst.id ? null : inst.id;
+    render();
+  };
+  detailLink.addEventListener("click", toggleExpand);
+  card.addEventListener("click", (e) => {
+    // ignore clicks on the compare toggle (it handles itself)
+    if (e.target.closest("[data-role='compare-toggle']")) return;
+    // pass through any other links (e.g. external offer links)
+    const a = e.target.closest("a");
+    if (a && a.getAttribute("data-role") !== "toggle-expand") return;
+    toggleExpand(e);
+  });
   return card;
 }
 
