@@ -359,6 +359,39 @@ const PRECIOUS_METALS_OFFERS = [
 ];
 
 /* ----------------------------------------------------------
+   MUDARABA OFFERS
+   fields: provider, providerCode, name{uz/ru/en}, rate,
+           term (months), minUZS, capitalization, earlyWithdrawal,
+           onlineOpen, url
+---------------------------------------------------------- */
+const MUDARABA_OFFERS = [
+  { id: "mdr-iman-24",
+    provider: "Iman Invest", providerCode: "II",
+    name: { uz: "Mudaraba 24 oy", ru: "Мударабa 24 мес.", en: "Mudaraba 24 months" },
+    rate: 18, term: 24, minUZS: 1000000,
+    capitalization: "monthly", earlyWithdrawal: "partial", onlineOpen: "yes",
+    url: "https://imaninvest.uz" },
+  { id: "mdr-iman-12",
+    provider: "Iman Invest", providerCode: "II",
+    name: { uz: "Mudaraba 12 oy", ru: "Мударабa 12 мес.", en: "Mudaraba 12 months" },
+    rate: 16, term: 12, minUZS: 1000000,
+    capitalization: "monthly", earlyWithdrawal: "partial", onlineOpen: "yes",
+    url: "https://imaninvest.uz" },
+  { id: "mdr-iman-6",
+    provider: "Iman Invest", providerCode: "II",
+    name: { uz: "Mudaraba 6 oy", ru: "Мударабa 6 мес.", en: "Mudaraba 6 months" },
+    rate: 15, term: 6, minUZS: 1000000,
+    capitalization: "end", earlyWithdrawal: "no", onlineOpen: "yes",
+    url: "https://imaninvest.uz" },
+  { id: "mdr-iman-3",
+    provider: "Iman Invest", providerCode: "II",
+    name: { uz: "Mudaraba 3 oy", ru: "Мударабa 3 мес.", en: "Mudaraba 3 months" },
+    rate: 14, term: 3, minUZS: 500000,
+    capitalization: "end", earlyWithdrawal: "no", onlineOpen: "yes",
+    url: "https://imaninvest.uz" },
+];
+
+/* ----------------------------------------------------------
    REGISTRY
 ---------------------------------------------------------- */
 const OFFERS = {
@@ -369,6 +402,7 @@ const OFFERS = {
   "precious-metals":{ kind: "precious-metals", currency: "USD", items: PRECIOUS_METALS_OFFERS },
   "gems":           { kind: "gems",            currency: "USD", items: GEMS_OFFERS },
   "gaming":         { kind: "gaming",          currency: "USD", items: GAMING_OFFERS },
+  "mudaraba":       { kind: "mudaraba",        currency: "UZS", items: MUDARABA_OFFERS },
 };
 
 /* ----------------------------------------------------------
@@ -479,6 +513,22 @@ const OFFERS_I18N = {
     "wear.ft":"Field-Tested", "wear.ww":"Well-Worn", "wear.bs":"Battle-Scarred",
     "go.skin":"Steam Market da ko'rish",
     "head.stat.bestSkin":"Eng ko'p o'sgan",
+
+    /* ---- mudaraba ---- */
+    "mdr.rate":"Kutilgan foyda", "mdr.term":"Muddat", "mdr.min":"Min. summa",
+    "mdr.provider":"Islom moliya muassasasi", "mdr.month":"oy",
+    "mdr.sort.rate.desc":"Daromad: yuqoridan pastga", "mdr.sort.rate.asc":"Daromad: pastdan yuqoriga",
+    "mdr.sort.term.asc":"Muddat: qisqadan uzunga", "mdr.sort.term.desc":"Muddat: uzundan qisqaga",
+    "mdr.sort.min.asc":"Min. summa: kichikdan kattaga", "mdr.sort.min.desc":"Min. summa: kattadan kichikka",
+    "mdr.filter.provider.all":"Muassasa: barchasi", "mdr.filter.term.all":"Muddat: har qanday",
+    "mdr.filter.term.6":"Muddat: 6 oygacha", "mdr.filter.term.12":"Muddat: 12 oygacha",
+    "mdr.filter.term.24":"Muddat: 24 oygacha", "mdr.filter.term.long":"Muddat: 24 oydan ko'p",
+    "mdr.search.ph":"Mudaraba mahsuloti yoki muassasa…",
+    "mdr.tog.cap":"Kapitalizatsiya", "mdr.tog.online":"Online ochish",
+    "mdr.tog.all":"Barchasi", "mdr.tog.monthly":"Oylik", "mdr.tog.end":"Oxirida",
+    "mdr.tog.yes":"Ha", "mdr.tog.no":"Yo'q",
+    "go.mdr":"imaninvest.uz da ochish",
+    "head.stat.bestMdr":"Eng yuqori foyda",
 
     /* ---- shared ---- */
     "go.bank":"bank.uz da ochish", "go.stock":"uzse.uz da ko'rish",
@@ -594,6 +644,22 @@ const OFFERS_I18N = {
     "go.skin":"Смотреть в Steam Market",
     "head.stat.bestSkin":"Лучший рост",
 
+    /* ---- mudaraba ---- */
+    "mdr.rate":"Ожидаемый доход", "mdr.term":"Срок", "mdr.min":"Мин. сумма",
+    "mdr.provider":"Исламская финансовая орг.", "mdr.month":"мес.",
+    "mdr.sort.rate.desc":"Доход: по убыванию", "mdr.sort.rate.asc":"Доход: по возрастанию",
+    "mdr.sort.term.asc":"Срок: от меньшего", "mdr.sort.term.desc":"Срок: от большего",
+    "mdr.sort.min.asc":"Мин. сумма: от меньшей", "mdr.sort.min.desc":"Мин. сумма: от большей",
+    "mdr.filter.provider.all":"Орг.: все", "mdr.filter.term.all":"Срок: любой",
+    "mdr.filter.term.6":"Срок: до 6 мес", "mdr.filter.term.12":"Срок: до 12 мес",
+    "mdr.filter.term.24":"Срок: до 24 мес", "mdr.filter.term.long":"Срок: более 24 мес",
+    "mdr.search.ph":"Продукт мудараба или организация…",
+    "mdr.tog.cap":"Капитализация", "mdr.tog.online":"Онлайн",
+    "mdr.tog.all":"Все", "mdr.tog.monthly":"Ежемес.", "mdr.tog.end":"В конце",
+    "mdr.tog.yes":"Да", "mdr.tog.no":"Нет",
+    "go.mdr":"Открыть на imaninvest.uz",
+    "head.stat.bestMdr":"Лучший доход",
+
     /* ---- shared ---- */
     "go.bank":"Открыть на bank.uz", "go.stock":"Посмотреть на uzse.uz",
     "detail.empty.title":"Предложений пока нет",
@@ -706,6 +772,22 @@ const OFFERS_I18N = {
     "wear.ft":"Field-Tested", "wear.ww":"Well-Worn", "wear.bs":"Battle-Scarred",
     "go.skin":"View on Steam Market",
     "head.stat.bestSkin":"Best performer",
+
+    /* ---- mudaraba ---- */
+    "mdr.rate":"Expected profit", "mdr.term":"Term", "mdr.min":"Min. amount",
+    "mdr.provider":"Islamic finance org.", "mdr.month":"mo",
+    "mdr.sort.rate.desc":"Profit: high to low", "mdr.sort.rate.asc":"Profit: low to high",
+    "mdr.sort.term.asc":"Term: shortest first", "mdr.sort.term.desc":"Term: longest first",
+    "mdr.sort.min.asc":"Min. amount: low to high", "mdr.sort.min.desc":"Min. amount: high to low",
+    "mdr.filter.provider.all":"Provider: all", "mdr.filter.term.all":"Term: any",
+    "mdr.filter.term.6":"Term: up to 6 mo", "mdr.filter.term.12":"Term: up to 12 mo",
+    "mdr.filter.term.24":"Term: up to 24 mo", "mdr.filter.term.long":"Term: 24 mo+",
+    "mdr.search.ph":"Mudaraba product or provider…",
+    "mdr.tog.cap":"Capitalization", "mdr.tog.online":"Online open",
+    "mdr.tog.all":"All", "mdr.tog.monthly":"Monthly", "mdr.tog.end":"At maturity",
+    "mdr.tog.yes":"Yes", "mdr.tog.no":"No",
+    "go.mdr":"Open on imaninvest.uz",
+    "head.stat.bestMdr":"Best profit",
 
     /* ---- shared ---- */
     "go.bank":"Open on bank.uz", "go.stock":"View on uzse.uz",

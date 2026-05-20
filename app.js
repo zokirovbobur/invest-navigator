@@ -455,6 +455,27 @@ const INSTRUMENTS = [
     },
   },
   {
+    id: "mudaraba",
+    name: { uz: "Mudaraba", ru: "Мударабa", en: "Mudaraba" },
+    sub:  { uz: "Islom moliyasi · UZS", ru: "Исламские финансы · UZS", en: "Islamic finance · UZS" },
+    risk: "low", cap: "low", liq: "low",
+    income: "passive", market: "local", currency: "UZS", online: "yes", tangible: "no",
+    sharia: "compliant",
+    retMid: 16, retLabel: { uz: "14–18% yillik", ru: "14–18% годовых", en: "14–18% annual" },
+    minCapUSD: 40, minCapLabel: { uz: "500 000 so'm", ru: "500 000 сум", en: "500K UZS" },
+    complexity: "low",
+    pros: {
+      uz: ["Shariat talablariga to'liq mos", "Barqaror kutilgan daromad", "Davlat nazoratida"],
+      ru: ["Полностью соответствует шариату", "Стабильный ожидаемый доход", "Под государственным надзором"],
+      en: ["Fully Shariah-compliant", "Stable expected return", "State-supervised"],
+    },
+    cons: {
+      uz: ["Past likvidlik", "Faqat mahalliy provayderlar", "Kafolatlanmagan daromad"],
+      ru: ["Низкая ликвидность", "Только местные провайдеры", "Доход не застрахован"],
+      en: ["Low liquidity", "Local providers only", "Non-guaranteed return"],
+    },
+  },
+  {
     id: "tse",
     name: { uz: "Toshkent fond birjasi", ru: "Биржа (TSE)", en: "Stock Exchange (TSE)" },
     sub:  { uz: "Mahalliy aksiyalar · UZS", ru: "Локальные акции · UZS", en: "Local equities · UZS" },
@@ -741,6 +762,13 @@ const state = {
       game: "all",
       wear: "all",
     },
+    mudaraba: {
+      search: "",
+      sort: "rate.desc",
+      provider: "all",
+      term: "all",
+      onlineOpen: "all",
+    },
   },
 };
 
@@ -883,6 +911,7 @@ function buildFilterUI() {
     else if (meta && meta.kind === "precious-metals") buildMetalFilterUI(wrap);
     else if (meta && meta.kind === "gems") buildGemFilterUI(wrap);
     else if (meta && meta.kind === "gaming") buildGamingFilterUI(wrap);
+    else if (meta && meta.kind === "mudaraba") buildMudarabaFilterUI(wrap);
     else buildHomeFilterUI(wrap); // fallback
   }
   // bind toggle pill listeners
@@ -1031,6 +1060,42 @@ function buildDepositFilterUI(wrap) {
     ]),
     makeToggleGroup(t("dep.tog.online"), "onlineOpen", f.onlineOpen, [
       ["all", t("dep.tog.all")], ["yes", t("dep.tog.yes")], ["no", t("dep.tog.no")],
+    ]),
+  );
+  wrap.appendChild(toggles);
+}
+
+/* ---------- Mudaraba filter UI ---------- */
+function buildMudarabaFilterUI(wrap) {
+  const f = state.detailFilters.mudaraba;
+  const items = OFFERS[state.detailId].items;
+  const providers = Array.from(new Set(items.map((i) => i.provider)));
+  providers.sort();
+
+  wrap.appendChild(makeSearchInput(f.search, t("mdr.search.ph")));
+  wrap.appendChild(makeSelect("sort", [
+    ["rate.desc", t("mdr.sort.rate.desc")],
+    ["rate.asc",  t("mdr.sort.rate.asc")],
+    ["term.asc",  t("mdr.sort.term.asc")],
+    ["term.desc", t("mdr.sort.term.desc")],
+    ["min.asc",   t("mdr.sort.min.asc")],
+    ["min.desc",  t("mdr.sort.min.desc")],
+  ], f.sort, (v) => { f.sort = v; render(); }, true));
+  wrap.appendChild(makeSelect("filter-provider", [
+    ["all", t("mdr.filter.provider.all")],
+    ...providers.map((p) => [p, p]),
+  ], f.provider, (v) => { f.provider = v; render(); }));
+  wrap.appendChild(makeSelect("filter-term", [
+    ["all", t("mdr.filter.term.all")],
+    ["6",   t("mdr.filter.term.6")],
+    ["12",  t("mdr.filter.term.12")],
+    ["24",  t("mdr.filter.term.24")],
+    ["long",t("mdr.filter.term.long")],
+  ], f.term, (v) => { f.term = v; render(); }));
+
+  const toggles = el("div", { class: "toggles", style: "width: 100%" },
+    makeToggleGroup(t("mdr.tog.online"), "onlineOpen", f.onlineOpen, [
+      ["all", t("mdr.tog.all")], ["yes", t("mdr.tog.yes")], ["no", t("mdr.tog.no")],
     ]),
   );
   wrap.appendChild(toggles);
@@ -1244,6 +1309,31 @@ function filterAndSortDeposits(items) {
   else if (s === "term.desc") list.sort((a, b) => b.term - a.term);
   else if (s === "min.asc")   list.sort((a, b) => minOf(a) - minOf(b));
   else if (s === "min.desc")  list.sort((a, b) => minOf(b) - minOf(a));
+  return list;
+}
+
+function filterAndSortMudaraba(items) {
+  const f = state.detailFilters.mudaraba;
+  let list = items.slice();
+  if (f.search) {
+    const q = f.search.toLowerCase().trim();
+    list = list.filter((o) => [o.provider, o.name[state.lang]].join(" ").toLowerCase().includes(q));
+  }
+  if (f.provider !== "all") list = list.filter((o) => o.provider === f.provider);
+  if (f.term !== "all") {
+    list = list.filter((o) => {
+      if (f.term === "long") return o.term > 24;
+      return o.term <= parseInt(f.term, 10);
+    });
+  }
+  if (f.onlineOpen !== "all") list = list.filter((o) => o.onlineOpen === f.onlineOpen);
+  const s = f.sort;
+  if (s === "rate.desc") list.sort((a, b) => b.rate - a.rate);
+  else if (s === "rate.asc")  list.sort((a, b) => a.rate - b.rate);
+  else if (s === "term.asc")  list.sort((a, b) => a.term - b.term);
+  else if (s === "term.desc") list.sort((a, b) => b.term - a.term);
+  else if (s === "min.asc")   list.sort((a, b) => a.minUZS - b.minUZS);
+  else if (s === "min.desc")  list.sort((a, b) => b.minUZS - a.minUZS);
   return list;
 }
 
@@ -1726,10 +1816,10 @@ function pickTopOffers(inst) {
   const meta = (typeof OFFERS !== "undefined") ? OFFERS[inst.id] : null;
   if (!meta) return null;
   const items = meta.items.slice();
-  if (meta.kind === "deposit") {
+  if (meta.kind === "deposit" || meta.kind === "mudaraba") {
     items.sort((a, b) => b.rate - a.rate);
     return {
-      kind: "deposit",
+      kind: meta.kind,
       top: items.slice(0, 3).map((o) => ({
         label: o.provider,
         value: o.rate + "%",
@@ -2226,6 +2316,7 @@ function buildInstrCard(inst) {
     "gems":           { code: "◆",   clr: "#7FFFD4" },
     "gaming":         { code: "SKN", clr: "#4EC9B0" },
     "p2p":            { code: "P2P", clr: "#BB86FC" },
+    "mudaraba":       { code: "MUD", clr: "#4CAF82" },
   };
   const icon = ICON_MAP[inst.id] || { code: inst.id.slice(0, 3).toUpperCase(), clr: "#D9B871" };
   const iavatar = el("div", {
@@ -2330,6 +2421,17 @@ function renderDetail() {
       ));
     } else {
       list.forEach((o) => grid.appendChild(buildDepositCard(o, meta)));
+    }
+  } else if (meta.kind === "mudaraba") {
+    const list = filterAndSortMudaraba(meta.items);
+    renderLiveStatsMudaraba(list);
+    if (list.length === 0) {
+      grid.appendChild(el("div", { class: "empty" },
+        el("h3", null, t("catalog.empty.title")),
+        el("p", null, t("catalog.empty.body"))
+      ));
+    } else {
+      list.forEach((o) => grid.appendChild(buildMudarabaCard(o)));
     }
   } else if (meta.kind === "stock") {
     const list = filterAndSortStocks(meta.items);
@@ -2438,6 +2540,43 @@ function renderLiveStatsDeposit(list, meta) {
   wrap.appendChild(el("div", { class: "live-stat" },
     el("div", { class: "k" }, t("head.stat.minEntry")),
     el("div", { class: "v" }, minLabel)
+  ));
+}
+
+function renderLiveStatsMudaraba(list) {
+  const wrap = $("#live-stats");
+  wrap.innerHTML = "";
+
+  const countV = el("div", { class: "v" });
+  countV.appendChild(el("span", { class: "acc" }, String(list.length)));
+  if (list.length === 0) countV.classList.add("empty");
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.offers")),
+    countV
+  ));
+
+  if (list.length === 0) {
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.bestMdr")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    wrap.appendChild(el("div", { class: "live-stat" },
+      el("div", { class: "k" }, t("head.stat.minEntry")),
+      el("div", { class: "v empty" }, "—")
+    ));
+    return;
+  }
+
+  const best = list.reduce((m, o) => o.rate > m.rate ? o : m, list[0]);
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.bestMdr")),
+    el("div", { class: "v" }, best.rate + "%")
+  ));
+
+  const cheapest = list.reduce((m, o) => o.minUZS < m.minUZS ? o : m, list[0]);
+  wrap.appendChild(el("div", { class: "live-stat" },
+    el("div", { class: "k" }, t("head.stat.minEntry")),
+    el("div", { class: "v" }, fmtUZSFull(cheapest.minUZS, state.lang))
   ));
 }
 
@@ -2652,6 +2791,45 @@ function buildDepositCard(o, meta) {
     el("div", { class: "ofoot" },
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.bank"),
+        el("span", null, "↗")
+      )
+    )
+  );
+}
+
+function buildMudarabaCard(o) {
+  const termLabel = o.term + " " + t("mdr.month");
+  const minLabel  = fmtUZSFull(o.minUZS, state.lang);
+
+  const tags = el("div", { class: "otags" });
+  tags.appendChild(el("span", { class: "tag", style: "color:var(--ok);border-color:rgba(111,207,151,0.25);background:rgba(111,207,151,0.08)" }, "☽ Shariat"));
+  tags.appendChild(el("span", { class: "tag" }, t("dep.cap." + o.capitalization)));
+  if (o.onlineOpen === "yes") tags.appendChild(el("span", { class: "tag" }, t("dep.online") + ": " + t("mdr.tog.yes")));
+
+  return el("div", { class: "card offer-card interactive" },
+    el("div", { class: "top" },
+      el("div", { class: "provider" },
+        el("div", { class: "pavatar", style: "color:#4CAF82;background:rgba(76,175,130,0.12);border-color:rgba(76,175,130,0.25)" }, o.providerCode),
+        el("div", null,
+          el("div", { class: "pname" }, o.provider),
+          el("div", { class: "pcat" }, "UZS · " + t("mdr.provider"))
+        )
+      ),
+      el("span", { class: "badge online" }, o.onlineOpen === "yes" ? t("online.yes") : t("online.no"))
+    ),
+    el("div", { class: "oname" }, o.name[state.lang]),
+    el("div", { class: "rate-strip" },
+      el("span", { class: "lbl" }, t("mdr.rate")),
+      el("span", { class: "val" }, o.rate + "%")
+    ),
+    el("div", { class: "metrics" },
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("mdr.term")), el("div", { class: "v" }, termLabel)),
+      el("div", { class: "metric" }, el("div", { class: "k" }, t("mdr.min")),  el("div", { class: "v" }, minLabel))
+    ),
+    tags,
+    el("div", { class: "ofoot" },
+      el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
+        t("go.mdr"),
         el("span", null, "↗")
       )
     )
@@ -2937,6 +3115,12 @@ function renderActiveFilters() {
       if (f.wear !== "all") chips.push(["wear", t("wear." + f.wear) || f.wear]);
       if (f.sort !== "price.desc") chips.push(["sort", t("skin.sort." + f.sort)]);
       if (f.search) chips.push(["search", "« " + f.search + " »"]);
+    } else if (meta.kind === "mudaraba") {
+      if (f.provider !== "all") chips.push(["provider", t("mdr.provider") + ": " + f.provider]);
+      if (f.term !== "all") chips.push(["term", t("mdr.filter.term." + f.term)]);
+      if (f.onlineOpen !== "all") chips.push(["onlineOpen", t("mdr.tog.online") + ": " + t("mdr.tog." + f.onlineOpen)]);
+      if (f.sort !== "rate.desc") chips.push(["sort", t("mdr.sort." + f.sort)]);
+      if (f.search) chips.push(["search", "« " + f.search + " »"]);
     }
   }
 
@@ -2958,7 +3142,7 @@ function clearOne(key) {
     else f[key] = "all";
   } else {
     const meta = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
-    const defaultSortMap = { deposit: "rate.desc", stock: "div.desc", crypto: "cap.desc", "precious-metals": "price.desc", gems: "price.desc", gaming: "price.desc" };
+    const defaultSortMap = { deposit: "rate.desc", mudaraba: "rate.desc", stock: "div.desc", crypto: "cap.desc", "precious-metals": "price.desc", gems: "price.desc", gaming: "price.desc" };
     const defaultSort = (meta && defaultSortMap[meta.kind]) || "relevance";
     if (key === "sort") f.sort = defaultSort;
     else if (key === "search") { f.search = ""; }
@@ -2997,6 +3181,8 @@ function clearAll() {
       state.detailFilters.gems = { search: "", sort: "price.desc", stone: "all", liq: "all" };
     } else if (meta.kind === "gaming") {
       state.detailFilters.gaming = { search: "", sort: "price.desc", game: "all", wear: "all" };
+    } else if (meta.kind === "mudaraba") {
+      state.detailFilters.mudaraba = { search: "", sort: "rate.desc", provider: "all", term: "all", onlineOpen: "all" };
     }
   }
   buildFilterUI();
