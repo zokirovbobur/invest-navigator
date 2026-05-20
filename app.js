@@ -2210,6 +2210,29 @@ function buildInstrCard(inst) {
   const cxLevel = { low: 1, mid: 2, hi: 3 }[inst.complexity];
   for (let i = 0; i < 3; i++) cxDots.appendChild(el("i", { class: i < cxLevel ? "on" : "" }));
 
+  // ── instrument avatar icon ─────────────────────────────────
+  const ICON_MAP = {
+    "deposit-uzs":    { code: "UZS", clr: "#D9B871" },
+    "deposit-usd":    { code: "$",   clr: "#6FCF97" },
+    "ozbonds":        { code: "OBL", clr: "#56CCF2" },
+    "sukuk":          { code: "SUK", clr: "#9D8EE8" },
+    "tse":            { code: "TSE", clr: "#E8A87C" },
+    "div-stocks":     { code: "DIV", clr: "#6FCF97" },
+    "etf":            { code: "ETF", clr: "#5BC8E8" },
+    "real-estate":    { code: "RE",  clr: "#E8A87C" },
+    "startup":        { code: "VC",  clr: "#F06292" },
+    "crypto":         { code: "₿",   clr: "#F7931A" },
+    "precious-metals":{ code: "Au",  clr: "#D4AF37" },
+    "gems":           { code: "◆",   clr: "#7FFFD4" },
+    "gaming":         { code: "SKN", clr: "#4EC9B0" },
+    "p2p":            { code: "P2P", clr: "#BB86FC" },
+  };
+  const icon = ICON_MAP[inst.id] || { code: inst.id.slice(0, 3).toUpperCase(), clr: "#D9B871" };
+  const iavatar = el("div", {
+    class: "iavatar",
+    style: `color:${icon.clr};background:${icon.clr}1a;border-color:${icon.clr}33;`,
+  }, icon.code);
+
   const hasOffers = (typeof OFFERS !== "undefined") && !!OFFERS[inst.id];
   const isExpanded = state.expandedId === inst.id;
   const isCompared = state.compareIds.includes(inst.id);
@@ -2247,9 +2270,12 @@ function buildInstrCard(inst) {
 
   const card = el("div", { class: cardCls },
     el("div", { class: "top" },
-      el("div", null,
-        el("div", { class: "name" }, inst.name[state.lang]),
-        el("div", { class: "sub" }, inst.sub[state.lang])
+      el("div", { class: "card-title-row" },
+        iavatar,
+        el("div", null,
+          el("div", { class: "name" }, inst.name[state.lang]),
+          el("div", { class: "sub" }, inst.sub[state.lang])
+        )
       ),
       el("div", { class: "badges" }, riskBadge, onlineBadge)
     ),

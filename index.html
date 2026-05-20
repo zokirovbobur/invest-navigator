@@ -590,6 +590,16 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 
 .instr-card { display: flex; flex-direction: column; gap: 14px; }
 .instr-card .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.instr-card .card-title-row { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+.instr-card .iavatar {
+  width: 42px; height: 42px; border-radius: 12px;
+  display: grid; place-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px; letter-spacing: 0.04em; font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid;
+  user-select: none;
+}
 .instr-card .name { font-size: 18px; font-weight: 600; letter-spacing: -0.015em; }
 .instr-card .sub { font-size: 11px; color: var(--fg-2); margin-top: 4px; font-family: var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; }
 
