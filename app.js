@@ -118,6 +118,13 @@ const I18N = {
     "chart.date.1yr":   "1 yil oldin",
     "chart.date.2yr":   "2 yil oldin",
 
+    "offer.expand.eyebrow": "Taklif dinamikasi",
+    "offer.compare.eyebrow": "Takliflar solishtiruvi",
+    "offer.compare.toggle": "Solishtirish",
+    "offer.compare.clear": "Bekor qilish",
+    "offer.compare.hintOne": "Yana 1 taklifni «Solishtirish» tugmasi bilan tanlang — grafik shu yerda paydo bo'ladi",
+    "offer.compare.title.n": "{n} taklif solishtirilmoqda",
+
     "disclaimer.title": "Bu moliyaviy maslahat emas",
     "disclaimer.body": "Katalog faqat ta'lim va informatsion maqsadda taqdim etilgan. Investitsiya qarorlarini qabul qilishdan oldin mustaqil tahlil qiling yoki litsenziyalangan mutaxassis bilan maslahat qiling.",
     "footer.note": "© 2026 Invest Navigator · O'zbekiston",
@@ -237,6 +244,13 @@ const I18N = {
     "chart.date.today": "Сегодня",
     "chart.date.1yr":   "1 год назад",
     "chart.date.2yr":   "2 года назад",
+
+    "offer.expand.eyebrow": "Динамика предложения",
+    "offer.compare.eyebrow": "Сравнение предложений",
+    "offer.compare.toggle": "Сравнить",
+    "offer.compare.clear": "Отменить",
+    "offer.compare.hintOne": "Выберите ещё 1 предложение кнопкой «Сравнить» — график появится здесь",
+    "offer.compare.title.n": "Сравниваются {n} предложения",
 
     "disclaimer.title": "Это не финансовая консультация",
     "disclaimer.body": "Каталог предоставлен исключительно в образовательных и информационных целях. Перед принятием инвестрешений проведите самостоятельный анализ или проконсультируйтесь с лицензированным специалистом.",
@@ -358,6 +372,13 @@ const I18N = {
     "chart.date.today": "Today",
     "chart.date.1yr":   "1 yr ago",
     "chart.date.2yr":   "2 yrs ago",
+
+    "offer.expand.eyebrow": "Offer dynamics",
+    "offer.compare.eyebrow": "Offer comparison",
+    "offer.compare.toggle": "Compare",
+    "offer.compare.clear": "Clear",
+    "offer.compare.hintOne": "Select 1 more offer with the «Compare» toggle — the chart will appear here",
+    "offer.compare.title.n": "Comparing {n} offers",
 
     "disclaimer.title": "This is not financial advice",
     "disclaimer.body": "The catalog is provided for educational and informational purposes only. Do your own research or consult a licensed professional before making investment decisions.",
@@ -703,8 +724,10 @@ const state = {
   lang: "uz",
   route: "home",   // "home" | "detail"
   detailId: null,
-  expandedId: null, // currently-expanded direction card on home
-  compareIds: [],   // direction ids toggled into the comparison view
+  expandedId: null,      // currently-expanded direction card on home
+  compareIds: [],        // direction ids toggled into the comparison view
+  offerExpandedId: null, // currently-expanded offer card on detail page
+  offerCompareIds: [],   // offer ids toggled into compare view on detail page
   chartParams: { amount: 100, startOffset: 0 }, // 0=today 12=1yr 24=2yr
   filters: {
     search: "",
@@ -839,7 +862,9 @@ function syncRouteFromHash() {
   const { route, detailId } = parseHash();
   state.route = route;
   state.detailId = detailId;
-  state.expandedId = null; // collapse any open panel on route change
+  state.expandedId = null;
+  state.offerExpandedId = null;
+  state.offerCompareIds = [];
   buildFilterUI();
   applyI18nTextOnly();
   render();
@@ -2266,6 +2291,260 @@ function buildComparePanel(insts) {
   );
 }
 
+/* ============================================================
+   OFFER EXPAND / COMPARE — helpers
+============================================================ */
+
+function makeOfferPseudoInst(offer, kind) {
+  let retMid, risk, currency;
+
+  if (kind === "deposit") {
+    retMid = offer.rate;
+    risk = "low";
+    currency = offer.minUZS != null ? "UZS" : "USD";
+  } else if (kind === "mudaraba") {
+    retMid = offer.rate;
+    risk = "low";
+    currency = "UZS";
+  } else if (kind === "stock") {
+    retMid = (offer.divYield || 0) + 7;
+    risk = "mid";
+    currency = "UZS";
+  } else if (kind === "crypto") {
+    retMid = Math.max(-40, Math.min(80, (offer.change30d || 0) * 8));
+    risk = "hi";
+    currency = "USD";
+  } else if (kind === "precious-metals") {
+    retMid = offer.change1y || 0;
+    risk = "low";
+    currency = "USD";
+  } else if (kind === "gems") {
+    retMid = offer.change1y || 0;
+    risk = "mid";
+    currency = "USD";
+  } else if (kind === "gaming") {
+    retMid = Math.max(-50, Math.min(100, (offer.change30d || 0) * 6));
+    risk = "hi";
+    currency = "USD";
+  } else {
+    retMid = 10;
+    risk = "mid";
+    currency = "USD";
+  }
+
+  return { id: offer.id, retMid, risk, currency };
+}
+
+function offerDisplayName(offer, kind, lang) {
+  if (kind === "stock" || kind === "crypto") return offer.ticker || offer.name[lang] || offer.id;
+  if (kind === "precious-metals") return offer.symbol + " · " + (offer.name[lang] || offer.symbol);
+  return offer.name ? offer.name[lang] || offer.id : offer.id;
+}
+
+function offerCurrentValueLabel(offer, kind) {
+  if (kind === "deposit" || kind === "mudaraba") return offer.rate + "%";
+  if (kind === "stock") return offer.divYield > 0 ? offer.divYield.toFixed(1) + "%" : "—";
+  if (kind === "crypto" || kind === "gaming") return (offer.change30d >= 0 ? "+" : "") + offer.change30d.toFixed(1) + "%";
+  if (kind === "precious-metals" || kind === "gems") return (offer.change1y >= 0 ? "+" : "") + offer.change1y.toFixed(1) + "%";
+  return "—";
+}
+
+function offerCurrentValueKey(kind) {
+  if (kind === "deposit" || kind === "mudaraba") return "dep.rate";
+  if (kind === "stock") return "stk.div";
+  return "head.stat.bestChange";
+}
+
+function buildOfferExpandedPanel(offer, kind) {
+  const pseudoInst = makeOfferPseudoInst(offer, kind);
+  const { svg, setupHover, pastGrowth, forecastDelta, benchTotal } = buildChart(pseudoInst, state.chartParams);
+
+  const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
+  const controls = buildChartControls();
+
+  const header = el("div", { class: "ep-header" },
+    el("div", { class: "ep-title" },
+      el("div", { class: "ep-eyebrow eyebrow" }, t("offer.expand.eyebrow")),
+      el("h3", null, offerDisplayName(offer, kind, state.lang))
+    ),
+    controls,
+    el("div", { class: "ep-stats" },
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t("expand.past")),
+        el("div", { class: "v " + (pastGrowth >= 0 ? "up" : "down") }, fmtPct(pastGrowth))
+      ),
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t("expand.forecast")),
+        el("div", { class: "v " + (forecastDelta >= 0 ? "up" : "down") }, fmtPct(forecastDelta))
+      ),
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t(offerCurrentValueKey(kind)) ),
+        el("div", { class: "v" }, offerCurrentValueLabel(offer, kind))
+      ),
+      el("div", { class: "ep-stat" },
+        el("div", { class: "k" }, t("expand.benchmark")),
+        el("div", { class: "v bench" }, fmtPct(benchTotal))
+      )
+    )
+  );
+
+  const legend = el("div", { class: "ep-legend" },
+    el("span", { class: "lg-item" }, el("span", { class: "lg-sw solid" }), t("expand.axis.past")),
+    el("span", { class: "lg-item" }, el("span", { class: "lg-sw dashed" }), t("expand.axis.future")),
+    el("span", { class: "lg-item" }, el("span", { class: "lg-sw bench" }), t("expand.benchmark"))
+  );
+
+  const tooltipEl = el("div", { class: "ep-hover-tooltip" });
+  const chartWrap = el("div", { class: "ep-chart-wrap" });
+  chartWrap.appendChild(svg);
+  chartWrap.appendChild(tooltipEl);
+  setupHover(tooltipEl);
+
+  return el("div", { class: "expand-panel" },
+    header,
+    legend,
+    chartWrap,
+    el("div", { class: "ep-foot" }, t("expand.disclaimer"))
+  );
+}
+
+function buildOfferComparePanel(offers, kind) {
+  const pseudoInsts = offers.map((o) => makeOfferPseudoInst(o, kind));
+  const { svg, setupHover, seriesList } = buildCompareChart(pseudoInsts, state.chartParams);
+  const PAST = 24, FUT = 12;
+
+  const controls = buildChartControls();
+
+  const header = el("div", { class: "cp-header" },
+    el("div", { class: "cp-title" },
+      el("div", { class: "ep-eyebrow eyebrow" }, t("offer.compare.eyebrow")),
+      el("h3", null, t("offer.compare.title.n").replace("{n}", offers.length))
+    ),
+    controls,
+    el("button", {
+      class: "cp-clear",
+      onclick: () => { state.offerCompareIds = []; render(); },
+    }, "✕  " + t("offer.compare.clear"))
+  );
+
+  const legend = el("div", { class: "cp-legend" });
+  offers.forEach((offer, idx) => {
+    const c = COMPARE_COLORS[idx % COMPARE_COLORS.length];
+    const pseudo = pseudoInsts[idx];
+    const { valueAt } = (() => {
+      const s = generateSeries(pseudo);
+      const entryIdx = PAST - state.chartParams.startOffset;
+      const fullSeries = s.hist.concat(s.fut.slice(1));
+      const entryPct = fullSeries[entryIdx];
+      return { valueAt: (i) => state.chartParams.amount * (1 + (fullSeries[i] - entryPct) / 100) };
+    })();
+    const valToday    = fmtUSDExact(valueAt(PAST));
+    const valForecast = fmtUSDExact(valueAt(PAST + FUT));
+    legend.appendChild(el("div", { class: "cp-leg-item" },
+      el("span", { class: "dot", style: "background:" + c }),
+      el("div", { class: "lg-meta" },
+        el("div", { class: "lg-name" }, offerDisplayName(offer, kind, state.lang)),
+        el("div", { class: "lg-vals" },
+          el("span", { class: "v-past" }, valToday),
+          el("span", { class: "sep" }, "·"),
+          el("span", { class: "v-fwd muted" }, valForecast)
+        )
+      ),
+      el("button", {
+        class: "lg-remove",
+        title: t("offer.compare.toggle"),
+        onclick: (e) => {
+          e.stopPropagation();
+          const i = state.offerCompareIds.indexOf(offer.id);
+          if (i >= 0) state.offerCompareIds.splice(i, 1);
+          render();
+        },
+      }, "✕")
+    ));
+  });
+
+  const legendSub = el("div", { class: "ep-legend" },
+    el("span", { class: "lg-item" }, el("span", { class: "lg-sw solid" }), t("expand.axis.past")),
+    el("span", { class: "lg-item" }, el("span", { class: "lg-sw dashed" }), t("expand.axis.future"))
+  );
+
+  const tooltipEl = el("div", { class: "ep-hover-tooltip ep-hover-tooltip--multi" });
+  const chartWrap = el("div", { class: "ep-chart-wrap cp-chart-wrap" });
+  chartWrap.appendChild(svg);
+  chartWrap.appendChild(tooltipEl);
+  setupHover(tooltipEl);
+
+  return el("div", { class: "expand-panel compare-panel" },
+    header,
+    legend,
+    legendSub,
+    chartWrap,
+    el("div", { class: "ep-foot" }, t("expand.disclaimer"))
+  );
+}
+
+function buildOfferCmpSwitch(offerId) {
+  const isCompared = state.offerCompareIds.includes(offerId);
+  const sw = el("button", {
+    class: "cmp-switch",
+    "aria-pressed": isCompared ? "true" : "false",
+    title: t("offer.compare.toggle"),
+    "data-role": "offer-compare-toggle",
+  },
+    el("span", { class: "ct-track" }, el("span", { class: "ct-thumb" })),
+    el("span", { class: "ct-lbl" }, t("offer.compare.toggle"))
+  );
+  sw.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const idx = state.offerCompareIds.indexOf(offerId);
+    if (idx >= 0) state.offerCompareIds.splice(idx, 1);
+    else state.offerCompareIds.push(offerId);
+    render();
+  });
+  return sw;
+}
+
+function wrapOfferCardClickable(card, offerId) {
+  const isExpanded = state.offerExpandedId === offerId;
+  if (isExpanded) card.classList.add("expanded");
+  if (state.offerCompareIds.includes(offerId)) card.classList.add("compared");
+  card.classList.add("clickable");
+  card.style.cursor = "pointer";
+  card.addEventListener("click", (e) => {
+    if (e.target.closest("[data-role='offer-compare-toggle']")) return;
+    const a = e.target.closest("a");
+    if (a) return;
+    e.preventDefault();
+    state.offerExpandedId = state.offerExpandedId === offerId ? null : offerId;
+    render();
+  });
+}
+
+function renderOfferList(list, kind, buildFn) {
+  const grid = $("#dir-grid");
+  const compareActive = state.offerCompareIds.length > 0;
+  const visibleIds = new Set(list.map((o) => o.id));
+  const comparedIds = state.offerCompareIds.filter((id) => visibleIds.has(id));
+  const compared = comparedIds.map((id) => list.find((o) => o.id === id)).filter(Boolean);
+  const others = list.filter((o) => !comparedIds.includes(o.id));
+
+  const renderCard = (o) => {
+    grid.appendChild(buildFn(o));
+    if (!compareActive && state.offerExpandedId === o.id) {
+      grid.appendChild(buildOfferExpandedPanel(o, kind));
+    }
+  };
+
+  compared.forEach(renderCard);
+  if (compared.length >= 2) {
+    grid.appendChild(buildOfferComparePanel(compared, kind));
+  } else if (compared.length === 1) {
+    grid.appendChild(el("div", { class: "compare-hint" }, t("offer.compare.hintOne")));
+  }
+  others.forEach(renderCard);
+}
+
 function buildInstrCard(inst) {
   const riskBadge   = el("span", { class: "badge risk-" + inst.risk }, t("risk." + inst.risk));
   const onlineBadge = el("span", { class: "badge " + (inst.online === "yes" ? "online" : "offline") },
@@ -2411,83 +2690,46 @@ function renderDetail() {
     return;
   }
 
+  const emptyEl = () => el("div", { class: "empty" },
+    el("h3", null, t("catalog.empty.title")),
+    el("p", null, t("catalog.empty.body"))
+  );
+
   if (meta.kind === "deposit") {
     const list = filterAndSortDeposits(meta.items);
     renderLiveStatsDeposit(list, meta);
-    if (list.length === 0) {
-      grid.appendChild(el("div", { class: "empty" },
-        el("h3", null, t("catalog.empty.title")),
-        el("p", null, t("catalog.empty.body"))
-      ));
-    } else {
-      list.forEach((o) => grid.appendChild(buildDepositCard(o, meta)));
-    }
+    if (list.length === 0) { grid.appendChild(emptyEl()); return; }
+    renderOfferList(list, "deposit", (o) => buildDepositCard(o, meta));
   } else if (meta.kind === "mudaraba") {
     const list = filterAndSortMudaraba(meta.items);
     renderLiveStatsMudaraba(list);
-    if (list.length === 0) {
-      grid.appendChild(el("div", { class: "empty" },
-        el("h3", null, t("catalog.empty.title")),
-        el("p", null, t("catalog.empty.body"))
-      ));
-    } else {
-      list.forEach((o) => grid.appendChild(buildMudarabaCard(o)));
-    }
+    if (list.length === 0) { grid.appendChild(emptyEl()); return; }
+    renderOfferList(list, "mudaraba", (o) => buildMudarabaCard(o));
   } else if (meta.kind === "stock") {
     const list = filterAndSortStocks(meta.items);
     renderLiveStatsStock(list);
-    if (list.length === 0) {
-      grid.appendChild(el("div", { class: "empty" },
-        el("h3", null, t("catalog.empty.title")),
-        el("p", null, t("catalog.empty.body"))
-      ));
-    } else {
-      list.forEach((o) => grid.appendChild(buildStockCard(o)));
-    }
+    if (list.length === 0) { grid.appendChild(emptyEl()); return; }
+    renderOfferList(list, "stock", (o) => buildStockCard(o));
   } else if (meta.kind === "precious-metals") {
     const list = filterAndSortMetals(meta.items);
     renderLiveStatsMetals(list);
-    if (list.length === 0) {
-      grid.appendChild(el("div", { class: "empty" },
-        el("h3", null, t("catalog.empty.title")),
-        el("p", null, t("catalog.empty.body"))
-      ));
-    } else {
-      list.forEach((o) => grid.appendChild(buildMetalCard(o)));
-    }
+    if (list.length === 0) { grid.appendChild(emptyEl()); return; }
+    renderOfferList(list, "precious-metals", (o) => buildMetalCard(o));
   } else if (meta.kind === "crypto") {
     const list = filterAndSortCrypto(meta.items);
     renderLiveStatsCrypto(list);
-    if (list.length === 0) {
-      grid.appendChild(el("div", { class: "empty" },
-        el("h3", null, t("catalog.empty.title")),
-        el("p", null, t("catalog.empty.body"))
-      ));
-    } else {
-      list.forEach((o) => grid.appendChild(buildCryptoCard(o)));
-    }
+    if (list.length === 0) { grid.appendChild(emptyEl()); return; }
+    renderOfferList(list, "crypto", (o) => buildCryptoCard(o));
   } else if (meta.kind === "gems") {
     const list = filterAndSortGems(meta.items);
     renderLiveStatsGems(list);
-    if (list.length === 0) {
-      grid.appendChild(el("div", { class: "empty" },
-        el("h3", null, t("catalog.empty.title")),
-        el("p", null, t("catalog.empty.body"))
-      ));
-    } else {
-      list.forEach((o) => grid.appendChild(buildGemCard(o)));
-    }
+    if (list.length === 0) { grid.appendChild(emptyEl()); return; }
+    renderOfferList(list, "gems", (o) => buildGemCard(o));
   } else if (meta.kind === "gaming") {
     const list = filterAndSortGaming(meta.items);
     renderLiveStatsGaming(list);
-    if (list.length === 0) {
-      grid.appendChild(el("div", { class: "empty" },
-        el("h3", null, t("catalog.empty.title")),
-        el("p", null, t("catalog.empty.body"))
-      ));
-    } else {
-      list.forEach((o) => grid.appendChild(buildSkinCard(o)));
-    }
+    if (list.length === 0) { grid.appendChild(emptyEl()); return; }
+    renderOfferList(list, "gaming", (o) => buildSkinCard(o));
   }
 }
 
@@ -2767,7 +3009,7 @@ function buildDepositCard(o, meta) {
   tags.appendChild(el("span", { class: "tag" }, t("dep.early." + o.earlyWithdrawal)));
   if (o.onlineOpen === "yes") tags.appendChild(el("span", { class: "tag" }, t("dep.online") + ": " + t("dep.tog.yes")));
 
-  return el("div", { class: "card offer-card interactive" },
+  const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
       el("div", { class: "provider" },
         el("div", { class: "pavatar" }, o.providerCode),
@@ -2792,9 +3034,12 @@ function buildDepositCard(o, meta) {
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.bank"),
         el("span", null, "↗")
-      )
+      ),
+      buildOfferCmpSwitch(o.id)
     )
   );
+  wrapOfferCardClickable(card, o.id);
+  return card;
 }
 
 function buildMudarabaCard(o) {
@@ -2806,7 +3051,7 @@ function buildMudarabaCard(o) {
   tags.appendChild(el("span", { class: "tag" }, t("dep.cap." + o.capitalization)));
   if (o.onlineOpen === "yes") tags.appendChild(el("span", { class: "tag" }, t("dep.online") + ": " + t("mdr.tog.yes")));
 
-  return el("div", { class: "card offer-card interactive" },
+  const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
       el("div", { class: "provider" },
         el("div", { class: "pavatar", style: "color:#4CAF82;background:rgba(76,175,130,0.12);border-color:rgba(76,175,130,0.25)" }, o.providerCode),
@@ -2831,9 +3076,12 @@ function buildMudarabaCard(o) {
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.mdr"),
         el("span", null, "↗")
-      )
+      ),
+      buildOfferCmpSwitch(o.id)
     )
   );
+  wrapOfferCardClickable(card, o.id);
+  return card;
 }
 
 function buildStockCard(o) {
@@ -2847,7 +3095,7 @@ function buildStockCard(o) {
   tags.appendChild(el("span", { class: "tag" }, t("stk.liq") + ": " + t("liq." + o.liq)));
   if (o.ipo) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(217,184,113,0.30); background: rgba(217,184,113,0.08)" }, "★ " + t("stk.ipo")));
 
-  return el("div", { class: "card offer-card interactive" },
+  const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
       el("div", { class: "provider" },
         el("div", { class: "pavatar" }, o.ticker.slice(0, 2)),
@@ -2874,9 +3122,12 @@ function buildStockCard(o) {
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.stock"),
         el("span", null, "↗")
-      )
+      ),
+      buildOfferCmpSwitch(o.id)
     )
   );
+  wrapOfferCardClickable(card, o.id);
+  return card;
 }
 
 function buildMetalCard(o) {
@@ -2891,7 +3142,7 @@ function buildMetalCard(o) {
   tags.appendChild(el("span", { class: "tag" }, unitLabel));
   tags.appendChild(el("span", { class: "tag" }, t("metal.tog.liq") + ": " + t("liq." + o.liq)));
 
-  return el("div", { class: "card offer-card interactive" },
+  const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
       el("div", { class: "provider" },
         el("div", { class: "pavatar" }, o.symbol),
@@ -2918,9 +3169,12 @@ function buildMetalCard(o) {
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.metal"),
         el("span", null, "↗")
-      )
+      ),
+      buildOfferCmpSwitch(o.id)
     )
   );
+  wrapOfferCardClickable(card, o.id);
+  return card;
 }
 
 function buildCryptoCard(o) {
@@ -2937,7 +3191,7 @@ function buildCryptoCard(o) {
     t("crypt.staking") + " " + o.stakingAPY.toFixed(1) + "%"
   ));
 
-  return el("div", { class: "card offer-card interactive" },
+  const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
       el("div", { class: "provider" },
         el("div", { class: "pavatar" }, o.ticker.slice(0, 2)),
@@ -2966,9 +3220,12 @@ function buildCryptoCard(o) {
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.crypto"),
         el("span", null, "↗")
-      )
+      ),
+      buildOfferCmpSwitch(o.id)
     )
   );
+  wrapOfferCardClickable(card, o.id);
+  return card;
 }
 
 function buildGemCard(o) {
@@ -2980,7 +3237,7 @@ function buildGemCard(o) {
   tags.appendChild(el("span", { class: "tag" }, t("gem.grade") + ": " + o.grade));
   tags.appendChild(el("span", { class: "tag" }, t("gem.tog.liq") + ": " + t("liq." + o.liq)));
 
-  return el("div", { class: "card offer-card interactive" },
+  const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
       el("div", { class: "provider" },
         el("div", { class: "pavatar" }, o.stone.slice(0, 2).toUpperCase()),
@@ -3007,9 +3264,12 @@ function buildGemCard(o) {
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.gems"),
         el("span", null, "↗")
-      )
+      ),
+      buildOfferCmpSwitch(o.id)
     )
   );
+  wrapOfferCardClickable(card, o.id);
+  return card;
 }
 
 function buildSkinCard(o) {
@@ -3023,7 +3283,7 @@ function buildSkinCard(o) {
   if (wearLabel) tags.appendChild(el("span", { class: "tag" }, wearLabel));
   if (o.float != null) tags.appendChild(el("span", { class: "tag" }, t("skin.float") + ": " + parseFloat(o.float).toFixed(4)));
 
-  return el("div", { class: "card offer-card interactive" },
+  const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
       el("div", { class: "provider" },
         el("div", { class: "pavatar" }, o.game.slice(0, 2).toUpperCase()),
@@ -3050,9 +3310,12 @@ function buildSkinCard(o) {
       el("a", { class: "external-link", href: o.url, target: "_blank", rel: "noopener" },
         t("go.skin"),
         el("span", null, "↗")
-      )
+      ),
+      buildOfferCmpSwitch(o.id)
     )
   );
+  wrapOfferCardClickable(card, o.id);
+  return card;
 }
 
 /* ============================================================

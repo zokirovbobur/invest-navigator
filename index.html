@@ -754,13 +754,15 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 .cmp-switch .ct-lbl { line-height: 1; }
 
 /* Compared card subtle accent */
-.instr-card.compared {
+.instr-card.compared,
+.offer-card.compared {
   border-color: rgba(217,184,113,0.35);
   background:
     linear-gradient(180deg, rgba(217,184,113,0.04), transparent 60%),
     var(--card-bg);
 }
-.instr-card.compared::before {
+.instr-card.compared::before,
+.offer-card.compared::before {
   content: "";
   position: absolute;
   top: 0; left: 0; right: 0; height: 2px;
@@ -768,6 +770,17 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 .instr-card { position: relative; }
+.offer-card { position: relative; }
+
+/* Expanded offer card */
+.offer-card.expanded {
+  border-color: rgba(217,184,113,0.55) !important;
+  box-shadow:
+    0 0 0 1px rgba(217,184,113,0.35),
+    0 20px 50px -22px var(--accent-glow),
+    var(--card-shadow);
+  background: linear-gradient(180deg, rgba(217,184,113,0.05), rgba(27,31,40,0.6));
+}
 
 /* empty state */
 .empty {
