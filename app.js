@@ -1,5 +1,5 @@
 /* ============================================================
-   INVEST NAVIGATOR — KATALOG
+   FINPORT.UZ — KATALOG
    ============================================================ */
 
 const I18N = {
@@ -155,7 +155,7 @@ const I18N = {
 
     "disclaimer.title": "Bu moliyaviy maslahat emas",
     "disclaimer.body": "Katalog faqat ta'lim va informatsion maqsadda taqdim etilgan. Investitsiya qarorlarini qabul qilishdan oldin mustaqil tahlil qiling yoki litsenziyalangan mutaxassis bilan maslahat qiling.",
-    "footer.note": "© 2026 Invest Navigator · O'zbekiston",
+    "footer.note": "© 2026 Finport.uz · O'zbekiston",
     "footer.version": "Kategoriya v0.1 · MVP",
   },
 
@@ -310,7 +310,7 @@ const I18N = {
 
     "disclaimer.title": "Это не финансовая консультация",
     "disclaimer.body": "Каталог предоставлен исключительно в образовательных и информационных целях. Перед принятием инвестрешений проведите самостоятельный анализ или проконсультируйтесь с лицензированным специалистом.",
-    "footer.note": "© 2026 Invest Navigator · Узбекистан",
+    "footer.note": "© 2026 Finport.uz · Узбекистан",
     "footer.version": "Категории v0.1 · MVP",
   },
 
@@ -466,7 +466,7 @@ const I18N = {
 
     "disclaimer.title": "This is not financial advice",
     "disclaimer.body": "The catalog is provided for educational and informational purposes only. Do your own research or consult a licensed professional before making investment decisions.",
-    "footer.note": "© 2026 Invest Navigator · Uzbekistan",
+    "footer.note": "© 2026 Finport.uz · Uzbekistan",
     "footer.version": "Categories v0.1 · MVP",
   },
 };
@@ -806,7 +806,7 @@ if (typeof OFFERS_I18N !== "undefined") {
 ============================================================ */
 const state = {
   lang: "uz",
-  route: "home",   // "home" | "detail"
+  route: "landing",   // "landing" | "home" | "portfolio" | "detail"
   detailId: null,
   expandedId: null,      // currently-expanded direction card on home
   compareIds: [],        // direction ids toggled into the comparison view
@@ -939,6 +939,8 @@ function parseHash() {
   const h = (window.location.hash || "").replace(/^#\/?/, "");
   if (h === "portfolio") return { route: "portfolio", detailId: null };
   if (h.startsWith("detail/")) return { route: "detail", detailId: h.slice("detail/".length) };
+  if (h === "home") return { route: "home", detailId: null };
+  if (h === "") return { route: "landing", detailId: null };
   return { route: "home", detailId: null };
 }
 
@@ -949,11 +951,16 @@ function syncRouteFromHash() {
   state.expandedId = null;
   state.offerExpandedId = null;
   state.offerCompareIds = [];
-  // Restore filter bar + stats row visibility (may have been hidden by portfolio page)
+  // Restore filter bar + stats row + page-head visibility
   const fb = document.getElementById("filter-bar");
   const lsr = document.querySelector(".live-stats-row");
+  const ph = document.querySelector(".page-head");
   if (fb) fb.style.display = "";
   if (lsr) lsr.style.display = "";
+  if (ph) ph.style.display = "";
+  // Restore outer section padding
+  const dirGrid = document.getElementById("dir-grid");
+  if (dirGrid && dirGrid.parentElement) dirGrid.parentElement.style.cssText = "padding-top: 20px";
   buildFilterUI();
   applyI18nTextOnly();
   render();
@@ -983,7 +990,11 @@ function applyI18nTextOnly() {
   const titleEl = $("#page-title");
   const eyebrowEl = $("#detail-eyebrow");
   const backEl = $("#back-link");
-  if (state.route === "home") {
+  if (state.route === "landing") {
+    titleEl.textContent = "";
+    eyebrowEl.hidden = true;
+    backEl.hidden = true;
+  } else if (state.route === "home") {
     titleEl.innerHTML = t("head.title");
     eyebrowEl.hidden = true;
     backEl.hidden = true;
@@ -1023,8 +1034,8 @@ function buildFilterUI() {
   const wrap = $("#filter-bar");
   wrap.innerHTML = "";
 
-  if (state.route === "portfolio") {
-    return; // no filter bar for portfolio page
+  if (state.route === "portfolio" || state.route === "landing") {
+    return; // no filter bar for portfolio/landing page
   } else if (state.route === "home") {
     buildHomeFilterUI(wrap);
   } else {
@@ -1569,7 +1580,8 @@ function filterAndSortGaming(items) {
 ============================================================ */
 function render() {
   syncTogglesPressed();
-  if (state.route === "home") renderHome();
+  if (state.route === "landing") renderLanding();
+  else if (state.route === "home") renderHome();
   else if (state.route === "portfolio") renderPortfolio();
   else renderDetail();
   renderActiveFilters();
@@ -2039,6 +2051,236 @@ function buildPfAddBtn(offer, kind) {
     });
   }
   return btn;
+}
+
+/* ---------- Landing Page rendering ---------- */
+function renderLanding() {
+  const grid = $("#dir-grid");
+  const outerSection = grid.parentElement;
+  if (outerSection) outerSection.style.cssText = "padding: 0";
+
+  grid.innerHTML = "";
+  grid.className = "landing-page";
+  grid.style.cssText = "";
+
+  const fb = $("#filter-bar");
+  if (fb) fb.style.display = "none";
+  const lsr = document.querySelector(".live-stats-row");
+  if (lsr) lsr.style.display = "none";
+  const ph = document.querySelector(".page-head");
+  if (ph) ph.style.display = "none";
+
+  const L = state.lang;
+
+  const TXT = {
+    uz: {
+      eyebrow: "O'zbekiston investitsiya platformasi",
+      title:   "Aqlli investitsiya <em>navigatori</em>",
+      sub:     "15+ investitsiya yo'nalishi, real-time ma'lumotlar va portfel boshqaruvi — barchasi bir joyda. Bank depozitlaridan kripto va qimmatbaho metallargacha.",
+      cta:     "Kategoriyalarni ko'rish",
+      ctaSec:  "Portfelim",
+      s1v:"15+",  s1k:"Investitsiya yo'nalishi",
+      s2v:"2",    s2k:"Lokal · Xalqaro bozorlar",
+      s3v:"$50",  s3k:"Dan boshlang'ich kirish",
+      featEy:  "Imkoniyatlar",
+      featH:   "Nima uchun Finport.uz?",
+      pfEy:    "Portfel boshqaruvi",
+      pfH:     "O'z portfelingizni kuzating",
+      pfDesc:  "Turli investitsiya turlariga qo'shgan mablag'laringizni bir platformada boshqaring. O'sish dinamikasini kuzating va daromadingizni hisoblang.",
+      pfItems: ["Investitsiya taqsimoti donut diagrammasi", "Bosqichli o'sish grafigi va 1 yillik prognoz", "Har bir pozitsiya bo'yicha daromad hisobi"],
+      pfMk1: "Jami kiritildi", pfMv1: "$2,450",
+      pfMk2: "Prognoz (1 yil)", pfMv2: "$3,180",
+      finalH:   "Investitsiyangizni <em>hozir</em> boshlang",
+      finalSub: "O'zingizga mos investitsiya yo'nalishini toping va portfelingizni qurishni boshlang.",
+      finalCta: "Tanishish",
+    },
+    ru: {
+      eyebrow: "Инвестиционная платформа Узбекистана",
+      title:   "Умный <em>навигатор</em> инвестиций",
+      sub:     "15+ направлений инвестиций, данные в реальном времени и управление портфелем — всё в одном месте.",
+      cta:     "Просмотреть категории",
+      ctaSec:  "Мой портфель",
+      s1v:"15+",  s1k:"Направлений инвестиций",
+      s2v:"2",    s2k:"Локальный · Международный",
+      s3v:"$50",  s3k:"Минимальный вход",
+      featEy:  "Возможности",
+      featH:   "Почему Finport.uz?",
+      pfEy:    "Портфель",
+      pfH:     "Отслеживайте свой портфель",
+      pfDesc:  "Управляйте вложениями в различные инструменты на одной платформе. Следите за динамикой роста и рассчитывайте доходность.",
+      pfItems: ["Диаграмма распределения инвестиций", "Стековый график роста и прогноз на 1 год", "Доходность по каждой позиции"],
+      pfMk1: "Всего вложено", pfMv1: "$2,450",
+      pfMk2: "Прогноз (1 год)", pfMv2: "$3,180",
+      finalH:   "Начните инвестировать <em>сегодня</em>",
+      finalSub: "Найдите подходящее направление инвестиций и начните строить свой портфель.",
+      finalCta: "Начать",
+    },
+    en: {
+      eyebrow: "Uzbekistan's Investment Platform",
+      title:   "The smart investment <em>navigator</em>",
+      sub:     "15+ investment categories, real-time data and portfolio management — all in one place.",
+      cta:     "Browse categories",
+      ctaSec:  "My portfolio",
+      s1v:"15+",  s1k:"Investment categories",
+      s2v:"2",    s2k:"Local · International markets",
+      s3v:"$50",  s3k:"Minimum entry",
+      featEy:  "Features",
+      featH:   "Why Finport.uz?",
+      pfEy:    "Portfolio",
+      pfH:     "Track your portfolio",
+      pfDesc:  "Manage investments across different asset classes in one platform. Monitor growth dynamics and calculate your returns.",
+      pfItems: ["Investment allocation donut chart", "Stacked growth chart with 1-year forecast", "Return calculations per position"],
+      pfMk1: "Total invested", pfMv1: "$2,450",
+      pfMk2: "Projected (1yr)", pfMv2: "$3,180",
+      finalH:   "Start investing <em>now</em>",
+      finalSub: "Find the right investment direction for you and start building your portfolio.",
+      finalCta: "Get started",
+    },
+  };
+
+  const txt = TXT[L] || TXT.uz;
+
+  const FEATS = [
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>`,
+      uz:{ t:"Keng qamrovli katalog", b:"Bank depozitlari, aksiyalar, ETF, kripto, qimmatbaho metallar, mudaraba va yana 8+ yo'nalish." },
+      ru:{ t:"Широкий каталог", b:"Банковские депозиты, акции, ETF, крипто, драгметаллы, мудараба и ещё 8+ направлений." },
+      en:{ t:"Comprehensive catalog", b:"Bank deposits, stocks, ETFs, crypto, precious metals, mudaraba and 8+ more categories." },
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+      uz:{ t:"Real-time ma'lumotlar", b:"Har bir yo'nalish uchun dolzarb daromad, risk va likvidlik ko'rsatkichlari." },
+      ru:{ t:"Данные в реальном времени", b:"Актуальные показатели доходности, риска и ликвидности для каждого направления." },
+      en:{ t:"Real-time data", b:"Up-to-date return, risk and liquidity indicators for every investment direction." },
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>`,
+      uz:{ t:"Taqqoslash vositasi", b:"Bir nechta kategoriyani bir grafikda solishtiring va o'zingizga eng mos yo'nalishni toping." },
+      ru:{ t:"Инструмент сравнения", b:"Сравнивайте несколько категорий на одном графике и найдите наиболее подходящее направление." },
+      en:{ t:"Comparison tool", b:"Compare multiple categories on one chart and find the most suitable direction for you." },
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`,
+      uz:{ t:"Portfel boshqaruvi", b:"Investitsiyalaringizni qo'shing, taqsimotni kuzating va 1 yillik o'sish prognozini oling." },
+      ru:{ t:"Управление портфелем", b:"Добавляйте инвестиции, следите за распределением и получите прогноз роста на 1 год." },
+      en:{ t:"Portfolio management", b:"Add investments, track allocation and get a 1-year growth forecast for your portfolio." },
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`,
+      uz:{ t:"Ko'p tilli interfeys", b:"O'zbek, Rus va Ingliz tillarida ishlaydi. Interfeys tanlangan tilda to'liq ko'rsatiladi." },
+      ru:{ t:"Многоязычный интерфейс", b:"Работает на узбекском, русском и английском языках. Интерфейс полностью на выбранном языке." },
+      en:{ t:"Multi-language interface", b:"Works in Uzbek, Russian and English. The full interface is in your chosen language." },
+    },
+    {
+      icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+      uz:{ t:"Shaffof shartlar", b:"Spred, komissiya, minimal kirish summasi va batafsil shartlar — hech narsa yashirilmaydi." },
+      ru:{ t:"Прозрачные условия", b:"Спред, комиссии, минимальная сумма и подробные условия — ничего не скрыто." },
+      en:{ t:"Transparent terms", b:"Spreads, fees, minimum amounts and detailed conditions — nothing is hidden." },
+    },
+  ];
+
+  // Hero
+  const hero = el("div", { class: "land-hero" },
+    el("div", { class: "land-hero-inner" },
+      el("div", { class: "land-eyebrow" }, txt.eyebrow),
+      el("h1",  { class: "land-hero-title", html: txt.title }),
+      el("p",   { class: "land-hero-sub" }, txt.sub),
+      el("div", { class: "land-cta-row" },
+        el("button", { class: "land-cta-btn", onclick: () => navigate("home") },
+          txt.cta,
+          el("span", { class: "land-arr" }, "→")
+        ),
+        el("button", { class: "land-cta-sec", onclick: () => navigate("portfolio") }, txt.ctaSec)
+      )
+    )
+  );
+
+  // Stats strip
+  const stats = el("div", { class: "land-stats" },
+    el("div", { class: "land-stat" }, el("div", { class: "land-sv" }, txt.s1v), el("div", { class: "land-sk" }, txt.s1k)),
+    el("div", { class: "land-stat" }, el("div", { class: "land-sv" }, txt.s2v), el("div", { class: "land-sk" }, txt.s2k)),
+    el("div", { class: "land-stat" }, el("div", { class: "land-sv" }, txt.s3v), el("div", { class: "land-sk" }, txt.s3k))
+  );
+
+  // Features
+  const featsGrid = el("div", { class: "land-feats-grid" });
+  FEATS.forEach((f) => {
+    const d = f[L] || f.uz;
+    featsGrid.appendChild(
+      el("div", { class: "land-feat" },
+        el("div", { class: "land-feat-icon", html: f.icon }),
+        el("div", { class: "land-feat-title" }, d.t),
+        el("div", { class: "land-feat-body"  }, d.b)
+      )
+    );
+  });
+  const features = el("div", { class: "land-features" },
+    el("div", { class: "land-sect-hd" },
+      el("div", { class: "land-sect-ey" }, txt.featEy),
+      el("h2",  { class: "land-sect-title" }, txt.featH)
+    ),
+    featsGrid
+  );
+
+  // Portfolio section
+  const pfChartSvg = `<svg viewBox="0 0 280 90" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="lpfg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#D9B871" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#D9B871" stop-opacity="0.02"/>
+      </linearGradient>
+    </defs>
+    <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5" stroke="#D9B871" stroke-width="2" fill="none"/>
+    <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5 L280 90 L0 90 Z" fill="url(#lpfg)"/>
+    <path d="M0 82 C40 80 80 76 120 70 C160 64 200 52 240 38 L280 28" stroke="#6FCF97" stroke-width="1.5" stroke-dasharray="4 3" fill="none" opacity="0.55"/>
+  </svg>`;
+
+  const pfVisual = el("div", { class: "land-pf-visual" },
+    el("div", { class: "land-pf-mock-stats" },
+      el("div", { class: "land-pf-mock-card" },
+        el("div", { class: "land-pf-mk" }, txt.pfMk1),
+        el("div", { class: "land-pf-mv"    }, txt.pfMv1)
+      ),
+      el("div", { class: "land-pf-mock-card" },
+        el("div", { class: "land-pf-mk"     }, txt.pfMk2),
+        el("div", { class: "land-pf-mv up"  }, txt.pfMv2)
+      )
+    ),
+    el("div", { class: "land-pf-chart-wrap", html: pfChartSvg })
+  );
+
+  const pfList = el("ul", { class: "land-pf-list" },
+    ...txt.pfItems.map((item) =>
+      el("li", { class: "land-pf-li" }, el("span", { class: "land-pf-dot" }), item)
+    )
+  );
+
+  const portfolio = el("div", { class: "land-pf-section" },
+    el("div", { class: "land-pf-inner" },
+      el("div", { class: "land-pf-text" },
+        el("div", { class: "land-sect-ey" }, txt.pfEy),
+        el("h2",  { class: "land-pf-title" }, txt.pfH),
+        el("p",   { class: "land-pf-desc"  }, txt.pfDesc),
+        pfList,
+        el("button", { class: "land-cta-sec mt16", onclick: () => navigate("portfolio") }, txt.ctaSec + " →")
+      ),
+      pfVisual
+    )
+  );
+
+  // Final CTA
+  const finalCta = el("div", { class: "land-final" },
+    el("div", { class: "land-final-inner" },
+      el("h2",    { class: "land-final-title", html: txt.finalH }),
+      el("p",     { class: "land-final-sub"   }, txt.finalSub),
+      el("button", { class: "land-cta-btn", onclick: () => navigate("home") },
+        txt.finalCta,
+        el("span", { class: "land-arr" }, "→")
+      )
+    )
+  );
+
+  grid.append(hero, stats, features, portfolio, finalCta);
 }
 
 /* ---------- Home rendering (directions grid) ---------- */
@@ -4025,7 +4267,7 @@ function boot() {
 
   $("#basket-btn").addEventListener("click", () => navigate("portfolio"));
   $("#brand").addEventListener("click", () => navigate(""));
-  $("#back-link").addEventListener("click", () => navigate(""));
+  $("#back-link").addEventListener("click", () => navigate("home"));
 
   $("#clear-all").addEventListener("click", clearAll);
 
