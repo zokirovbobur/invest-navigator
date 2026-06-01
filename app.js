@@ -1651,7 +1651,7 @@ function isInPortfolio(offerId) {
 /* ============================================================
    PORTFOLIO — SVG charts
 ============================================================ */
-function buildPortfolioDonut(slices) {
+function buildPortfolioDonut(slices, tooltipEl) {
   const total = slices.reduce((s, x) => s + x.value, 0);
   if (total === 0) return el("div", {});
   const W = 160, H = 160, cx = 80, cy = 80, R = 68, r = 46;
@@ -1659,10 +1659,10 @@ function buildPortfolioDonut(slices) {
   svg.appendChild(svgEl("circle", { cx, cy, r: R, fill: "rgba(255,255,255,0.025)" }));
 
   let start = -Math.PI / 2;
-  slices.forEach(({ color, value }) => {
+  slices.forEach(({ kind, color, value }) => {
     const angle = (value / total) * Math.PI * 2;
-    // For a full circle, draw two halves to avoid degenerate arc
     const segments = angle > Math.PI * 1.999 ? 2 : 1;
+    const paths = [];
     for (let seg = 0; seg < segments; seg++) {
       const a0 = start + seg * (angle / segments);
       const a1 = start + (seg + 1) * (angle / segments);
@@ -1672,50 +1672,89 @@ function buildPortfolioDonut(slices) {
       const x4 = cx + r * Math.cos(a0), y4 = cy + r * Math.sin(a0);
       const la = (angle / segments) > Math.PI ? 1 : 0;
       const d = `M${x1.toFixed(2)} ${y1.toFixed(2)} A${R} ${R} 0 ${la} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} L${x3.toFixed(2)} ${y3.toFixed(2)} A${r} ${r} 0 ${la} 0 ${x4.toFixed(2)} ${y4.toFixed(2)} Z`;
-      svg.appendChild(svgEl("path", { d, fill: color, opacity: "0.82" }));
+      const p = svgEl("path", { d, fill: color, opacity: "0.80", style: "cursor:default;transition:opacity 0.15s" });
+      paths.push(p);
+      svg.appendChild(p);
     }
+
+    // Hover events for each slice
+    paths.forEach((p) => {
+      p.addEventListener("mouseenter", () => {
+        paths.forEach((q) => { q.style.opacity = "1"; q.setAttribute("stroke", "rgba(255,255,255,0.12)"); q.setAttribute("stroke-width", "1.5"); });
+        if (tooltipEl) {
+          const pct = ((value / total) * 100).toFixed(1);
+          tooltipEl.innerHTML = "";
+          tooltipEl.appendChild(el("div", { class: "ep-tip-date" }, t("pf.kind." + kind) || kind));
+          tooltipEl.appendChild(el("div", { class: "ep-tip-row" },
+            el("span", { class: "ep-tip-dot", style: "background:" + color }),
+            el("span", { class: "ep-tip-name" }, fmtUSDExact(value)),
+            el("span", { class: "ep-tip-val", style: "color:var(--fg-1);font-size:11px" }, pct + "%")
+          ));
+          tooltipEl.classList.add("visible");
+        }
+      });
+      p.addEventListener("mousemove", (e) => {
+        if (!tooltipEl) return;
+        const rect = svg.getBoundingClientRect();
+        const lx = e.clientX - rect.left + 10;
+        const ly = e.clientY - rect.top - 10;
+        tooltipEl.style.left = lx + "px";
+        tooltipEl.style.top  = ly + "px";
+      });
+      p.addEventListener("mouseleave", () => {
+        paths.forEach((q) => { q.style.opacity = "0.80"; q.removeAttribute("stroke"); q.removeAttribute("stroke-width"); });
+        if (tooltipEl) tooltipEl.classList.remove("visible");
+      });
+    });
+
     start += angle;
   });
 
-  svg.appendChild(svgEl("circle", { cx, cy, r, fill: "var(--bg-1)" }));
-  svg.appendChild(svgEl("text", { x: cx, y: cy - 7, "text-anchor": "middle", fill: "rgba(255,255,255,0.32)", "font-family": "JetBrains Mono,monospace", "font-size": "9", "letter-spacing": "0.08em" }, t("pf.stat.total").toUpperCase().slice(0, 5)));
-  svg.appendChild(svgEl("text", { x: cx, y: cy + 11, "text-anchor": "middle", fill: "rgba(255,255,255,0.82)", "font-family": "JetBrains Mono,monospace", "font-size": "15", "font-weight": "600", "letter-spacing": "-0.01em" }, "$" + total.toFixed(0)));
+  svg.appendChild(svgEl("circle", { cx, cy, r, fill: "var(--bg-1)", style: "pointer-events:none" }));
+  svg.appendChild(svgEl("text", { x: cx, y: cy - 7, "text-anchor": "middle", fill: "rgba(255,255,255,0.32)", "font-family": "JetBrains Mono,monospace", "font-size": "9", "letter-spacing": "0.08em", style: "pointer-events:none" }, t("pf.stat.total").toUpperCase().slice(0, 5)));
+  svg.appendChild(svgEl("text", { x: cx, y: cy + 11, "text-anchor": "middle", fill: "rgba(255,255,255,0.82)", "font-family": "JetBrains Mono,monospace", "font-size": "15", "font-weight": "600", "letter-spacing": "-0.01em", style: "pointer-events:none" }, "$" + total.toFixed(0)));
   return svg;
 }
 
-function buildPortfolioCombinedChart() {
+function buildPortfolioStackedChart() {
   const items = state.portfolio;
   if (items.length === 0) return null;
   const PAST = 24, FUT = 12, N = PAST + FUT;
 
+  // Build per-item value series (anchored at today = item.amount)
   const seriesList = items.map((item) => {
     const s = generateSeries({ id: item.offerId, retMid: item.retMid, risk: item.risk, currency: item.currency });
     const full = s.hist.concat(s.fut.slice(1));
     const base = full[PAST];
-    return { item, valueAt: (i) => item.amount * (1 + (full[i] - base) / 100) };
+    return { item, valueAt: (i) => Math.max(0, item.amount * (1 + (full[i] - base) / 100)) };
   });
 
-  const totalAt = (i) => seriesList.reduce((s, { valueAt }) => s + valueAt(i), 0);
-  const totalInvested = items.reduce((s, x) => s + x.amount, 0);
+  // Cumulative stacked value at point i: [0, v1, v1+v2, …, total]
+  const cumAt = (i) => {
+    const arr = [0];
+    seriesList.forEach(({ valueAt }) => arr.push(arr[arr.length - 1] + valueAt(i)));
+    return arr;
+  };
+  const totalAt = (i) => cumAt(i)[seriesList.length];
 
-  let yMin = Infinity, yMax = -Infinity;
-  for (let i = 0; i <= N; i++) {
-    const v = totalAt(i);
-    if (v < yMin) yMin = v;
-    if (v > yMax) yMax = v;
-  }
-  yMin = Math.min(yMin, totalInvested * 0.9);
-  const span = Math.max(yMax - yMin, 1);
-  yMin -= span * 0.08; yMax += span * 0.14;
+  let yMax = 0;
+  for (let i = 0; i <= N; i++) yMax = Math.max(yMax, totalAt(i));
+  yMax *= 1.12;
+  const yMin = 0;
 
-  const W = 900, H = 230, pad = { l: 68, r: 16, t: 18, b: 32 };
+  const W = 900, H = 240, pad = { l: 68, r: 16, t: 18, b: 32 };
   const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
   const xAt = (i) => pad.l + (i / N) * cw;
   const yAt = (v) => pad.t + ch - ((v - yMin) / (yMax - yMin)) * ch;
 
-  const svg = svgEl("svg", { class: "ep-chart", viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: "cursor:crosshair" });
+  const svg = svgEl("svg", {
+    class: "ep-chart",
+    viewBox: `0 0 ${W} ${H}`,
+    preserveAspectRatio: "none",
+    style: "cursor:crosshair",
+  });
 
-  // Grid
+  // Grid lines + Y-axis labels
   for (let g = 0; g <= 4; g++) {
     const v = yMin + (g / 4) * (yMax - yMin);
     const y = yAt(v);
@@ -1723,36 +1762,111 @@ function buildPortfolioCombinedChart() {
     svg.appendChild(svgEl("text", { x: pad.l - 8, y: y + 3.5, "text-anchor": "end", fill: "rgba(255,255,255,0.32)", "font-family": "JetBrains Mono,monospace", "font-size": 10 }, fmtUSDChart(v)));
   }
 
-  // Individual thin position lines
-  seriesList.forEach(({ item, valueAt }, idx) => {
-    const c = item.color;
-    const d = Array.from({ length: PAST + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(valueAt(i)).toFixed(1)).join(" ");
-    svg.appendChild(svgEl("path", { d, fill: "none", stroke: c, "stroke-width": 1, opacity: 0.3 }));
+  // Stacked areas — draw bottom-layer first so top layers overlap correctly
+  seriesList.forEach(({ item }, idx) => {
+    const topPts    = Array.from({ length: N + 1 }, (_, i) => [xAt(i), yAt(cumAt(i)[idx + 1])]);
+    const bottomPts = Array.from({ length: N + 1 }, (_, i) => [xAt(i), yAt(cumAt(i)[idx])]);
+
+    // Solid historical area
+    const histTop    = topPts.slice(0, PAST + 1);
+    const histBottom = bottomPts.slice(0, PAST + 1);
+    const histD = histTop.map(([x, y], i) => (i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`)).join(" ")
+      + " " + [...histBottom].reverse().map(([x, y]) => `L${x.toFixed(1)} ${y.toFixed(1)}`).join(" ") + " Z";
+    svg.appendChild(svgEl("path", { d: histD, fill: item.color, opacity: "0.72" }));
+
+    // Dashed/translucent forecast area
+    const futTop    = topPts.slice(PAST);
+    const futBottom = bottomPts.slice(PAST);
+    const futD = futTop.map(([x, y], i) => (i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`)).join(" ")
+      + " " + [...futBottom].reverse().map(([x, y]) => `L${x.toFixed(1)} ${y.toFixed(1)}`).join(" ") + " Z";
+    svg.appendChild(svgEl("path", { d: futD, fill: item.color, opacity: "0.38" }));
+
+    // Top edge line — historical solid, forecast dashed
+    const histEdge = histTop.map(([x, y], i) => (i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`)).join(" ");
+    svg.appendChild(svgEl("path", { d: histEdge, fill: "none", stroke: item.color, "stroke-width": 1.5, opacity: "0.9" }));
+    const futEdge = futTop.map(([x, y], i) => (i === 0 ? `M${x.toFixed(1)} ${y.toFixed(1)}` : `L${x.toFixed(1)} ${y.toFixed(1)}`)).join(" ");
+    svg.appendChild(svgEl("path", { d: futEdge, fill: "none", stroke: item.color, "stroke-width": 1.5, "stroke-dasharray": "4 3", opacity: "0.65" }));
   });
-
-  // Area fill
-  const areaPath = Array.from({ length: N + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(totalAt(i)).toFixed(1)).join(" ")
-    + ` L${xAt(N).toFixed(1)},${yAt(yMin).toFixed(1)} L${xAt(0).toFixed(1)},${yAt(yMin).toFixed(1)} Z`;
-  svg.appendChild(svgEl("path", { d: areaPath, fill: "rgba(217,184,113,0.06)", stroke: "none" }));
-
-  // Total historical line
-  const histPath = Array.from({ length: PAST + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(totalAt(i)).toFixed(1)).join(" ");
-  svg.appendChild(svgEl("path", { d: histPath, fill: "none", stroke: "#D9B871", "stroke-width": 2.5, "stroke-linecap": "round" }));
-
-  // Total forecast line
-  const futPath = Array.from({ length: FUT + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i + PAST).toFixed(1) + "," + yAt(totalAt(i + PAST)).toFixed(1)).join(" ");
-  svg.appendChild(svgEl("path", { d: futPath, fill: "none", stroke: "#D9B871", "stroke-width": 2, "stroke-dasharray": "5 4", "stroke-linecap": "round" }));
 
   // Today marker
   const todayX = xAt(PAST);
-  svg.appendChild(svgEl("line", { x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b, stroke: "rgba(217,184,113,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4" }));
+  svg.appendChild(svgEl("line", { x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b, stroke: "rgba(255,255,255,0.30)", "stroke-width": 1, "stroke-dasharray": "3 4" }));
   svg.appendChild(svgEl("circle", { cx: todayX, cy: yAt(totalAt(PAST)), r: 5, fill: "#D9B871", stroke: "rgba(217,184,113,0.25)", "stroke-width": 4 }));
 
   // X-axis labels
   [{ i: 0, text: "−24oy" }, { i: PAST / 2, text: "−12oy" }, { i: PAST, text: t("expand.axis.today") }, { i: N, text: "+12oy" }]
     .forEach(({ i, text }) => svg.appendChild(svgEl("text", { x: xAt(i), y: H - pad.b + 18, "text-anchor": "middle", fill: "rgba(255,255,255,0.36)", "font-family": "JetBrains Mono,monospace", "font-size": 10, "letter-spacing": "0.05em" }, text)));
 
-  return { svg, totalAtToday: totalAt(PAST), totalAtFuture: totalAt(N) };
+  // Hover crosshair line
+  const hoverLine = svgEl("line", { x1: 0, x2: 0, y1: pad.t, y2: H - pad.b, stroke: "rgba(255,255,255,0.32)", "stroke-width": 1, "stroke-dasharray": "2 3", visibility: "hidden" });
+  svg.appendChild(hoverLine);
+
+  // Hover dot per layer (sits at midpoint of each stacked band)
+  const hoverDots = seriesList.map(({ item }) => {
+    const dot = svgEl("circle", { cx: 0, cy: 0, r: 4, fill: item.color, stroke: "var(--bg-2)", "stroke-width": 2, visibility: "hidden" });
+    svg.appendChild(dot);
+    return dot;
+  });
+
+  const setupHover = (tooltipEl) => {
+    svg.addEventListener("mousemove", (e) => {
+      const rect = svg.getBoundingClientRect();
+      const frac = Math.max(0, Math.min(1, (e.clientX - rect.left - rect.width * (pad.l / W)) / (rect.width * (cw / W))));
+      const idx = Math.round(frac * N);
+      const svgX = xAt(idx);
+      const cum  = cumAt(idx);
+      const total = cum[seriesList.length];
+
+      hoverLine.setAttribute("x1", svgX); hoverLine.setAttribute("x2", svgX);
+      hoverLine.setAttribute("visibility", "visible");
+
+      hoverDots.forEach((dot, i) => {
+        const midY = yAt((cum[i] + cum[i + 1]) / 2);
+        dot.setAttribute("cx", svgX); dot.setAttribute("cy", midY);
+        dot.setAttribute("visibility", "visible");
+      });
+
+      // Tooltip content
+      tooltipEl.innerHTML = "";
+      const monthOff = idx - PAST;
+      const label = monthOff === 0 ? t("expand.axis.today") : (monthOff > 0 ? "+" : "") + monthOff + " " + t("expand.month");
+      tooltipEl.appendChild(el("div", { class: "ep-tip-date" }, label));
+
+      seriesList.forEach(({ item }, i) => {
+        const val = cum[i + 1] - cum[i];
+        tooltipEl.appendChild(el("div", { class: "ep-tip-row" },
+          el("span", { class: "ep-tip-dot", style: "background:" + item.color }),
+          el("span", { class: "ep-tip-name" }, (item.displayNames[state.lang] || item.displayNames.uz).slice(0, 16)),
+          el("span", { class: "ep-tip-val" }, fmtUSDExact(val))
+        ));
+      });
+
+      // Divider + total row
+      if (seriesList.length > 1) {
+        const sep = el("div", { style: "height:1px;background:rgba(255,255,255,0.08);margin:4px 0" });
+        tooltipEl.appendChild(sep);
+        tooltipEl.appendChild(el("div", { class: "ep-tip-row" },
+          el("span", { class: "ep-tip-dot", style: "background:#D9B871" }),
+          el("span", { class: "ep-tip-name", style: "color:var(--fg-0);font-weight:600" }, t("pf.stat.total")),
+          el("span", { class: "ep-tip-val" }, fmtUSDExact(total))
+        ));
+      }
+
+      // Position tooltip (flip to left if near right edge)
+      const tipLeft = e.clientX - rect.left + 14;
+      tooltipEl.style.left = (tipLeft + 190 > rect.width ? tipLeft - 210 : tipLeft) + "px";
+      tooltipEl.style.top  = Math.max(0, e.clientY - rect.top - 32) + "px";
+      tooltipEl.classList.add("visible");
+    });
+
+    svg.addEventListener("mouseleave", () => {
+      hoverLine.setAttribute("visibility", "hidden");
+      hoverDots.forEach((d) => d.setAttribute("visibility", "hidden"));
+      tooltipEl.classList.remove("visible");
+    });
+  };
+
+  return { svg, setupHover, totalAtToday: totalAt(PAST), totalAtFuture: totalAt(N) };
 }
 
 /* ============================================================
@@ -1779,7 +1893,7 @@ function renderPortfolio() {
 
   // Stats
   const total = state.portfolio.reduce((s, p) => s + p.amount, 0);
-  const chartResult = buildPortfolioCombinedChart();
+  const chartResult = buildPortfolioStackedChart();
   const projectedVal = chartResult ? chartResult.totalAtFuture : total;
   const projectedReturn = projectedVal - total;
   const projectedRetPct = (projectedReturn / total) * 100;
@@ -1808,8 +1922,10 @@ function renderPortfolio() {
   const KIND_COLORS = { deposit: "#D9B871", mudaraba: "#4CAF82", stock: "#56CCF2", crypto: "#F7931A", "precious-metals": "#D4AF37", gems: "#7FFFD4", gaming: "#4EC9B0" };
   const slices = Object.entries(byKind).map(([kind, value]) => ({ kind, value, color: KIND_COLORS[kind] || "#8B8780" }));
 
-  const pieWrap = el("div", { class: "pf-pie-wrap" });
-  pieWrap.appendChild(buildPortfolioDonut(slices));
+  const pieWrap = el("div", { class: "pf-pie-wrap", style: "position:relative" });
+  const pieTooltip = el("div", { class: "ep-hover-tooltip" });
+  pieWrap.appendChild(buildPortfolioDonut(slices, pieTooltip));
+  pieWrap.appendChild(pieTooltip);
   const pieLegend = el("div", { class: "pf-pie-legend" });
   slices.forEach(({ kind, value, color }) => {
     const pct = ((value / total) * 100).toFixed(0);
@@ -1827,16 +1943,19 @@ function renderPortfolio() {
     pieWrap
   ));
 
-  // Line chart
+  // Stacked area chart
   if (chartResult) {
-    const legend = el("div", { class: "pf-line-legend" },
-      el("span", { class: "lg-item" }, el("span", { class: "lg-sw" }), t("pf.legend.total")),
-      state.portfolio.length > 1 ? el("span", { class: "lg-item" }, el("span", { class: "lg-sw thin" }), t("pf.legend.pos")) : null
-    );
-    const tooltipEl = el("div", { class: "ep-hover-tooltip" });
+    const legend = el("div", { class: "pf-line-legend" });
+    // One legend item per position (bottom → top order)
+    state.portfolio.forEach((item) => {
+      const sw = el("span", { class: "lg-sw", style: `background:${item.color};height:10px;border-radius:3px;opacity:0.8` });
+      legend.appendChild(el("span", { class: "lg-item" }, sw, (item.displayNames[state.lang] || item.displayNames.uz).slice(0, 18)));
+    });
+    const chartTooltip = el("div", { class: "ep-hover-tooltip" });
     const chartWrap = el("div", { class: "ep-chart-wrap", style: "margin-bottom:0" });
     chartWrap.appendChild(chartResult.svg);
-    chartWrap.appendChild(tooltipEl);
+    chartWrap.appendChild(chartTooltip);
+    chartResult.setupHover(chartTooltip);
     chartsRow.appendChild(el("div", { class: "pf-chart-card" },
       el("div", { class: "pf-chart-title" }, t("pf.chart.growth")),
       legend,
