@@ -118,6 +118,34 @@ const I18N = {
     "chart.date.1yr":   "1 yil oldin",
     "chart.date.2yr":   "2 yil oldin",
 
+    "pf.title":          "Portfel",
+    "pf.eyebrow":        "Mening portfelim",
+    "pf.empty.title":    "Portfel bo'sh",
+    "pf.empty.body":     "Takliflar sahifasida «Portfelga qo'shish» tugmasini bosib pozitsiya qo'shing",
+    "pf.stat.total":     "Jami investitsiya",
+    "pf.stat.projected": "Taxminiy +12 oyda",
+    "pf.stat.return":    "Taxminiy daromad",
+    "pf.stat.positions": "Pozitsiyalar",
+    "pf.chart.alloc":    "Taqsimot",
+    "pf.chart.growth":   "O'sish dinamikasi",
+    "pf.invested":       "Kiritildi",
+    "pf.annual":         "Yillik",
+    "pf.in12m":          "+12 oy",
+    "pf.remove":         "O'chirish",
+    "pf.positions":      "Pozitsiyalar",
+    "pf.add.btn":        "Portfelga qo'shish",
+    "pf.add.done":       "Qo'shildi ✓",
+    "pf.kind.deposit":        "Bank depoziti",
+    "pf.kind.mudaraba":       "Mudaraba",
+    "pf.kind.stock":          "Aksiyalar",
+    "pf.kind.crypto":         "Kripto",
+    "pf.kind.precious-metals":"Qimmatbaho metallar",
+    "pf.kind.gems":           "Qimmatbaho toshlar",
+    "pf.kind.gaming":         "O'yin aktivlari",
+    "pf.legend.total":   "Jami portfel",
+    "pf.legend.pos":     "Pozitsiyalar",
+    "pf.added":          "Qo'shilgan sana",
+
     "offer.expand.eyebrow": "Taklif dinamikasi",
     "offer.compare.eyebrow": "Takliflar solishtiruvi",
     "offer.compare.toggle": "Solishtirish",
@@ -244,6 +272,34 @@ const I18N = {
     "chart.date.today": "Сегодня",
     "chart.date.1yr":   "1 год назад",
     "chart.date.2yr":   "2 года назад",
+
+    "pf.title":          "Портфель",
+    "pf.eyebrow":        "Мой портфель",
+    "pf.empty.title":    "Портфель пуст",
+    "pf.empty.body":     "Добавьте позицию кнопкой «Добавить в портфель» на странице предложений",
+    "pf.stat.total":     "Всего инвестировано",
+    "pf.stat.projected": "Прогноз +12 мес.",
+    "pf.stat.return":    "Ожидаемый доход",
+    "pf.stat.positions": "Позиции",
+    "pf.chart.alloc":    "Распределение",
+    "pf.chart.growth":   "Динамика роста",
+    "pf.invested":       "Вложено",
+    "pf.annual":         "Годовых",
+    "pf.in12m":          "+12 мес.",
+    "pf.remove":         "Удалить",
+    "pf.positions":      "Позиции",
+    "pf.add.btn":        "В портфель",
+    "pf.add.done":       "Добавлено ✓",
+    "pf.kind.deposit":        "Банк. депозит",
+    "pf.kind.mudaraba":       "Мударабa",
+    "pf.kind.stock":          "Акции",
+    "pf.kind.crypto":         "Крипто",
+    "pf.kind.precious-metals":"Дрaг. металлы",
+    "pf.kind.gems":           "Дрaг. камни",
+    "pf.kind.gaming":         "Игровые активы",
+    "pf.legend.total":   "Весь портфель",
+    "pf.legend.pos":     "Позиции",
+    "pf.added":          "Дата добавления",
 
     "offer.expand.eyebrow": "Динамика предложения",
     "offer.compare.eyebrow": "Сравнение предложений",
@@ -372,6 +428,34 @@ const I18N = {
     "chart.date.today": "Today",
     "chart.date.1yr":   "1 yr ago",
     "chart.date.2yr":   "2 yrs ago",
+
+    "pf.title":          "Portfolio",
+    "pf.eyebrow":        "My portfolio",
+    "pf.empty.title":    "Portfolio is empty",
+    "pf.empty.body":     "Add a position using the «Add to portfolio» button on any offer page",
+    "pf.stat.total":     "Total invested",
+    "pf.stat.projected": "Projected +12 mo.",
+    "pf.stat.return":    "Expected return",
+    "pf.stat.positions": "Positions",
+    "pf.chart.alloc":    "Allocation",
+    "pf.chart.growth":   "Growth dynamics",
+    "pf.invested":       "Invested",
+    "pf.annual":         "Annual",
+    "pf.in12m":          "+12 mo.",
+    "pf.remove":         "Remove",
+    "pf.positions":      "Positions",
+    "pf.add.btn":        "Add to portfolio",
+    "pf.add.done":       "Added ✓",
+    "pf.kind.deposit":        "Bank deposit",
+    "pf.kind.mudaraba":       "Mudaraba",
+    "pf.kind.stock":          "Equities",
+    "pf.kind.crypto":         "Crypto",
+    "pf.kind.precious-metals":"Precious metals",
+    "pf.kind.gems":           "Precious stones",
+    "pf.kind.gaming":         "Gaming assets",
+    "pf.legend.total":   "Total portfolio",
+    "pf.legend.pos":     "Positions",
+    "pf.added":          "Date added",
 
     "offer.expand.eyebrow": "Offer dynamics",
     "offer.compare.eyebrow": "Offer comparison",
@@ -729,6 +813,7 @@ const state = {
   offerExpandedId: null, // currently-expanded offer card on detail page
   offerCompareIds: [],   // offer ids toggled into compare view on detail page
   chartParams: { amount: 100, startOffset: 0 }, // 0=today 12=1yr 24=2yr
+  portfolio: [],         // [{uid, offerId, kind, directionId, displayNames, avatarCode, color, retMid, risk, currency, amount, addedAt}]
   filters: {
     search: "",
     sort: "relevance",
@@ -852,9 +937,8 @@ function fmtUSDExact(v) {
 ============================================================ */
 function parseHash() {
   const h = (window.location.hash || "").replace(/^#\/?/, "");
-  if (h.startsWith("detail/")) {
-    return { route: "detail", detailId: h.slice("detail/".length) };
-  }
+  if (h === "portfolio") return { route: "portfolio", detailId: null };
+  if (h.startsWith("detail/")) return { route: "detail", detailId: h.slice("detail/".length) };
   return { route: "home", detailId: null };
 }
 
@@ -865,6 +949,11 @@ function syncRouteFromHash() {
   state.expandedId = null;
   state.offerExpandedId = null;
   state.offerCompareIds = [];
+  // Restore filter bar + stats row visibility (may have been hidden by portfolio page)
+  const fb = document.getElementById("filter-bar");
+  const lsr = document.querySelector(".live-stats-row");
+  if (fb) fb.style.display = "";
+  if (lsr) lsr.style.display = "";
   buildFilterUI();
   applyI18nTextOnly();
   render();
@@ -898,6 +987,14 @@ function applyI18nTextOnly() {
     titleEl.innerHTML = t("head.title");
     eyebrowEl.hidden = true;
     backEl.hidden = true;
+  } else if (state.route === "portfolio") {
+    titleEl.textContent = t("pf.title");
+    eyebrowEl.hidden = false;
+    eyebrowEl.innerHTML = "";
+    eyebrowEl.appendChild(el("span", { class: "dot" }));
+    eyebrowEl.appendChild(document.createTextNode(t("pf.eyebrow")));
+    backEl.hidden = false;
+    backEl.textContent = t("back");
   } else {
     const inst = INSTRUMENTS.find((i) => i.id === state.detailId);
     const offers = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
@@ -926,7 +1023,9 @@ function buildFilterUI() {
   const wrap = $("#filter-bar");
   wrap.innerHTML = "";
 
-  if (state.route === "home") {
+  if (state.route === "portfolio") {
+    return; // no filter bar for portfolio page
+  } else if (state.route === "home") {
     buildHomeFilterUI(wrap);
   } else {
     const meta = (typeof OFFERS !== "undefined") ? OFFERS[state.detailId] : null;
@@ -1471,8 +1570,10 @@ function filterAndSortGaming(items) {
 function render() {
   syncTogglesPressed();
   if (state.route === "home") renderHome();
+  else if (state.route === "portfolio") renderPortfolio();
   else renderDetail();
   renderActiveFilters();
+  updateBasketButton();
 }
 
 function syncTogglesPressed() {
@@ -1483,6 +1584,342 @@ function syncTogglesPressed() {
       b.setAttribute("aria-pressed", b.dataset.v === f[group] ? "true" : "false");
     });
   });
+}
+
+/* ============================================================
+   PORTFOLIO — persistence helpers
+============================================================ */
+function savePortfolio() {
+  try { localStorage.setItem("inv_nav_portfolio", JSON.stringify(state.portfolio)); } catch(e) {}
+}
+function loadPortfolio() {
+  try { state.portfolio = JSON.parse(localStorage.getItem("inv_nav_portfolio") || "[]"); } catch(e) { state.portfolio = []; }
+}
+
+function updateBasketButton() {
+  const btn = $("#basket-btn");
+  const cnt = $("#basket-count");
+  if (!btn || !cnt) return;
+  const n = state.portfolio.length;
+  btn.classList.toggle("has-items", n > 0);
+  if (n > 0) { cnt.style.display = ""; cnt.textContent = String(n); }
+  else { cnt.style.display = "none"; }
+}
+
+function addToPortfolio(offer, kind) {
+  const pseudo = makeOfferPseudoInst(offer, kind);
+  const KIND_COLORS = {
+    deposit: "#D9B871", mudaraba: "#4CAF82", stock: "#56CCF2",
+    crypto: "#F7931A", "precious-metals": "#D4AF37", gems: "#7FFFD4", gaming: "#4EC9B0",
+  };
+  let avatarCode;
+  if (kind === "deposit" || kind === "mudaraba") avatarCode = offer.providerCode || "—";
+  else if (kind === "stock" || kind === "crypto") avatarCode = (offer.ticker || "").slice(0, 2).toUpperCase();
+  else if (kind === "precious-metals") avatarCode = offer.symbol || "—";
+  else if (kind === "gems") avatarCode = (offer.stone || "??").slice(0, 2).toUpperCase();
+  else if (kind === "gaming") avatarCode = (offer.game || "??").slice(0, 2).toUpperCase();
+  else avatarCode = offer.id.slice(0, 2).toUpperCase();
+
+  state.portfolio.push({
+    uid: "pf_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+    offerId: offer.id,
+    kind,
+    directionId: state.detailId,
+    displayNames: { uz: offerDisplayName(offer, kind, "uz"), ru: offerDisplayName(offer, kind, "ru"), en: offerDisplayName(offer, kind, "en") },
+    avatarCode,
+    color: KIND_COLORS[kind] || "#D9B871",
+    retMid:   pseudo.retMid,
+    risk:     pseudo.risk,
+    currency: pseudo.currency,
+    amount:   state.chartParams.amount,
+    addedAt:  new Date().toISOString().slice(0, 10),
+  });
+  savePortfolio();
+  render();
+}
+
+function removeFromPortfolio(uid) {
+  state.portfolio = state.portfolio.filter((p) => p.uid !== uid);
+  savePortfolio();
+  render();
+}
+
+function isInPortfolio(offerId) {
+  return state.portfolio.some((p) => p.offerId === offerId);
+}
+
+/* ============================================================
+   PORTFOLIO — SVG charts
+============================================================ */
+function buildPortfolioDonut(slices) {
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  if (total === 0) return el("div", {});
+  const W = 160, H = 160, cx = 80, cy = 80, R = 68, r = 46;
+  const svg = svgEl("svg", { viewBox: "0 0 160 160", style: "width:160px;height:160px;flex-shrink:0;overflow:visible" });
+  svg.appendChild(svgEl("circle", { cx, cy, r: R, fill: "rgba(255,255,255,0.025)" }));
+
+  let start = -Math.PI / 2;
+  slices.forEach(({ color, value }) => {
+    const angle = (value / total) * Math.PI * 2;
+    // For a full circle, draw two halves to avoid degenerate arc
+    const segments = angle > Math.PI * 1.999 ? 2 : 1;
+    for (let seg = 0; seg < segments; seg++) {
+      const a0 = start + seg * (angle / segments);
+      const a1 = start + (seg + 1) * (angle / segments);
+      const x1 = cx + R * Math.cos(a0), y1 = cy + R * Math.sin(a0);
+      const x2 = cx + R * Math.cos(a1), y2 = cy + R * Math.sin(a1);
+      const x3 = cx + r * Math.cos(a1), y3 = cy + r * Math.sin(a1);
+      const x4 = cx + r * Math.cos(a0), y4 = cy + r * Math.sin(a0);
+      const la = (angle / segments) > Math.PI ? 1 : 0;
+      const d = `M${x1.toFixed(2)} ${y1.toFixed(2)} A${R} ${R} 0 ${la} 1 ${x2.toFixed(2)} ${y2.toFixed(2)} L${x3.toFixed(2)} ${y3.toFixed(2)} A${r} ${r} 0 ${la} 0 ${x4.toFixed(2)} ${y4.toFixed(2)} Z`;
+      svg.appendChild(svgEl("path", { d, fill: color, opacity: "0.82" }));
+    }
+    start += angle;
+  });
+
+  svg.appendChild(svgEl("circle", { cx, cy, r, fill: "var(--bg-1)" }));
+  svg.appendChild(svgEl("text", { x: cx, y: cy - 7, "text-anchor": "middle", fill: "rgba(255,255,255,0.32)", "font-family": "JetBrains Mono,monospace", "font-size": "9", "letter-spacing": "0.08em" }, t("pf.stat.total").toUpperCase().slice(0, 5)));
+  svg.appendChild(svgEl("text", { x: cx, y: cy + 11, "text-anchor": "middle", fill: "rgba(255,255,255,0.82)", "font-family": "JetBrains Mono,monospace", "font-size": "15", "font-weight": "600", "letter-spacing": "-0.01em" }, "$" + total.toFixed(0)));
+  return svg;
+}
+
+function buildPortfolioCombinedChart() {
+  const items = state.portfolio;
+  if (items.length === 0) return null;
+  const PAST = 24, FUT = 12, N = PAST + FUT;
+
+  const seriesList = items.map((item) => {
+    const s = generateSeries({ id: item.offerId, retMid: item.retMid, risk: item.risk, currency: item.currency });
+    const full = s.hist.concat(s.fut.slice(1));
+    const base = full[PAST];
+    return { item, valueAt: (i) => item.amount * (1 + (full[i] - base) / 100) };
+  });
+
+  const totalAt = (i) => seriesList.reduce((s, { valueAt }) => s + valueAt(i), 0);
+  const totalInvested = items.reduce((s, x) => s + x.amount, 0);
+
+  let yMin = Infinity, yMax = -Infinity;
+  for (let i = 0; i <= N; i++) {
+    const v = totalAt(i);
+    if (v < yMin) yMin = v;
+    if (v > yMax) yMax = v;
+  }
+  yMin = Math.min(yMin, totalInvested * 0.9);
+  const span = Math.max(yMax - yMin, 1);
+  yMin -= span * 0.08; yMax += span * 0.14;
+
+  const W = 900, H = 230, pad = { l: 68, r: 16, t: 18, b: 32 };
+  const cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  const xAt = (i) => pad.l + (i / N) * cw;
+  const yAt = (v) => pad.t + ch - ((v - yMin) / (yMax - yMin)) * ch;
+
+  const svg = svgEl("svg", { class: "ep-chart", viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: "none", style: "cursor:crosshair" });
+
+  // Grid
+  for (let g = 0; g <= 4; g++) {
+    const v = yMin + (g / 4) * (yMax - yMin);
+    const y = yAt(v);
+    svg.appendChild(svgEl("line", { x1: pad.l, x2: W - pad.r, y1: y, y2: y, stroke: "rgba(255,255,255,0.05)", "stroke-width": 1 }));
+    svg.appendChild(svgEl("text", { x: pad.l - 8, y: y + 3.5, "text-anchor": "end", fill: "rgba(255,255,255,0.32)", "font-family": "JetBrains Mono,monospace", "font-size": 10 }, fmtUSDChart(v)));
+  }
+
+  // Individual thin position lines
+  seriesList.forEach(({ item, valueAt }, idx) => {
+    const c = item.color;
+    const d = Array.from({ length: PAST + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(valueAt(i)).toFixed(1)).join(" ");
+    svg.appendChild(svgEl("path", { d, fill: "none", stroke: c, "stroke-width": 1, opacity: 0.3 }));
+  });
+
+  // Area fill
+  const areaPath = Array.from({ length: N + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(totalAt(i)).toFixed(1)).join(" ")
+    + ` L${xAt(N).toFixed(1)},${yAt(yMin).toFixed(1)} L${xAt(0).toFixed(1)},${yAt(yMin).toFixed(1)} Z`;
+  svg.appendChild(svgEl("path", { d: areaPath, fill: "rgba(217,184,113,0.06)", stroke: "none" }));
+
+  // Total historical line
+  const histPath = Array.from({ length: PAST + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i).toFixed(1) + "," + yAt(totalAt(i)).toFixed(1)).join(" ");
+  svg.appendChild(svgEl("path", { d: histPath, fill: "none", stroke: "#D9B871", "stroke-width": 2.5, "stroke-linecap": "round" }));
+
+  // Total forecast line
+  const futPath = Array.from({ length: FUT + 1 }, (_, i) => (i === 0 ? "M" : "L") + xAt(i + PAST).toFixed(1) + "," + yAt(totalAt(i + PAST)).toFixed(1)).join(" ");
+  svg.appendChild(svgEl("path", { d: futPath, fill: "none", stroke: "#D9B871", "stroke-width": 2, "stroke-dasharray": "5 4", "stroke-linecap": "round" }));
+
+  // Today marker
+  const todayX = xAt(PAST);
+  svg.appendChild(svgEl("line", { x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b, stroke: "rgba(217,184,113,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4" }));
+  svg.appendChild(svgEl("circle", { cx: todayX, cy: yAt(totalAt(PAST)), r: 5, fill: "#D9B871", stroke: "rgba(217,184,113,0.25)", "stroke-width": 4 }));
+
+  // X-axis labels
+  [{ i: 0, text: "−24oy" }, { i: PAST / 2, text: "−12oy" }, { i: PAST, text: t("expand.axis.today") }, { i: N, text: "+12oy" }]
+    .forEach(({ i, text }) => svg.appendChild(svgEl("text", { x: xAt(i), y: H - pad.b + 18, "text-anchor": "middle", fill: "rgba(255,255,255,0.36)", "font-family": "JetBrains Mono,monospace", "font-size": 10, "letter-spacing": "0.05em" }, text)));
+
+  return { svg, totalAtToday: totalAt(PAST), totalAtFuture: totalAt(N) };
+}
+
+/* ============================================================
+   PORTFOLIO — page rendering
+============================================================ */
+function renderPortfolio() {
+  const grid = $("#dir-grid");
+  grid.innerHTML = "";
+  grid.className = "pf-page section";
+  grid.style.cssText = "";
+
+  // Hide filter bar + live stats for portfolio
+  const filterBar = $("#filter-bar");
+  if (filterBar) filterBar.style.display = "none";
+  document.querySelector(".live-stats-row").style.display = "none";
+
+  if (state.portfolio.length === 0) {
+    grid.appendChild(el("div", { class: "pf-empty" },
+      el("h3", null, t("pf.empty.title")),
+      el("p", null, t("pf.empty.body"))
+    ));
+    return;
+  }
+
+  // Stats
+  const total = state.portfolio.reduce((s, p) => s + p.amount, 0);
+  const chartResult = buildPortfolioCombinedChart();
+  const projectedVal = chartResult ? chartResult.totalAtFuture : total;
+  const projectedReturn = projectedVal - total;
+  const projectedRetPct = (projectedReturn / total) * 100;
+  const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
+
+  const statsRow = el("div", { class: "pf-stats" });
+  [
+    { k: t("pf.stat.total"),     v: fmtUSDExact(total),             cls: "" },
+    { k: t("pf.stat.projected"), v: fmtUSDExact(projectedVal),      cls: projectedReturn >= 0 ? "up" : "down" },
+    { k: t("pf.stat.return"),    v: fmtPct(projectedRetPct),        cls: projectedReturn >= 0 ? "up" : "down" },
+    { k: t("pf.stat.positions"), v: String(state.portfolio.length), cls: "" },
+  ].forEach(({ k, v, cls }) => {
+    statsRow.appendChild(el("div", { class: "pf-stat-card" },
+      el("div", { class: "pf-sk" }, k),
+      el("div", { class: "pf-sv " + cls }, v)
+    ));
+  });
+  grid.appendChild(statsRow);
+
+  // Charts row
+  const chartsRow = el("div", { class: "pf-charts-row" });
+
+  // Pie chart — group by kind
+  const byKind = {};
+  state.portfolio.forEach((p) => { byKind[p.kind] = (byKind[p.kind] || 0) + p.amount; });
+  const KIND_COLORS = { deposit: "#D9B871", mudaraba: "#4CAF82", stock: "#56CCF2", crypto: "#F7931A", "precious-metals": "#D4AF37", gems: "#7FFFD4", gaming: "#4EC9B0" };
+  const slices = Object.entries(byKind).map(([kind, value]) => ({ kind, value, color: KIND_COLORS[kind] || "#8B8780" }));
+
+  const pieWrap = el("div", { class: "pf-pie-wrap" });
+  pieWrap.appendChild(buildPortfolioDonut(slices));
+  const pieLegend = el("div", { class: "pf-pie-legend" });
+  slices.forEach(({ kind, value, color }) => {
+    const pct = ((value / total) * 100).toFixed(0);
+    pieLegend.appendChild(el("div", { class: "pf-pie-leg-item" },
+      el("span", { class: "pf-pie-leg-dot", style: "background:" + color }),
+      el("span", { class: "pf-pie-leg-name" }, t("pf.kind." + kind) || kind),
+      el("span", { class: "pf-pie-leg-val" }, fmtUSDExact(value)),
+      el("span", { class: "pf-pie-leg-pct" }, pct + "%")
+    ));
+  });
+  pieWrap.appendChild(pieLegend);
+
+  chartsRow.appendChild(el("div", { class: "pf-chart-card" },
+    el("div", { class: "pf-chart-title" }, t("pf.chart.alloc")),
+    pieWrap
+  ));
+
+  // Line chart
+  if (chartResult) {
+    const legend = el("div", { class: "pf-line-legend" },
+      el("span", { class: "lg-item" }, el("span", { class: "lg-sw" }), t("pf.legend.total")),
+      state.portfolio.length > 1 ? el("span", { class: "lg-item" }, el("span", { class: "lg-sw thin" }), t("pf.legend.pos")) : null
+    );
+    const tooltipEl = el("div", { class: "ep-hover-tooltip" });
+    const chartWrap = el("div", { class: "ep-chart-wrap", style: "margin-bottom:0" });
+    chartWrap.appendChild(chartResult.svg);
+    chartWrap.appendChild(tooltipEl);
+    chartsRow.appendChild(el("div", { class: "pf-chart-card" },
+      el("div", { class: "pf-chart-title" }, t("pf.chart.growth")),
+      legend,
+      chartWrap
+    ));
+  }
+
+  grid.appendChild(chartsRow);
+
+  // Positions
+  const posSection = el("div", { class: "pf-pos-section" });
+  posSection.appendChild(el("h3", null, t("pf.positions") + " (" + state.portfolio.length + ")"));
+  const posGrid = el("div", { class: "pf-pos-grid" });
+  state.portfolio.forEach((item) => posGrid.appendChild(buildPortfolioPositionCard(item)));
+  posSection.appendChild(posGrid);
+  grid.appendChild(posSection);
+}
+
+function buildPortfolioPositionCard(item) {
+  const pseudo = { id: item.offerId, retMid: item.retMid, risk: item.risk, currency: item.currency };
+  const s = generateSeries(pseudo);
+  const full = s.hist.concat(s.fut.slice(1));
+  const PAST = 24;
+  const base = full[PAST];
+  const val12 = item.amount * (1 + (full[PAST + 12] - base) / 100);
+  const ret12 = val12 - item.amount;
+  const retPct = (ret12 / item.amount) * 100;
+
+  const amtInput = el("input", { type: "number", min: "1", max: "1000000", value: item.amount });
+  amtInput.addEventListener("change", (e) => {
+    const v = parseFloat(e.target.value);
+    if (v > 0) { item.amount = v; savePortfolio(); render(); }
+  });
+
+  return el("div", { class: "pf-pos-card" },
+    el("div", { class: "pf-pos-top" },
+      el("div", { class: "pf-pos-avatar", style: `color:${item.color};background:${item.color}1a;border-color:${item.color}33` }, item.avatarCode),
+      el("div", { style: "flex:1;min-width:0;overflow:hidden" },
+        el("div", { class: "pf-pos-name", title: item.displayNames[state.lang] || item.displayNames.uz }, item.displayNames[state.lang] || item.displayNames.uz),
+        el("div", { class: "pf-pos-kind" }, t("pf.kind." + item.kind) || item.kind)
+      ),
+      el("button", { class: "pf-pos-remove", title: t("pf.remove"), onclick: () => removeFromPortfolio(item.uid) }, "✕")
+    ),
+    el("div", { class: "pf-pos-metrics" },
+      el("div", { class: "pf-pos-m" }, el("div", { class: "k" }, t("pf.invested")), el("div", { class: "v" }, fmtUSDExact(item.amount))),
+      el("div", { class: "pf-pos-m" }, el("div", { class: "k" }, t("pf.annual")),   el("div", { class: "v " + (item.retMid >= 0 ? "up" : "down") }, (item.retMid >= 0 ? "+" : "") + item.retMid.toFixed(1) + "%")),
+      el("div", { class: "pf-pos-m" }, el("div", { class: "k" }, t("pf.in12m")),    el("div", { class: "v " + (ret12 >= 0 ? "up" : "down") }, fmtUSDExact(val12)))
+    ),
+    el("div", { class: "pf-pos-amount-row" },
+      el("span", { class: "pf-pos-amount-lbl" }, t("chart.amount")),
+      el("div", { class: "pf-pos-amount-wrap" },
+        el("span", { class: "cur" }, "$"),
+        amtInput
+      )
+    )
+  );
+}
+
+/* ============================================================
+   PORTFOLIO — "Add to portfolio" button (expand panel)
+============================================================ */
+function buildPfAddBtn(offer, kind) {
+  const already = isInPortfolio(offer.id);
+  const btn = el("button", {
+    class: "pf-add-btn" + (already ? " added" : ""),
+  });
+  const cartSvg = () => {
+    const s = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    s.setAttribute("viewBox", "0 0 20 20"); s.setAttribute("fill", "none");
+    s.setAttribute("stroke", "currentColor"); s.setAttribute("stroke-width", "1.8");
+    s.setAttribute("stroke-linecap", "round"); s.setAttribute("stroke-linejoin", "round");
+    s.innerHTML = '<path d="M1.5 2h2.5l2.5 10h8.5l1.8-6.5H5.5"/><circle cx="9" cy="17.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="14.5" cy="17.5" r="1.2" fill="currentColor" stroke="none"/>';
+    return s;
+  };
+  btn.appendChild(cartSvg());
+  btn.appendChild(document.createTextNode(already ? t("pf.add.done") : t("pf.add.btn")));
+  if (!already) {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      addToPortfolio(offer, kind);
+    });
+  }
+  return btn;
 }
 
 /* ---------- Home rendering (directions grid) ---------- */
@@ -2361,13 +2798,14 @@ function buildOfferExpandedPanel(offer, kind) {
 
   const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
   const controls = buildChartControls();
+  const pfBtn = buildPfAddBtn(offer, kind);
 
   const header = el("div", { class: "ep-header" },
     el("div", { class: "ep-title" },
       el("div", { class: "ep-eyebrow eyebrow" }, t("offer.expand.eyebrow")),
       el("h3", null, offerDisplayName(offer, kind, state.lang))
     ),
-    controls,
+    el("div", { style: "display:flex;align-items:center;gap:12px;flex-wrap:wrap" }, controls, pfBtn),
     el("div", { class: "ep-stats" },
       el("div", { class: "ep-stat" },
         el("div", { class: "k" }, t("expand.past")),
@@ -3456,6 +3894,7 @@ function clearAll() {
    BOOT
 ============================================================ */
 function boot() {
+  loadPortfolio();
   syncRouteFromHash();
 
   $$("#lang-switch button").forEach((b) => {
@@ -3465,6 +3904,7 @@ function boot() {
     });
   });
 
+  $("#basket-btn").addEventListener("click", () => navigate("portfolio"));
   $("#brand").addEventListener("click", () => navigate(""));
   $("#back-link").addEventListener("click", () => navigate(""));
 

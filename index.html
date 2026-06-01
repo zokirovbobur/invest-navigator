@@ -1303,6 +1303,190 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 }
 
 /* ============================================================
+   BASKET BUTTON (topbar)
+============================================================ */
+.basket-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 12px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fg-1);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.basket-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+.basket-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--line-2); color: var(--fg-0); }
+.basket-btn.has-items { border-color: rgba(217,184,113,0.40); background: rgba(217,184,113,0.07); color: var(--accent); }
+.basket-count {
+  display: grid; place-items: center;
+  min-width: 18px; height: 18px;
+  border-radius: 99px;
+  background: var(--accent);
+  color: var(--bg-0);
+  font-family: var(--font-mono);
+  font-size: 10px; font-weight: 700;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+/* ============================================================
+   ADD TO PORTFOLIO BUTTON (expand panel)
+============================================================ */
+.pf-add-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px;
+  border-radius: 99px;
+  background: rgba(217,184,113,0.08);
+  border: 1px solid rgba(217,184,113,0.28);
+  color: var(--accent);
+  font-size: 11px; font-weight: 600;
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.12s;
+  white-space: nowrap; flex-shrink: 0;
+}
+.pf-add-btn:hover { background: rgba(217,184,113,0.16); border-color: rgba(217,184,113,0.5); transform: translateY(-1px); }
+.pf-add-btn.added { background: rgba(111,207,151,0.10); border-color: rgba(111,207,151,0.35); color: var(--ok); }
+.pf-add-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ============================================================
+   PORTFOLIO PAGE
+============================================================ */
+.pf-page { display: flex; flex-direction: column; gap: 28px; }
+
+.pf-empty {
+  padding: 80px 32px; text-align: center;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-lg); color: var(--fg-2);
+}
+.pf-empty h3 { color: var(--fg-1); margin-bottom: 10px; font-weight: 500; font-size: 18px; }
+.pf-empty p { font-size: 14px; max-width: 380px; margin: 0 auto; line-height: 1.6; }
+
+.pf-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+}
+.pf-stat-card {
+  background: var(--card-bg);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  padding: 20px 22px;
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.pf-stat-card .pf-sk {
+  font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-2);
+}
+.pf-stat-card .pf-sv {
+  font-family: var(--font-mono); font-size: 24px;
+  font-weight: 600; letter-spacing: -0.02em; color: var(--fg-0); line-height: 1.1;
+}
+.pf-stat-card .pf-sv.up   { color: var(--ok); }
+.pf-stat-card .pf-sv.down { color: var(--bad); }
+.pf-stat-card .pf-sv-sub { font-size: 13px; color: var(--fg-2); font-weight: 400; margin-left: 4px; }
+
+.pf-charts-row {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 900px) { .pf-charts-row { grid-template-columns: 1fr; } }
+
+.pf-chart-card {
+  background: var(--card-bg); border: var(--card-border);
+  border-radius: var(--radius-lg); padding: 22px 24px;
+  backdrop-filter: var(--card-backdrop); -webkit-backdrop-filter: var(--card-backdrop);
+}
+.pf-chart-title {
+  font-family: var(--font-mono); font-size: 10px;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--fg-2); margin-bottom: 18px;
+}
+
+.pf-pie-wrap { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+.pf-pie-legend { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 110px; }
+.pf-pie-leg-item { display: flex; align-items: center; gap: 8px; }
+.pf-pie-leg-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.pf-pie-leg-name { font-size: 12px; color: var(--fg-1); flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-pie-leg-val  { font-family: var(--font-mono); font-size: 11px; color: var(--fg-0); font-weight: 500; }
+.pf-pie-leg-pct  { font-family: var(--font-mono); font-size: 10px; color: var(--fg-2); margin-left: 3px; }
+
+.pf-line-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.pf-line-legend .lg-item { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-2); }
+.pf-line-legend .lg-sw { width: 20px; height: 2px; background: var(--accent); border-radius: 2px; }
+.pf-line-legend .lg-sw.thin { background: rgba(255,255,255,0.2); height: 1px; }
+
+.pf-pos-section h3 { font-size: 15px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 14px; color: var(--fg-1); }
+.pf-pos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; }
+
+.pf-pos-card {
+  background: var(--card-bg); border: var(--card-border);
+  border-radius: var(--radius-md); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 12px;
+  backdrop-filter: var(--card-backdrop); -webkit-backdrop-filter: var(--card-backdrop);
+  transition: border-color 0.15s;
+}
+.pf-pos-card:hover { border-color: var(--line-2); }
+.pf-pos-top { display: flex; align-items: flex-start; gap: 10px; }
+.pf-pos-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  flex-shrink: 0; border: 1px solid;
+}
+.pf-pos-name { font-size: 14px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pf-pos-kind { font-size: 10px; font-family: var(--font-mono); color: var(--fg-3); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+.pf-pos-remove {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: grid; place-items: center; color: var(--fg-3);
+  font-size: 11px; flex-shrink: 0;
+  cursor: pointer; background: none; border: none;
+  transition: color 0.15s, background 0.15s;
+  margin-left: auto;
+}
+.pf-pos-remove:hover { color: var(--bad); background: rgba(224,122,122,0.10); }
+
+.pf-pos-metrics {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+  padding: 10px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.pf-pos-m { display: flex; flex-direction: column; gap: 3px; }
+.pf-pos-m .k { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--fg-2); }
+.pf-pos-m .v { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--fg-0); }
+.pf-pos-m .v.up   { color: var(--ok); }
+.pf-pos-m .v.down { color: var(--bad); }
+
+.pf-pos-amount-row { display: flex; align-items: center; gap: 8px; }
+.pf-pos-amount-lbl { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-2); }
+.pf-pos-amount-wrap {
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px 10px; border-radius: 8px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--line);
+  transition: border-color 0.15s;
+}
+.pf-pos-amount-wrap:focus-within { border-color: var(--accent); }
+.pf-pos-amount-wrap .cur { font-family: var(--font-mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+.pf-pos-amount-wrap input {
+  background: none; border: none; outline: none;
+  font-family: var(--font-mono); font-size: 13px; color: var(--fg-0); width: 64px;
+}
+.pf-pos-amount-wrap input::-webkit-outer-spin-button,
+.pf-pos-amount-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.pf-pos-amount-wrap input[type=number] { -moz-appearance: textfield; }
+
+/* ============================================================
    RESPONSIVE
 ============================================================ */
 
@@ -1339,6 +1523,14 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
       <div class="wordmark">Invest<span>·</span>Navigator</div>
     </div>
     <div class="topbar-right">
+      <button class="basket-btn" id="basket-btn" title="Portfel">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1.5 2h2.5l2.5 10h8.5l1.8-6.5H5.5"/>
+          <circle cx="9" cy="17.5" r="1.2" fill="currentColor" stroke="none"/>
+          <circle cx="14.5" cy="17.5" r="1.2" fill="currentColor" stroke="none"/>
+        </svg>
+        <span id="basket-count" class="basket-count" style="display:none">0</span>
+      </button>
       <div class="lang-switch" id="lang-switch">
         <button data-lang="uz" aria-pressed="true">UZ</button>
         <button data-lang="ru">RU</button>
