@@ -155,7 +155,7 @@ const I18N = {
 
     "disclaimer.title": "Bu moliyaviy maslahat emas",
     "disclaimer.body": "Katalog faqat ta'lim va informatsion maqsadda taqdim etilgan. Investitsiya qarorlarini qabul qilishdan oldin mustaqil tahlil qiling yoki litsenziyalangan mutaxassis bilan maslahat qiling.",
-    "footer.note": "© 2026 Invest Navigator · O'zbekiston",
+    "footer.note": "© 2026 Finport.uz · O'zbekiston",
     "footer.version": "Kategoriya v0.1 · MVP",
   },
 
@@ -310,7 +310,7 @@ const I18N = {
 
     "disclaimer.title": "Это не финансовая консультация",
     "disclaimer.body": "Каталог предоставлен исключительно в образовательных и информационных целях. Перед принятием инвестрешений проведите самостоятельный анализ или проконсультируйтесь с лицензированным специалистом.",
-    "footer.note": "© 2026 Invest Navigator · Узбекистан",
+    "footer.note": "© 2026 Finport.uz · Узбекистан",
     "footer.version": "Категории v0.1 · MVP",
   },
 
@@ -466,7 +466,7 @@ const I18N = {
 
     "disclaimer.title": "This is not financial advice",
     "disclaimer.body": "The catalog is provided for educational and informational purposes only. Do your own research or consult a licensed professional before making investment decisions.",
-    "footer.note": "© 2026 Invest Navigator · Uzbekistan",
+    "footer.note": "© 2026 Finport.uz · Uzbekistan",
     "footer.version": "Categories v0.1 · MVP",
   },
 };
@@ -2075,7 +2075,7 @@ function renderLanding() {
   const TXT = {
     uz: {
       eyebrow: "O'zbekiston investitsiya platformasi",
-      title:   "Aqlli investitsiya <em>navigatori</em>",
+      title:   "Sizning aqlli investitsiya <em>boshqaruv portingiz</em>",
       sub:     "15+ investitsiya yo'nalishi, real-time ma'lumotlar va portfel boshqaruvi — barchasi bir joyda. Bank depozitlaridan kripto va qimmatbaho metallargacha.",
       cta:     "Kategoriyalarni ko'rish",
       ctaSec:  "Portfelim",
@@ -2083,7 +2083,7 @@ function renderLanding() {
       s2v:"2",    s2k:"Lokal · Xalqaro bozorlar",
       s3v:"$50",  s3k:"Dan boshlang'ich kirish",
       featEy:  "Imkoniyatlar",
-      featH:   "Nima uchun Invest Navigator?",
+      featH:   "Nima uchun Finport.uz?",
       pfEy:    "Portfel boshqaruvi",
       pfH:     "O'z portfelingizni kuzating",
       pfDesc:  "Turli investitsiya turlariga qo'shgan mablag'laringizni bir platformada boshqaring. O'sish dinamikasini kuzating va daromadingizni hisoblang.",
@@ -2096,7 +2096,7 @@ function renderLanding() {
     },
     ru: {
       eyebrow: "Инвестиционная платформа Узбекистана",
-      title:   "Умный <em>навигатор</em> инвестиций",
+      title:   "Ваш умный <em>инвестиционный порт</em>",
       sub:     "15+ направлений инвестиций, данные в реальном времени и управление портфелем — всё в одном месте.",
       cta:     "Просмотреть категории",
       ctaSec:  "Мой портфель",
@@ -2104,7 +2104,7 @@ function renderLanding() {
       s2v:"2",    s2k:"Локальный · Международный",
       s3v:"$50",  s3k:"Минимальный вход",
       featEy:  "Возможности",
-      featH:   "Почему Invest Navigator?",
+      featH:   "Почему Finport.uz?",
       pfEy:    "Портфель",
       pfH:     "Отслеживайте свой портфель",
       pfDesc:  "Управляйте вложениями в различные инструменты на одной платформе. Следите за динамикой роста и рассчитывайте доходность.",
@@ -2117,7 +2117,7 @@ function renderLanding() {
     },
     en: {
       eyebrow: "Uzbekistan's Investment Platform",
-      title:   "The smart investment <em>navigator</em>",
+      title:   "Your smart investment <em>management port</em>",
       sub:     "15+ investment categories, real-time data and portfolio management — all in one place.",
       cta:     "Browse categories",
       ctaSec:  "My portfolio",
@@ -2125,7 +2125,7 @@ function renderLanding() {
       s2v:"2",    s2k:"Local · International markets",
       s3v:"$50",  s3k:"Minimum entry",
       featEy:  "Features",
-      featH:   "Why Invest Navigator?",
+      featH:   "Why Finport.uz?",
       pfEy:    "Portfolio",
       pfH:     "Track your portfolio",
       pfDesc:  "Manage investments across different asset classes in one platform. Monitor growth dynamics and calculate your returns.",
