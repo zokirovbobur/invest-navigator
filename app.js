@@ -155,7 +155,7 @@ const I18N = {
 
     "disclaimer.title": "Bu moliyaviy maslahat emas",
     "disclaimer.body": "Katalog faqat ta'lim va informatsion maqsadda taqdim etilgan. Investitsiya qarorlarini qabul qilishdan oldin mustaqil tahlil qiling yoki litsenziyalangan mutaxassis bilan maslahat qiling.",
-    "footer.note": "© 2026 Finport.uz · O'zbekiston",
+    "footer.note": "© 2026 Invest Navigator · O'zbekiston",
     "footer.version": "Kategoriya v0.1 · MVP",
   },
 
@@ -310,7 +310,7 @@ const I18N = {
 
     "disclaimer.title": "Это не финансовая консультация",
     "disclaimer.body": "Каталог предоставлен исключительно в образовательных и информационных целях. Перед принятием инвестрешений проведите самостоятельный анализ или проконсультируйтесь с лицензированным специалистом.",
-    "footer.note": "© 2026 Finport.uz · Узбекистан",
+    "footer.note": "© 2026 Invest Navigator · Узбекистан",
     "footer.version": "Категории v0.1 · MVP",
   },
 
@@ -466,7 +466,7 @@ const I18N = {
 
     "disclaimer.title": "This is not financial advice",
     "disclaimer.body": "The catalog is provided for educational and informational purposes only. Do your own research or consult a licensed professional before making investment decisions.",
-    "footer.note": "© 2026 Finport.uz · Uzbekistan",
+    "footer.note": "© 2026 Invest Navigator · Uzbekistan",
     "footer.version": "Categories v0.1 · MVP",
   },
 };
@@ -2083,7 +2083,7 @@ function renderLanding() {
       s2v:"2",    s2k:"Lokal · Xalqaro bozorlar",
       s3v:"$50",  s3k:"Dan boshlang'ich kirish",
       featEy:  "Imkoniyatlar",
-      featH:   "Nima uchun Finport.uz?",
+      featH:   "Nima uchun Invest Navigator?",
       pfEy:    "Portfel boshqaruvi",
       pfH:     "O'z portfelingizni kuzating",
       pfDesc:  "Turli investitsiya turlariga qo'shgan mablag'laringizni bir platformada boshqaring. O'sish dinamikasini kuzating va daromadingizni hisoblang.",
@@ -2104,7 +2104,7 @@ function renderLanding() {
       s2v:"2",    s2k:"Локальный · Международный",
       s3v:"$50",  s3k:"Минимальный вход",
       featEy:  "Возможности",
-      featH:   "Почему Finport.uz?",
+      featH:   "Почему Invest Navigator?",
       pfEy:    "Портфель",
       pfH:     "Отслеживайте свой портфель",
       pfDesc:  "Управляйте вложениями в различные инструменты на одной платформе. Следите за динамикой роста и рассчитывайте доходность.",
@@ -2125,7 +2125,7 @@ function renderLanding() {
       s2v:"2",    s2k:"Local · International markets",
       s3v:"$50",  s3k:"Minimum entry",
       featEy:  "Features",
-      featH:   "Why Finport.uz?",
+      featH:   "Why Invest Navigator?",
       pfEy:    "Portfolio",
       pfH:     "Track your portfolio",
       pfDesc:  "Manage investments across different asset classes in one platform. Monitor growth dynamics and calculate your returns.",
