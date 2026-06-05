@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Finport.uz — Investor Deck 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --accent:#D9B871; --accent-soft:#E8CB8E; --accent-deep:#B89150; --accent-glow:rgba(217,184,113,.18);
+  --bg-0:#0E1014; --bg-1:#15181F; --bg-2:#1B1F28; --bg-3:#232833; --bg-4:#2C313D;
+  --line:rgba(255,255,255,.07); --line-2:rgba(255,255,255,.14);
+  --fg-0:#F4F1EA; --fg-1:#C8C4BC; --fg-2:#8B8780; --fg-3:#5C5953;
+  --ok:#6FCF97; --warn:#E8C77E; --bad:#E07A7A; --info:#7FB0E0;
+  --sans:'Manrope',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg-0); color:var(--fg-0); font-family:var(--sans);
+  -webkit-font-smoothing:antialiased; overflow:hidden; letter-spacing:-.01em; line-height:1.5;
+}
+.num{font-family:var(--mono);font-feature-settings:"tnum" 1;letter-spacing:-.02em}
+em{font-style:normal;color:var(--accent)}
+.muted{color:var(--fg-2)}
+.eyebrow{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.22em;color:var(--accent);font-weight:500}
+
+/* ---------- atmosphere ---------- */
+.bg-mesh{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(900px 600px at 78% -10%, rgba(217,184,113,.10), transparent 60%),
+    radial-gradient(700px 500px at -10% 110%, rgba(127,176,224,.06), transparent 60%);
+}
+.bg-grain{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* ---------- deck / slides ---------- */
+.deck{position:relative;z-index:1;height:100%;width:100%}
+.slide{
+  position:absolute;inset:0;display:none;
+  padding:clamp(28px,5vh,64px) clamp(28px,6vw,96px) clamp(70px,9vh,96px);
+  flex-direction:column;
+}
+.slide.active{display:flex;animation:fade .5s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.slide-inner{width:100%;max-width:1180px;margin:auto;display:flex;flex-direction:column;flex:1;justify-content:center}
+.reveal{opacity:0;transform:translateY(16px);animation:rise .6s cubic-bezier(.2,.7,.2,1) forwards}
+.slide.active .reveal{animation-play-state:running}
+@keyframes rise{to{opacity:1;transform:none}}
+.r1{animation-delay:.08s}.r2{animation-delay:.18s}.r3{animation-delay:.28s}.r4{animation-delay:.38s}.r5{animation-delay:.48s}.r6{animation-delay:.58s}
+
+h1{font-size:clamp(30px,4.6vw,58px);font-weight:700;line-height:1.04;letter-spacing:-.03em}
+h2{font-size:clamp(24px,3.2vw,42px);font-weight:700;line-height:1.08;letter-spacing:-.025em}
+h3{font-size:clamp(17px,1.5vw,20px);font-weight:600}
+.lead{font-size:clamp(16px,1.7vw,22px);color:var(--fg-1);font-weight:400;max-width:60ch}
+.slide-head{margin-bottom:clamp(18px,3.2vh,34px)}
+.slide-head .kicker{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.slide-head .kicker .ix{font-family:var(--mono);font-size:11px;color:var(--fg-3);letter-spacing:.1em}
+
+/* brand */
+.brand{display:flex;align-items:center;gap:12px}
+.brand .mark{width:30px;height:30px;border-radius:8px;position:relative;
+  background:radial-gradient(circle at 30% 30%,var(--accent-soft),var(--accent-deep));
+  box-shadow:0 0 0 1px rgba(255,255,255,.08),0 8px 18px -6px var(--accent-glow)}
+.brand .mark::before{content:"";position:absolute;inset:7px;border-radius:4px;background:var(--bg-0);
+  clip-path:polygon(50% 0,100% 100%,0 100%)}
+.brand .wm{font-weight:700;font-size:16px;letter-spacing:.02em}
+.brand .wm span{color:var(--accent)}
+
+/* cards / chips */
+.card{background:linear-gradient(180deg,rgba(27,31,40,.7),rgba(21,24,31,.55));
+  border:1px solid var(--line);border-radius:18px;padding:22px 22px;
+  box-shadow:0 24px 60px -34px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.04);backdrop-filter:blur(8px)}
+.chip{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  padding:6px 11px;border-radius:99px;border:1px solid var(--line-2);color:var(--fg-1);background:rgba(255,255,255,.03)}
+.chip.gold{border-color:rgba(217,184,113,.4);color:var(--accent);background:rgba(217,184,113,.08)}
+.dot-led{width:7px;height:7px;border-radius:99px;background:var(--accent);box-shadow:0 0 8px var(--accent-glow)}
+
+.grid{display:grid;gap:clamp(12px,1.6vw,18px)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+
+/* feature / numbered */
+.feat .ic{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin-bottom:14px;
+  background:rgba(217,184,113,.1);border:1px solid rgba(217,184,113,.25);color:var(--accent)}
+.feat .ic svg{width:20px;height:20px}
+.feat h3{margin-bottom:7px}
+.feat p{font-size:14px;color:var(--fg-2);line-height:1.5}
+.numlist{display:flex;flex-direction:column;gap:14px}
+.numrow{display:flex;gap:16px;align-items:flex-start}
+.numrow .n{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-family:var(--mono);
+  font-size:14px;color:var(--bg-0);font-weight:600;background:linear-gradient(135deg,var(--accent-soft),var(--accent-deep))}
+.numrow .tx h3{font-size:16px;margin-bottom:3px}
+.numrow .tx p{font-size:14px;color:var(--fg-2)}
+
+/* stat strip */
+.stats{display:flex;gap:clamp(20px,4vw,56px);flex-wrap:wrap}
+.stat .v{font-family:var(--mono);font-size:clamp(26px,3.2vw,40px);font-weight:600;color:var(--fg-0);letter-spacing:-.03em}
+.stat .v.gold{color:var(--accent)}
+.stat .k{font-size:12.5px;color:var(--fg-2);margin-top:3px;max-width:18ch}
+
+/* table */
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:13px 14px;border-bottom:1px solid var(--line)}
+th{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--fg-3);font-weight:500}
+td{color:var(--fg-1)}
+tr.me td{background:linear-gradient(90deg,rgba(217,184,113,.12),rgba(217,184,113,.03));color:var(--fg-0);font-weight:600}
+tr.me td:first-child{border-left:2px solid var(--accent)}
+.yes{color:var(--ok)} .no{color:var(--bad)} .partial{color:var(--warn)}
+
+/* phone mock */
+.phone{width:248px;height:480px;border-radius:34px;background:linear-gradient(180deg,#1a1e26,#0f1217);
+  border:1px solid var(--line-2);padding:14px 12px;position:relative;
+  box-shadow:0 50px 90px -40px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.05)}
+.phone::before{content:"";position:absolute;top:12px;left:50%;transform:translateX(-50%);width:74px;height:5px;border-radius:99px;background:rgba(255,255,255,.12)}
+.phone .scr{margin-top:14px;height:100%;display:flex;flex-direction:column;gap:9px;overflow:hidden}
+.mtop{display:flex;justify-content:space-between;align-items:center;padding:2px 4px 6px}
+.mtop .mt-wm{font-size:12px;font-weight:700}.mtop .mt-wm span{color:var(--accent)}
+.mtop .mt-lang{font-family:var(--mono);font-size:9px;color:var(--fg-3)}
+.mcard{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:13px;padding:11px 12px}
+.mcard .mh{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.mcard .mh .nm{font-size:11.5px;font-weight:600}
+.mcard .mh .av{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--bg-0)}
+.mcard .mret{font-family:var(--mono);font-size:18px;font-weight:600;color:var(--ok)}
+.mcard .msub{font-size:9.5px;color:var(--fg-3);margin-top:1px}
+.mbar{height:5px;border-radius:99px;background:rgba(255,255,255,.07);margin-top:9px;overflow:hidden}
+.mbar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent-deep),var(--accent-soft))}
+
+.checklist{display:flex;flex-direction:column;gap:11px}
+.checkrow{display:flex;gap:11px;align-items:flex-start;font-size:15px;color:var(--fg-1)}
+.checkrow .ck{flex:none;width:21px;height:21px;border-radius:6px;display:grid;place-items:center;margin-top:1px;
+  background:rgba(111,207,151,.13);border:1px solid rgba(111,207,151,.35);color:var(--ok);font-size:12px}
+
+/* funds bars */
+.fbar{display:flex;flex-direction:column;gap:15px}
+.fbar .row .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.fbar .row .lab{font-size:14px;color:var(--fg-1)}
+.fbar .row .val{font-family:var(--mono);font-size:14px;color:var(--fg-0)}
+.fbar .row .val .pct{color:var(--accent);margin-left:8px}
+.fbar .track{height:9px;border-radius:99px;background:rgba(255,255,255,.06);overflow:hidden}
+.fbar .track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent-deep),var(--accent-soft));
+  width:0;transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.slide.active .fbar .track i{width:var(--w)}
+
+/* timeline */
+.tl{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.tl .q{position:relative}
+.tl .q .qh{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.08em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tl .q .qh::before{content:"";width:9px;height:9px;border-radius:99px;background:var(--accent);box-shadow:0 0 10px var(--accent-glow)}
+.tl .q ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+.tl .q li{font-size:13.5px;color:var(--fg-1);padding-left:14px;position:relative;line-height:1.4}
+.tl .q li::before{content:"";position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:99px;background:var(--fg-3)}
+.tl .line{position:absolute;left:0;right:0;top:4px;height:1px;background:linear-gradient(90deg,var(--accent),var(--line));z-index:-1}
+
+/* chips row mini */
+.mini{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+
+/* cover */
+.cover-stats{display:flex;gap:clamp(24px,4vw,52px);flex-wrap:wrap;margin-top:auto}
+
+/* ---------- nav UI ---------- */
+.progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent-deep),var(--accent-soft));z-index:30;transition:width .4s ease;box-shadow:0 0 12px var(--accent-glow)}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
+  padding:18px clamp(20px,4vw,40px);pointer-events:none}
+.topbar .brand{pointer-events:auto}
+.counter{font-family:var(--mono);font-size:12px;color:var(--fg-2);pointer-events:auto}
+.counter b{color:var(--fg-0)}
+.nav{position:fixed;right:clamp(20px,4vw,40px);bottom:24px;z-index:20;display:flex;gap:10px}
+.nav button{width:42px;height:42px;border-radius:11px;border:1px solid var(--line-2);background:rgba(27,31,40,.7);
+  color:var(--fg-1);cursor:pointer;display:grid;place-items:center;transition:all .15s;backdrop-filter:blur(8px)}
+.nav button:hover{border-color:var(--accent);color:var(--accent)}
+.nav button:disabled{opacity:.3;cursor:default}
+.nav button svg{width:18px;height:18px}
+.dots{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;z-index:20;display:flex;gap:9px}
+.dots button{width:8px;height:8px;border-radius:99px;border:none;background:rgba(255,255,255,.16);cursor:pointer;transition:all .2s;padding:0}
+.dots button.on{background:var(--accent);width:22px}
+.hint{position:fixed;left:clamp(20px,4vw,40px);bottom:30px;z-index:20;font-family:var(--mono);font-size:10.5px;color:var(--fg-3);letter-spacing:.05em}
+
+@media (max-width:760px){
+  .g3,.g2,.g4{grid-template-columns:1fr}
+  .tl{grid-template-columns:1fr 1fr}
+  .slide{padding:74px 20px 92px}
+  .phone{display:none}
+  .hint{display:none}
+  .cover-stats{gap:18px}
+}
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-grain"></div>
+
+<div class="progress" id="progress"></div>
+<div class="topbar">
+  <div class="brand"><div class="mark"></div><div class="wm">Finport<span>.</span>uz</div></div>
+  <div class="counter"><b id="cur">01</b> / <span id="total">10</span></div>
+</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1 COVER -->
+  <section class="slide active">
+    <div class="slide-inner">
+      <div class="reveal r1"><span class="eyebrow">Investor Deck · 2026 · Pre-seed</span></div>
+      <h1 class="reveal r2" style="margin-top:18px;max-width:18ch">
+        O'zbekistonning birinchi <em>neytral</em> investitsiya navigatori
+      </h1>
+      <p class="lead reveal r3" style="margin-top:20px">
+        Depozitdan sukuk, aksiya va kriptogacha — <b style="color:var(--fg-0)">15+ yo'nalish</b> bir platformada.
+        Taqqoslang, tushuning, portfelingizni boshqaring. Hech kim sotmaydi — biz yo'l ko'rsatamiz.
+      </p>
+      <div class="mini reveal r4">
+        <span class="chip gold"><span class="dot-led"></span> Cross-asset aggregator</span>
+        <span class="chip">3 til · UZ / RU / EN</span>
+        <span class="chip">Ishlaydigan MVP v0.1</span>
+      </div>
+      <div class="cover-stats reveal r5">
+        <div class="stat"><div class="v gold num">37M+</div><div class="k">aholi · ulkan bo'sh maydon</div></div>
+        <div class="stat"><div class="v num">~80K</div><div class="k">faol investor (jami ~800K hisobning &lt;10%)</div></div>
+        <div class="stat"><div class="v num">$300K</div><div class="k">pre-seed so'rovi · 18 oy runway</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 PROBLEM -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Muammo</span><span class="ix">— 02</span></div>
+        <h2 class="reveal r1">O'zbeklar pul jamg'aradi — <em>lekin qayerga qo'yishni bilishmaydi</em></h2>
+      </div>
+      <div class="grid g2" style="align-items:start">
+        <div class="numlist">
+          <div class="numrow reveal r2"><div class="n">1</div><div class="tx">
+            <h3>Tanlov ko'p — ravshanlik yo'q</h3>
+            <p>Depozit, obligatsiya, sukuk, aksiya, ETF, kripto, metall... har biri alohida ilova, alohida til, alohida shartlar. Yagona taqqoslash joyi mavjud emas.</p></div></div>
+          <div class="numrow reveal r3"><div class="n">2</div><div class="tx">
+            <h3>Past ishtirok, yuqori ishonchsizlik</h3>
+            <p>~800K broker hisobidan 10% dan kami faol. Asosiy to'siq iqtisodiy emas — moliyaviy savodsizlik va ishonchsizlik.</p></div></div>
+          <div class="numrow reveal r4"><div class="n">3</div><div class="tx">
+            <h3>Har bir o'yinchi faqat o'zini sotadi</h3>
+            <p>Jett — faqat aksiya, Iman — faqat islom moliyasi, Freedom — xalqaro. Neytral, xolis maslahatchi yo'q.</p></div></div>
+          <div class="numrow reveal r5"><div class="n">4</div><div class="tx">
+            <h3>Shaffoflik yetishmaydi</h3>
+            <p>Spred, komissiya, minimal summa ko'pincha yashirin. "Qaysi biri menga foydali?" degan savol javobsiz qoladi.</p></div></div>
+        </div>
+        <div class="card reveal r4" style="align-self:center">
+          <span class="eyebrow">Bozor holati</span>
+          <div class="stats" style="flex-direction:column;gap:24px;margin-top:18px">
+            <div class="stat"><div class="v num">&lt;10%</div><div class="k">broker hisoblarining faol ulushi</div></div>
+            <div class="stat"><div class="v num">15+</div><div class="k">tarqoq, bog'lanmagan kanal</div></div>
+            <div class="stat"><div class="v gold num">0</div><div class="k">neytral cross-asset aggregator</div></div>
+          </div>
+          <p class="muted" style="font-size:13px;margin-top:20px;border-top:1px solid var(--line);padding-top:16px">
+            Jett asoschisi bu maydonni "<em>blue ocean</em>" deb ataydi — muqarrar o'sish kutilmoqda.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 SOLUTION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Yechim</span><span class="ix">— 03</span></div>
+        <h2 class="reveal r1">Finport.uz — investitsiyaning <em>Google'i</em></h2>
+        <p class="lead reveal r2" style="margin-top:12px">Izlang · Taqqoslang · Boshqaring. Bitta neytral platforma, barcha aktiv turlari.</p>
+      </div>
+      <div class="grid g3">
+        <div class="card feat reveal r2">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
+          <h3>Yagona katalog</h3>
+          <p>15+ yo'nalish, 69+ real taklif (Asaka, NBU, Agrobank, Iman Invest...) bir joyda. Risk, daromad, valyuta, likvidlik va shariatga muvofiqlik bo'yicha filtr.</p>
+        </div>
+        <div class="card feat reveal r3">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
+          <h3>Aqlli taqqoslash</h3>
+          <p>Bir nechta yo'nalishni bitta grafikda solishtiring. Real spred, komissiya, minimal kirish — hech narsa yashirilmaydi.</p>
+        </div>
+        <div class="card feat reveal r4">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
+          <h3>Portfel boshqaruvi</h3>
+          <p>Barcha aktivlaringizni qo'shing, taqsimotni kuzating va 1 yillik o'sish prognozini oling. Daromad — har bir pozitsiya bo'yicha.</p>
+        </div>
+      </div>
+      <div class="mini reveal r5" style="justify-content:center;margin-top:26px">
+        <span class="chip gold">Neytral</span>
+        <span class="chip">Ta'limga yo'naltirilgan</span>
+        <span class="chip">3 tilli</span>
+        <span class="chip">$50 dan boshlanadi</span>
+        <span class="chip">Halol filtr</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 PRODUCT / PROTO -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Mahsulot · Proto</span><span class="ix">— 04</span></div>
+        <h2 class="reveal r1">Bu g'oya emas — <em>bugun ishlaydigan</em> prototip</h2>
+      </div>
+      <div class="grid g2" style="align-items:center;gap:clamp(24px,4vw,56px)">
+        <div class="reveal r2" style="display:flex;justify-content:center">
+          <div class="phone">
+            <div class="scr">
+              <div class="mtop"><div class="mt-wm">Finport<span>.</span>uz</div><div class="mt-lang">UZ · RU · EN</div></div>
+              <div class="mcard">
+                <div class="mh"><div class="nm">Bank depoziti (UZS)</div><div class="av" style="background:#E8CB8E">AG</div></div>
+                <div class="mret">21%</div><div class="msub">yillik · Agrobank "Hosil" · oylik kapitalizatsiya</div>
+                <div class="mbar"><i style="width:88%"></i></div>
+              </div>
+              <div class="mcard">
+                <div class="mh"><div class="nm">Sukuk</div><div class="av" style="background:#6FCF97">SK</div></div>
+                <div class="mret" style="color:var(--accent)">10–15%</div><div class="msub">islom obligatsiyasi · aktivga asoslangan · halol</div>
+                <div class="mbar"><i style="width:60%"></i></div>
+              </div>
+              <div class="mcard">
+                <div class="mh"><div class="nm">Qimmatbaho metallar</div><div class="av" style="background:#D9B871">PM</div></div>
+                <div class="mret" style="color:var(--info)">+12.4%</div><div class="msub">Oltin · Kumush · Platina · 1y dinamika</div>
+                <div class="mbar"><i style="width:72%"></i></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="checklist">
+            <div class="checkrow reveal r2"><div class="ck">✓</div><div><b style="color:var(--fg-0)">15+ kategoriya, 69+ taklif</b> — live ma'lumotlar bilan</div></div>
+            <div class="checkrow reveal r3"><div class="ck">✓</div><div>Interaktiv narx grafiklari (BTC, oltin, aleksandrit dinamikasi)</div></div>
+            <div class="checkrow reveal r3"><div class="ck">✓</div><div><b style="color:var(--fg-0)">Compare mode</b> — yo'nalishlarni yonma-yon bitta grafikda</div></div>
+            <div class="checkrow reveal r4"><div class="ck">✓</div><div>Portfel: donut taqsimot + bosqichli o'sish + 1y prognoz</div></div>
+            <div class="checkrow reveal r4"><div class="ck">✓</div><div>To'liq 3 tilli, mobil-responsiv interfeys</div></div>
+            <div class="checkrow reveal r5"><div class="ck">✓</div><div>Shariatga muvofiqlik belgisi (halol filtr)</div></div>
+          </div>
+          <div class="mini reveal r5" style="margin-top:24px">
+            <span class="chip gold"><span class="dot-led"></span> v0.1 MVP — jonli</span>
+            <span class="chip">github.com/zokirovbobur/invest-navigator</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 MARKET TAM-SAM-SOM -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Bozor</span><span class="ix">— 05</span></div>
+        <h2 class="reveal r1">Bozor imkoniyati — <em>TAM · SAM · SOM</em></h2>
+      </div>
+      <div class="grid g2" style="align-items:center;gap:clamp(24px,4vw,48px)">
+        <div class="reveal r2" style="display:flex;justify-content:center">
+          <svg viewBox="0 0 340 300" style="width:100%;max-width:360px">
+            <defs>
+              <radialGradient id="tam" cx="50%" cy="42%" r="60%">
+                <stop offset="0%" stop-color="rgba(217,184,113,.05)"/><stop offset="100%" stop-color="rgba(217,184,113,.13)"/>
+              </radialGradient>
+            </defs>
+            <circle cx="170" cy="150" r="140" fill="url(#tam)" stroke="rgba(217,184,113,.3)" stroke-width="1"/>
+            <circle cx="170" cy="178" r="95" fill="rgba(217,184,113,.10)" stroke="rgba(217,184,113,.45)" stroke-width="1"/>
+            <circle cx="170" cy="205" r="50" fill="rgba(217,184,113,.85)" stroke="var(--accent-soft)" stroke-width="1.5"/>
+            <text x="170" y="34" text-anchor="middle" fill="var(--accent)" font-family="JetBrains Mono" font-size="13" font-weight="600">TAM · $120M</text>
+            <text x="170" y="118" text-anchor="middle" fill="var(--accent-soft)" font-family="JetBrains Mono" font-size="13" font-weight="600">SAM · $24M</text>
+            <text x="170" y="200" text-anchor="middle" fill="#0E1014" font-family="JetBrains Mono" font-size="14" font-weight="600">SOM</text>
+            <text x="170" y="218" text-anchor="middle" fill="#0E1014" font-family="JetBrains Mono" font-size="14" font-weight="600">$2.4M</text>
+          </svg>
+        </div>
+        <div>
+          <div class="numlist">
+            <div class="numrow reveal r3"><div class="n" style="font-size:11px">TAM</div><div class="tx">
+              <h3>$120M / yil</h3>
+              <p>O'zbekistonda retail moliyaviy mahsulotlarni taqsimlash daromad puli (~10M raqamli faol kattalar × ~$12 potensial yillik daromad/foydalanuvchi).</p></div></div>
+            <div class="numrow reveal r4"><div class="n" style="font-size:11px">SAM</div><div class="tx">
+              <h3>$24M / yil</h3>
+              <p>Investitsiyaga qiziquvchi shaharlik smartfon foydalanuvchilari — ~2M kishi × ~$12.</p></div></div>
+            <div class="numrow reveal r5"><div class="n" style="font-size:11px">SOM</div><div class="tx">
+              <h3>$2.4M / yil — 3-yillik realistik ulush</h3>
+              <p>~240K faol foydalanuvchi × ~$10 blended ARPU (SAMning ~10%).</p></div></div>
+          </div>
+          <div class="mini reveal r6">
+            <span class="chip">Smartfon ~77% · 27M+ internet</span>
+            <span class="chip gold">12% soliq imtiyozi (2024)</span>
+            <span class="chip">Digital invest +32% / yil</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 COMPETITION -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Raqobat</span><span class="ix">— 06</span></div>
+        <h2 class="reveal r1">Nega <em>Finport</em>? — hech kim cross-asset taqqoslamaydi</h2>
+      </div>
+      <div class="card reveal r2" style="padding:6px 6px">
+        <table>
+          <thead><tr><th>Platforma</th><th>Qamrov</th><th>Neytralmi?</th><th>Taqqoslash</th><th>Portfel</th></tr></thead>
+          <tbody>
+            <tr><td>Jett</td><td>Faqat TSE aksiyalari</td><td class="no">Yo'q (broker)</td><td>Cheklangan</td><td>Bazaviy</td></tr>
+            <tr><td>Iman / IMANUM</td><td>Faqat islom moliyasi</td><td class="no">Yo'q (o'z fondi)</td><td>Yo'q</td><td>Qisman</td></tr>
+            <tr><td>Freedom Broker</td><td>Xalqaro aksiyalar</td><td class="no">Yo'q (broker)</td><td>Yo'q</td><td>Bazaviy</td></tr>
+            <tr><td>depozit.uz / bank.uz</td><td>Faqat depozit</td><td class="partial">Qisman</td><td>Faqat depozit</td><td>Yo'q</td></tr>
+            <tr class="me"><td>Finport.uz</td><td>15+ barcha aktiv turi</td><td class="yes">Ha — neytral</td><td>To'liq</td><td>To'liq</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card reveal r4" style="margin-top:18px;text-align:center;border-color:rgba(217,184,113,.3)">
+        <p style="font-size:clamp(16px,1.9vw,22px);color:var(--fg-0)">
+          Finport = O'zbekiston uchun <em>NerdWallet + Morningstar</em>. <span class="muted">Biz mahsulot sotmaymiz — to'g'ri qaror qabul qilishga yordam beramiz.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 BUSINESS MODEL -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Biznes model</span><span class="ix">— 07</span></div>
+        <h2 class="reveal r1">Monetizatsiya — <em>Hybrid</em> uch oqim</h2>
+      </div>
+      <div class="grid g3">
+        <div class="card feat reveal r2">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <h3>1 · Affiliate / Lead-gen</h3>
+          <p>Har bir ochilgan depozit / broker hisobi / fond uchun komissiya (<b style="color:var(--fg-0)">$3–30/lead</b>). Banklar uchun mijoz topish kanali. <span style="color:var(--accent)">Asosiy erta daromad.</span></p>
+        </div>
+        <div class="card feat reveal r3">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 6.8H22l-6 4.4 2.3 7L12 16l-6.3 4.2 2.3-7-6-4.4h7.6z"/></svg></div>
+          <h3>2 · Premium obuna</h3>
+          <p>Kengaytirilgan analitika, ogohlantirishlar, soliq-optimizatsiya, eksklyuziv data. <b style="color:var(--fg-0)">~$3–5/oy</b>, faol foydalanuvchilarning ~4% i.</p>
+        </div>
+        <div class="card feat reveal r4">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 20h10M9 10l2 2 4-4"/></svg></div>
+          <h3>3 · B2B · Data & White-label</h3>
+          <p>Banklarga benchmark data, white-label taqqoslash vidjeti, sponsorlik joylashuvi (ochiq belgilangan) va API. <span style="color:var(--accent)">Yuqori marja.</span></p>
+        </div>
+      </div>
+      <div class="grid g2" style="margin-top:20px;align-items:center">
+        <div class="card reveal r5">
+          <span class="eyebrow">3-yillik ARR prognozi</span>
+          <svg viewBox="0 0 360 120" style="width:100%;margin-top:14px">
+            <line x1="8" y1="100" x2="352" y2="100" stroke="var(--line)" stroke-width="1"/>
+            <rect x="40" y="88" width="60" height="12" rx="3" fill="var(--accent-deep)"/>
+            <rect x="150" y="58" width="60" height="42" rx="3" fill="var(--accent)"/>
+            <rect x="260" y="16" width="60" height="84" rx="3" fill="var(--accent-soft)"/>
+            <text x="70" y="80" text-anchor="middle" fill="var(--fg-1)" font-family="JetBrains Mono" font-size="11">$0.15M</text>
+            <text x="180" y="50" text-anchor="middle" fill="var(--fg-0)" font-family="JetBrains Mono" font-size="11">$0.9M</text>
+            <text x="290" y="9" text-anchor="middle" fill="var(--accent)" font-family="JetBrains Mono" font-size="11" font-weight="600">$2.4M</text>
+            <text x="70" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10">Yil 1</text>
+            <text x="180" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10">Yil 2</text>
+            <text x="290" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10">Yil 3</text>
+          </svg>
+        </div>
+        <div class="reveal r5">
+          <div class="stats" style="gap:32px">
+            <div class="stat"><div class="v gold num">&gt;3x</div><div class="k">LTV / CAC nisbati (maqsad)</div></div>
+            <div class="stat"><div class="v num">~$10</div><div class="k">blended ARPU (yetuk)</div></div>
+            <div class="stat"><div class="v num">~$2</div><div class="k">CAC (organik + kontent)</div></div>
+          </div>
+          <p class="muted" style="font-size:13px;margin-top:18px">Nega hozir: open banking, 12% soliq imtiyozi va banklarning mijoz uchun kurashi → <em>har bir lead qiymati o'smoqda</em>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 ASK / USE OF FUNDS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Investitsiya so'rovi</span><span class="ix">— 08</span></div>
+        <h2 class="reveal r1"><em>$300K</em> — Pre-seed · 18 oylik runway</h2>
+      </div>
+      <div class="grid g2" style="align-items:center;gap:clamp(24px,4vw,52px)">
+        <div class="fbar reveal r2">
+          <div class="row"><div class="top"><span class="lab">Jamoa — eng + product + analitik/kontent</span><span class="val">$150K <span class="pct">50%</span></span></div><div class="track"><i style="--w:100%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab">Marketing & user acquisition</span><span class="val">$66K <span class="pct">22%</span></span></div><div class="track"><i style="--w:44%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab">Data, hamkorlik & litsenziya/compliance</span><span class="val">$45K <span class="pct">15%</span></span></div><div class="track"><i style="--w:30%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab">Mahsulot, infra & tooling</span><span class="val">$24K <span class="pct">8%</span></span></div><div class="track"><i style="--w:16%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab">Operatsion & rezerv</span><span class="val">$15K <span class="pct">5%</span></span></div><div class="track"><i style="--w:10%"></i></div></div>
+        </div>
+        <div class="card reveal r4">
+          <span class="eyebrow">Nega aynan shuncha?</span>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:16px">
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> 4 kishilik yadro jamoasini <b style="color:var(--fg-0)">18 oy</b> ushlab turish</li>
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> Ommaviy ishga tushirish (web + mobil) va dastlabki o'sish</li>
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> 25+ muassasa bilan affiliate shartnomalari</li>
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> Aniq traksiya bilan <b style="color:var(--accent)">seed roundga tayyor</b> bo'lish</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 ROADMAP / 12 MONTHS -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Yo'l xaritasi</span><span class="ix">— 09</span></div>
+        <h2 class="reveal r1">Kelasi 12 oyda <em>nimaga erishamiz</em></h2>
+      </div>
+      <div class="tl reveal r2" style="position:relative;margin-bottom:26px">
+        <div class="line"></div>
+        <div class="q"><div class="qh">Q1</div><ul>
+          <li>Ommaviy ishga tushirish (web + mobil PWA)</li>
+          <li>20+ hamkor muassasa shartnomasi</li>
+          <li>Halol filtr 2.0</li></ul></div>
+        <div class="q"><div class="qh">Q2</div><ul>
+          <li>25K ro'yxatdan o'tgan foydalanuvchi</li>
+          <li>Birinchi affiliate daromadi</li>
+          <li>Premium beta</li></ul></div>
+        <div class="q"><div class="qh">Q3</div><ul>
+          <li>50K ro'yxat · 12K MAU</li>
+          <li>2 bank bilan B2B pilot</li>
+          <li>Narx-ogohlantirish tizimi</li></ul></div>
+        <div class="q"><div class="qh">Q4</div><ul>
+          <li>80K ro'yxat · 15K MAU</li>
+          <li>3K premium obunachi</li>
+          <li><b style="color:var(--accent)">~$150K ARR · seed-ready</b></li></ul></div>
+      </div>
+      <div class="card reveal r5">
+        <div class="stats" style="justify-content:space-between">
+          <div class="stat"><div class="v gold num">80K</div><div class="k">ro'yxatdan o'tgan foydalanuvchi</div></div>
+          <div class="stat"><div class="v num">15K</div><div class="k">oylik faol (MAU)</div></div>
+          <div class="stat"><div class="v num">25+</div><div class="k">hamkor muassasa</div></div>
+          <div class="stat"><div class="v num">3K</div><div class="k">premium obunachi</div></div>
+          <div class="stat"><div class="v gold num">$150K</div><div class="k">ARR run-rate</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 TEAM / VISION / CLOSE -->
+  <section class="slide">
+    <div class="slide-inner">
+      <div class="slide-head">
+        <div class="kicker reveal r1"><span class="eyebrow">Jamoa & Vizyon</span><span class="ix">— 10</span></div>
+        <h2 class="reveal r1">Buni quradigan <em>jamoa</em></h2>
+      </div>
+      <div class="grid g2" style="align-items:start;gap:clamp(24px,4vw,48px)">
+        <div class="card reveal r2">
+          <div style="display:flex;gap:16px;align-items:center;margin-bottom:14px">
+            <div style="width:54px;height:54px;border-radius:14px;flex:none;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:18px;color:var(--bg-0);background:linear-gradient(135deg,var(--accent-soft),var(--accent-deep))">BZ</div>
+            <div><h3 style="font-size:18px">Bobur Zokirov</h3><p class="muted" style="font-size:13px">Asoschi · Product & Technology Leader</p></div>
+          </div>
+          <p style="font-size:14px;color:var(--fg-1);line-height:1.55">12+ yil moliya-texnologiya tajribasi. <b style="color:var(--fg-0)">Idea</b> (Head of Retail), <b style="color:var(--fg-0)">Mediapark</b> (CPTO maslahatchi), banking & fintech (Xalq Banki, EPAM, Paynet). Islom moliyasi va Sharia-compliant mahsulotlar bo'yicha chuqur ekspertiza.</p>
+          <div class="mini" style="margin-top:16px">
+            <span class="chip">Fintech · Banking</span><span class="chip">Product</span><span class="chip gold">+ CTO / co-founder qidirilmoqda</span>
+          </div>
+        </div>
+        <div class="reveal r3" style="display:flex;flex-direction:column;justify-content:center;height:100%">
+          <span class="eyebrow">Vizyon</span>
+          <p style="font-size:clamp(18px,2.2vw,26px);line-height:1.3;margin-top:14px;color:var(--fg-0)">
+            Har bir o'zbek o'z pulini <em>ishlatishni biladigan</em> davlat. Finport — Markaziy Osiyoning investitsiya operatsion tizimi.</p>
+        </div>
+      </div>
+      <div class="card reveal r5" style="margin-top:22px;text-align:center;border-color:rgba(217,184,113,.35);background:linear-gradient(180deg,rgba(217,184,113,.08),rgba(21,24,31,.5))">
+        <h2 style="font-size:clamp(22px,3vw,34px)"><em>$300K pre-seed</em> · Keling, birga quramiz</h2>
+        <p class="muted" style="margin-top:10px;font-family:var(--mono);font-size:13px">finport.uz · github.com/zokirovbobur/invest-navigator</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- nav -->
+<div class="dots" id="dots"></div>
+<div class="nav">
+  <button id="prev" aria-label="Oldingi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <button id="next" aria-label="Keyingi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
+</div>
+<div class="hint">← → strelkalar bilan boshqaring</div>
+
+<script>
+(function(){
+  const slides=[...document.querySelectorAll('.slide')];
+  const dotsWrap=document.getElementById('dots');
+  const prev=document.getElementById('prev'), next=document.getElementById('next');
+  const cur=document.getElementById('cur'), total=document.getElementById('total');
+  const progress=document.getElementById('progress');
+  let i=0; total.textContent=String(slides.length).padStart(2,'0');
+
+  slides.forEach((_,k)=>{const b=document.createElement('button');b.onclick=()=>go(k);dotsWrap.appendChild(b);});
+  const dots=[...dotsWrap.children];
+
+  function go(n){
+    i=Math.max(0,Math.min(slides.length-1,n));
+    slides.forEach((s,k)=>s.classList.toggle('active',k===i));
+    dots.forEach((d,k)=>d.classList.toggle('on',k===i));
+    cur.textContent=String(i+1).padStart(2,'0');
+    progress.style.width=((i+1)/slides.length*100)+'%';
+    prev.disabled=i===0; next.disabled=i===slides.length-1;
+  }
+  prev.onclick=()=>go(i-1); next.onclick=()=>go(i+1);
+  window.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(i+1);}
+    if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
+    if(e.key==='Home')go(0); if(e.key==='End')go(slides.length-1);
+  });
+  // swipe
+  let x0=null;
+  window.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
+  window.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)go(i+(dx<0?1:-1));x0=null;},{passive:true});
+  go(0);
+})();
+</script>
+</body>
+</html>
