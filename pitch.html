@@ -166,8 +166,15 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
 .topbar{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;
   padding:18px clamp(20px,4vw,40px);pointer-events:none}
 .topbar .brand{pointer-events:auto}
-.counter{font-family:var(--mono);font-size:12px;color:var(--fg-2);pointer-events:auto}
+.topbar-right{display:flex;align-items:center;gap:16px;pointer-events:auto}
+.counter{font-family:var(--mono);font-size:12px;color:var(--fg-2)}
 .counter b{color:var(--fg-0)}
+/* lang selector */
+.lang-sel{display:flex;gap:5px}
+.lang-btn{font-family:var(--mono);font-size:10px;letter-spacing:.08em;padding:4px 9px;border-radius:7px;
+  border:1px solid var(--line-2);background:rgba(255,255,255,.03);color:var(--fg-2);cursor:pointer;transition:all .15s}
+.lang-btn.on{border-color:rgba(217,184,113,.4);color:var(--accent);background:rgba(217,184,113,.08)}
+.lang-btn:hover:not(.on){border-color:var(--line-2);color:var(--fg-1);background:rgba(255,255,255,.06)}
 .nav{position:fixed;right:clamp(20px,4vw,40px);bottom:24px;z-index:20;display:flex;gap:10px}
 .nav button{width:42px;height:42px;border-radius:11px;border:1px solid var(--line-2);background:rgba(27,31,40,.7);
   color:var(--fg-1);cursor:pointer;display:grid;place-items:center;transition:all .15s;backdrop-filter:blur(8px)}
@@ -196,7 +203,14 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
 <div class="progress" id="progress"></div>
 <div class="topbar">
   <div class="brand"><div class="mark"></div><div class="wm">Finport<span>.</span>uz</div></div>
-  <div class="counter"><b id="cur">01</b> / <span id="total">10</span></div>
+  <div class="topbar-right">
+    <div class="lang-sel">
+      <button class="lang-btn on" data-lang="uz">UZ</button>
+      <button class="lang-btn" data-lang="ru">RU</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <div class="counter"><b id="cur">01</b> / <span id="total">10</span></div>
+  </div>
 </div>
 
 <div class="deck" id="deck">
@@ -204,23 +218,23 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <!-- 1 COVER -->
   <section class="slide active">
     <div class="slide-inner">
-      <div class="reveal r1"><span class="eyebrow">Investor Deck · 2026 · Pre-seed</span></div>
-      <h1 class="reveal r2" style="margin-top:18px;max-width:18ch">
+      <div class="reveal r1"><span class="eyebrow" data-i18n="s1_eyebrow">Investor Deck · 2026 · Pre-seed</span></div>
+      <h1 class="reveal r2" style="margin-top:18px;max-width:18ch" data-i18n-html="s1_title">
         O'zbekistonning birinchi <em>neytral</em> investitsiya navigatori
       </h1>
-      <p class="lead reveal r3" style="margin-top:20px">
+      <p class="lead reveal r3" style="margin-top:20px" data-i18n-html="s1_lead">
         Depozitdan sukuk, aksiya va kriptogacha — <b style="color:var(--fg-0)">15+ yo'nalish</b> bir platformada.
         Taqqoslang, tushuning, portfelingizni boshqaring. Hech kim sotmaydi — biz yo'l ko'rsatamiz.
       </p>
       <div class="mini reveal r4">
-        <span class="chip gold"><span class="dot-led"></span> Cross-asset aggregator</span>
-        <span class="chip">3 til · UZ / RU / EN</span>
-        <span class="chip">Ishlaydigan MVP v0.1</span>
+        <span class="chip gold"><span class="dot-led"></span> <span data-i18n="s1_chip1">Cross-asset aggregator</span></span>
+        <span class="chip" data-i18n="s1_chip2">3 til · UZ / RU / EN</span>
+        <span class="chip" data-i18n="s1_chip3">Ishlaydigan MVP v0.1</span>
       </div>
       <div class="cover-stats reveal r5">
-        <div class="stat"><div class="v gold num">37M+</div><div class="k">aholi · ulkan bo'sh maydon</div></div>
-        <div class="stat"><div class="v num">~80K</div><div class="k">faol investor (jami ~800K hisobning &lt;10%)</div></div>
-        <div class="stat"><div class="v num">$300K</div><div class="k">pre-seed so'rovi · 18 oy runway</div></div>
+        <div class="stat"><div class="v gold num">37M+</div><div class="k" data-i18n="s1_stat1_k">aholi · ulkan bo'sh maydon</div></div>
+        <div class="stat"><div class="v num">~80K</div><div class="k" data-i18n="s1_stat2_k">faol investor (jami ~800K hisobning &lt;10%)</div></div>
+        <div class="stat"><div class="v num">$300K</div><div class="k" data-i18n="s1_stat3_k">pre-seed so'rovi · 18 oy runway</div></div>
       </div>
     </div>
   </section>
@@ -229,32 +243,32 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Muammo</span><span class="ix">— 02</span></div>
-        <h2 class="reveal r1">O'zbeklar pul jamg'aradi — <em>lekin qayerga qo'yishni bilishmaydi</em></h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s2_eyebrow">Muammo</span><span class="ix">— 02</span></div>
+        <h2 class="reveal r1" data-i18n-html="s2_title">O'zbeklar pul jamg'aradi — <em>lekin qayerga qo'yishni bilishmaydi</em></h2>
       </div>
       <div class="grid g2" style="align-items:start">
         <div class="numlist">
           <div class="numrow reveal r2"><div class="n">1</div><div class="tx">
-            <h3>Tanlov ko'p — ravshanlik yo'q</h3>
-            <p>Depozit, obligatsiya, sukuk, aksiya, ETF, kripto, metall... har biri alohida ilova, alohida til, alohida shartlar. Yagona taqqoslash joyi mavjud emas.</p></div></div>
+            <h3 data-i18n="s2_n1_h">Tanlov ko'p — ravshanlik yo'q</h3>
+            <p data-i18n="s2_n1_p">Depozit, obligatsiya, sukuk, aksiya, ETF, kripto, metall... har biri alohida ilova, alohida til, alohida shartlar. Yagona taqqoslash joyi mavjud emas.</p></div></div>
           <div class="numrow reveal r3"><div class="n">2</div><div class="tx">
-            <h3>Past ishtirok, yuqori ishonchsizlik</h3>
-            <p>~800K broker hisobidan 10% dan kami faol. Asosiy to'siq iqtisodiy emas — moliyaviy savodsizlik va ishonchsizlik.</p></div></div>
+            <h3 data-i18n="s2_n2_h">Past ishtirok, yuqori ishonchsizlik</h3>
+            <p data-i18n="s2_n2_p">~800K broker hisobidan 10% dan kami faol. Asosiy to'siq iqtisodiy emas — moliyaviy savodsizlik va ishonchsizlik.</p></div></div>
           <div class="numrow reveal r4"><div class="n">3</div><div class="tx">
-            <h3>Har bir o'yinchi faqat o'zini sotadi</h3>
-            <p>Jett — faqat aksiya, Iman — faqat islom moliyasi, Freedom — xalqaro. Neytral, xolis maslahatchi yo'q.</p></div></div>
+            <h3 data-i18n="s2_n3_h">Har bir o'yinchi faqat o'zini sotadi</h3>
+            <p data-i18n="s2_n3_p">Jett — faqat aksiya, Iman — faqat islom moliyasi, Freedom — xalqaro. Neytral, xolis maslahatchi yo'q.</p></div></div>
           <div class="numrow reveal r5"><div class="n">4</div><div class="tx">
-            <h3>Shaffoflik yetishmaydi</h3>
-            <p>Spred, komissiya, minimal summa ko'pincha yashirin. "Qaysi biri menga foydali?" degan savol javobsiz qoladi.</p></div></div>
+            <h3 data-i18n="s2_n4_h">Shaffoflik yetishmaydi</h3>
+            <p data-i18n="s2_n4_p">Spred, komissiya, minimal summa ko'pincha yashirin. "Qaysi biri menga foydali?" degan savol javobsiz qoladi.</p></div></div>
         </div>
         <div class="card reveal r4" style="align-self:center">
-          <span class="eyebrow">Bozor holati</span>
+          <span class="eyebrow" data-i18n="s2_card_eyebrow">Bozor holati</span>
           <div class="stats" style="flex-direction:column;gap:24px;margin-top:18px">
-            <div class="stat"><div class="v num">&lt;10%</div><div class="k">broker hisoblarining faol ulushi</div></div>
-            <div class="stat"><div class="v num">15+</div><div class="k">tarqoq, bog'lanmagan kanal</div></div>
-            <div class="stat"><div class="v gold num">0</div><div class="k">neytral cross-asset aggregator</div></div>
+            <div class="stat"><div class="v num">&lt;10%</div><div class="k" data-i18n="s2_stat1_k">broker hisoblarining faol ulushi</div></div>
+            <div class="stat"><div class="v num">15+</div><div class="k" data-i18n="s2_stat2_k">tarqoq, bog'lanmagan kanal</div></div>
+            <div class="stat"><div class="v gold num">0</div><div class="k" data-i18n="s2_stat3_k">neytral cross-asset aggregator</div></div>
           </div>
-          <p class="muted" style="font-size:13px;margin-top:20px;border-top:1px solid var(--line);padding-top:16px">
+          <p class="muted" style="font-size:13px;margin-top:20px;border-top:1px solid var(--line);padding-top:16px" data-i18n-html="s2_quote">
             Jett asoschisi bu maydonni "<a href="https://uz.kursiv.media/en/2025-07-02/uzbekistans-capital-market-what-works-and-what-still-holds-it-back/" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(217,184,113,.4)">blue ocean</a>" deb ataydi — muqarrar o'sish kutilmoqda.</p>
         </div>
       </div>
@@ -265,33 +279,33 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Yechim</span><span class="ix">— 03</span></div>
-        <h2 class="reveal r1">Finport.uz — investitsiyaning <em>Google'i</em></h2>
-        <p class="lead reveal r2" style="margin-top:12px">Izlang · Taqqoslang · Boshqaring. Bitta neytral platforma, barcha aktiv turlari.</p>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s3_eyebrow">Yechim</span><span class="ix">— 03</span></div>
+        <h2 class="reveal r1" data-i18n-html="s3_title">Finport.uz — investitsiyaning <em>Google'i</em></h2>
+        <p class="lead reveal r2" style="margin-top:12px" data-i18n="s3_lead">Izlang · Taqqoslang · Boshqaring. Bitta neytral platforma, barcha aktiv turlari.</p>
       </div>
       <div class="grid g3">
         <div class="card feat reveal r2">
           <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></div>
-          <h3>Yagona katalog</h3>
-          <p>15+ yo'nalish, 69+ real taklif (Asaka, NBU, Agrobank, Iman Invest...) bir joyda. Risk, daromad, valyuta, likvidlik va shariatga muvofiqlik bo'yicha filtr.</p>
+          <h3 data-i18n="s3_c1_h">Yagona katalog</h3>
+          <p data-i18n="s3_c1_p">15+ yo'nalish, 69+ real taklif (Asaka, NBU, Agrobank, Iman Invest...) bir joyda. Risk, daromad, valyuta, likvidlik va shariatga muvofiqlik bo'yicha filtr.</p>
         </div>
         <div class="card feat reveal r3">
           <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></div>
-          <h3>Aqlli taqqoslash</h3>
-          <p>Bir nechta yo'nalishni bitta grafikda solishtiring. Real spred, komissiya, minimal kirish — hech narsa yashirilmaydi.</p>
+          <h3 data-i18n="s3_c2_h">Aqlli taqqoslash</h3>
+          <p data-i18n="s3_c2_p">Bir nechta yo'nalishni bitta grafikda solishtiring. Real spred, komissiya, minimal kirish — hech narsa yashirilmaydi.</p>
         </div>
         <div class="card feat reveal r4">
           <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-          <h3>Portfel boshqaruvi</h3>
-          <p>Barcha aktivlaringizni qo'shing, taqsimotni kuzating va 1 yillik o'sish prognozini oling. Daromad — har bir pozitsiya bo'yicha.</p>
+          <h3 data-i18n="s3_c3_h">Portfel boshqaruvi</h3>
+          <p data-i18n="s3_c3_p">Barcha aktivlaringizni qo'shing, taqsimotni kuzating va 1 yillik o'sish prognozini oling. Daromad — har bir pozitsiya bo'yicha.</p>
         </div>
       </div>
       <div class="mini reveal r5" style="justify-content:center;margin-top:26px">
-        <span class="chip gold">Neytral</span>
-        <span class="chip">Ta'limga yo'naltirilgan</span>
-        <span class="chip">3 tilli</span>
-        <span class="chip">$50 dan boshlanadi</span>
-        <span class="chip">Halol filtr</span>
+        <span class="chip gold" data-i18n="s3_chip1">Neytral</span>
+        <span class="chip" data-i18n="s3_chip2">Ta'limga yo'naltirilgan</span>
+        <span class="chip" data-i18n="s3_chip3">3 tilli</span>
+        <span class="chip" data-i18n="s3_chip4">$50 dan boshlanadi</span>
+        <span class="chip" data-i18n="s3_chip5">Halol filtr</span>
       </div>
     </div>
   </section>
@@ -300,8 +314,8 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Mahsulot · Proto</span><span class="ix">— 04</span></div>
-        <h2 class="reveal r1">Bu g'oya emas — <em>bugun ishlaydigan</em> prototip</h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s4_eyebrow">Mahsulot · Proto</span><span class="ix">— 04</span></div>
+        <h2 class="reveal r1" data-i18n-html="s4_title">Bu g'oya emas — <em>bugun ishlaydigan</em> prototip</h2>
       </div>
       <div class="grid g2" style="align-items:center;gap:clamp(24px,4vw,56px)">
         <div class="reveal r2" style="display:flex;justify-content:center">
@@ -328,15 +342,15 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
         </div>
         <div>
           <div class="checklist">
-            <div class="checkrow reveal r2"><div class="ck">✓</div><div><b style="color:var(--fg-0)">15+ kategoriya, 69+ taklif</b> — live ma'lumotlar bilan</div></div>
-            <div class="checkrow reveal r3"><div class="ck">✓</div><div>Interaktiv narx grafiklari (BTC, oltin, aleksandrit dinamikasi)</div></div>
-            <div class="checkrow reveal r3"><div class="ck">✓</div><div><b style="color:var(--fg-0)">Compare mode</b> — yo'nalishlarni yonma-yon bitta grafikda</div></div>
-            <div class="checkrow reveal r4"><div class="ck">✓</div><div>Portfel: donut taqsimot + bosqichli o'sish + 1y prognoz</div></div>
-            <div class="checkrow reveal r4"><div class="ck">✓</div><div>To'liq 3 tilli, mobil-responsiv interfeys</div></div>
-            <div class="checkrow reveal r5"><div class="ck">✓</div><div>Shariatga muvofiqlik belgisi (halol filtr)</div></div>
+            <div class="checkrow reveal r2"><div class="ck">✓</div><div data-i18n-html="s4_ck1"><b style="color:var(--fg-0)">15+ kategoriya, 69+ taklif</b> — live ma'lumotlar bilan</div></div>
+            <div class="checkrow reveal r3"><div class="ck">✓</div><div data-i18n="s4_ck2">Interaktiv narx grafiklari (BTC, oltin, aleksandrit dinamikasi)</div></div>
+            <div class="checkrow reveal r3"><div class="ck">✓</div><div data-i18n-html="s4_ck3"><b style="color:var(--fg-0)">Compare mode</b> — yo'nalishlarni yonma-yon bitta grafikda</div></div>
+            <div class="checkrow reveal r4"><div class="ck">✓</div><div data-i18n="s4_ck4">Portfel: donut taqsimot + bosqichli o'sish + 1y prognoz</div></div>
+            <div class="checkrow reveal r4"><div class="ck">✓</div><div data-i18n="s4_ck5">To'liq 3 tilli, mobil-responsiv interfeys</div></div>
+            <div class="checkrow reveal r5"><div class="ck">✓</div><div data-i18n="s4_ck6">Shariatga muvofiqlik belgisi (halol filtr)</div></div>
           </div>
           <div class="mini reveal r5" style="margin-top:24px">
-            <span class="chip gold"><span class="dot-led"></span> v0.1 MVP — jonli</span>
+            <span class="chip gold"><span class="dot-led"></span> <span data-i18n="s4_chip1">v0.1 MVP — jonli</span></span>
           </div>
         </div>
       </div>
@@ -347,8 +361,8 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Bozor</span><span class="ix">— 05</span></div>
-        <h2 class="reveal r1">Bozor imkoniyati — <em>TAM · SAM · SOM</em></h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s5_eyebrow">Bozor</span><span class="ix">— 05</span></div>
+        <h2 class="reveal r1" data-i18n-html="s5_title">Bozor imkoniyati — <em>TAM · SAM · SOM</em></h2>
       </div>
       <div class="grid g2" style="align-items:center;gap:clamp(24px,4vw,48px)">
         <div class="reveal r2" style="display:flex;justify-content:center">
@@ -370,19 +384,19 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
         <div>
           <div class="numlist">
             <div class="numrow reveal r3"><div class="n" style="font-size:11px">TAM</div><div class="tx">
-              <h3>$120M / yil</h3>
-              <p>O'zbekistonda retail moliyaviy mahsulotlarni taqsimlash daromad puli (~10M raqamli faol kattalar × ~$12 potensial yillik daromad/foydalanuvchi).</p></div></div>
+              <h3 data-i18n="s5_tam_h">$120M / yil</h3>
+              <p data-i18n="s5_tam_p">O'zbekistonda retail moliyaviy mahsulotlarni taqsimlash daromad puli (~10M raqamli faol kattalar × ~$12 potensial yillik daromad/foydalanuvchi).</p></div></div>
             <div class="numrow reveal r4"><div class="n" style="font-size:11px">SAM</div><div class="tx">
-              <h3>$24M / yil</h3>
-              <p>Investitsiyaga qiziquvchi shaharlik smartfon foydalanuvchilari — ~2M kishi × ~$12.</p></div></div>
+              <h3 data-i18n="s5_sam_h">$24M / yil</h3>
+              <p data-i18n="s5_sam_p">Investitsiyaga qiziquvchi shaharlik smartfon foydalanuvchilari — ~2M kishi × ~$12.</p></div></div>
             <div class="numrow reveal r5"><div class="n" style="font-size:11px">SOM</div><div class="tx">
-              <h3>$2.4M / yil — 3-yillik realistik ulush</h3>
-              <p>~240K faol foydalanuvchi × ~$10 blended ARPU (SAMning ~10%).</p></div></div>
+              <h3 data-i18n="s5_som_h">$2.4M / yil — 3-yillik realistik ulush</h3>
+              <p data-i18n="s5_som_p">~240K faol foydalanuvchi × ~$10 blended ARPU (SAMning ~10%).</p></div></div>
           </div>
           <div class="mini reveal r6">
-            <span class="chip">Smartfon ~77% · 27M+ internet</span>
-            <span class="chip gold">12% soliq imtiyozi (2024)</span>
-            <span class="chip">Digital invest +32% / yil</span>
+            <span class="chip" data-i18n="s5_chip1">Smartfon ~77% · 27M+ internet</span>
+            <span class="chip gold" data-i18n="s5_chip2">12% soliq imtiyozi (2024)</span>
+            <span class="chip" data-i18n="s5_chip3">Digital invest +32% / yil</span>
           </div>
         </div>
       </div>
@@ -393,23 +407,29 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Raqobat</span><span class="ix">— 06</span></div>
-        <h2 class="reveal r1">Nega <em>Finport</em>? — hech kim cross-asset taqqoslamaydi</h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s6_eyebrow">Raqobat</span><span class="ix">— 06</span></div>
+        <h2 class="reveal r1" data-i18n-html="s6_title">Nega <em>Finport</em>? — hech kim cross-asset taqqoslamaydi</h2>
       </div>
       <div class="card reveal r2" style="padding:6px 6px">
         <table>
-          <thead><tr><th>Platforma</th><th>Qamrov</th><th>Neytralmi?</th><th>Taqqoslash</th><th>Portfel</th></tr></thead>
+          <thead><tr>
+            <th data-i18n="s6_th1">Platforma</th>
+            <th data-i18n="s6_th2">Qamrov</th>
+            <th data-i18n="s6_th3">Neytralmi?</th>
+            <th data-i18n="s6_th4">Taqqoslash</th>
+            <th data-i18n="s6_th5">Portfel</th>
+          </tr></thead>
           <tbody>
-            <tr><td>Jett</td><td>Faqat TSE aksiyalari</td><td class="no">Yo'q (broker)</td><td>Cheklangan</td><td>Bazaviy</td></tr>
-            <tr><td>Iman / IMANUM</td><td>Faqat islom moliyasi</td><td class="no">Yo'q (o'z fondi)</td><td>Yo'q</td><td>Qisman</td></tr>
-            <tr><td>Freedom Broker</td><td>Xalqaro aksiyalar</td><td class="no">Yo'q (broker)</td><td>Yo'q</td><td>Bazaviy</td></tr>
-            <tr><td>depozit.uz / bank.uz</td><td>Faqat depozit</td><td class="partial">Qisman</td><td>Faqat depozit</td><td>Yo'q</td></tr>
-            <tr class="me"><td>Finport.uz</td><td>15+ barcha aktiv turi</td><td class="yes">Ha — neytral</td><td>To'liq</td><td>To'liq</td></tr>
+            <tr><td data-i18n="s6_r1_td1">Jett</td><td data-i18n="s6_r1_td2">Faqat TSE aksiyalari</td><td class="no" data-i18n="s6_r1_td3">Yo'q (broker)</td><td data-i18n="s6_r1_td4">Cheklangan</td><td data-i18n="s6_r1_td5">Bazaviy</td></tr>
+            <tr><td data-i18n="s6_r2_td1">Iman / IMANUM</td><td data-i18n="s6_r2_td2">Faqat islom moliyasi</td><td class="no" data-i18n="s6_r2_td3">Yo'q (o'z fondi)</td><td data-i18n="s6_r2_td4">Yo'q</td><td data-i18n="s6_r2_td5">Qisman</td></tr>
+            <tr><td data-i18n="s6_r3_td1">Freedom Broker</td><td data-i18n="s6_r3_td2">Xalqaro aksiyalar</td><td class="no" data-i18n="s6_r3_td3">Yo'q (broker)</td><td data-i18n="s6_r3_td4">Yo'q</td><td data-i18n="s6_r3_td5">Bazaviy</td></tr>
+            <tr><td data-i18n="s6_r4_td1">depozit.uz / bank.uz</td><td data-i18n="s6_r4_td2">Faqat depozit</td><td class="partial" data-i18n="s6_r4_td3">Qisman</td><td data-i18n="s6_r4_td4">Faqat depozit</td><td data-i18n="s6_r4_td5">Yo'q</td></tr>
+            <tr class="me"><td>Finport.uz</td><td data-i18n="s6_r5_td2">15+ barcha aktiv turi</td><td class="yes" data-i18n="s6_r5_td3">Ha — neytral</td><td data-i18n="s6_r5_td4">To'liq</td><td data-i18n="s6_r5_td5">To'liq</td></tr>
           </tbody>
         </table>
       </div>
       <div class="card reveal r4" style="margin-top:18px;text-align:center;border-color:rgba(217,184,113,.3)">
-        <p style="font-size:clamp(16px,1.9vw,22px);color:var(--fg-0)">
+        <p style="font-size:clamp(16px,1.9vw,22px);color:var(--fg-0)" data-i18n-html="s6_closing">
           Finport = O'zbekiston uchun <em>NerdWallet + Morningstar</em>. <span class="muted">Biz mahsulot sotmaymiz — to'g'ri qaror qabul qilishga yordam beramiz.</span></p>
       </div>
     </div>
@@ -419,29 +439,29 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Biznes model</span><span class="ix">— 07</span></div>
-        <h2 class="reveal r1">Monetizatsiya — <em>Hybrid</em> uch oqim</h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s7_eyebrow">Biznes model</span><span class="ix">— 07</span></div>
+        <h2 class="reveal r1" data-i18n-html="s7_title">Monetizatsiya — <em>Hybrid</em> uch oqim</h2>
       </div>
       <div class="grid g3">
         <div class="card feat reveal r2">
           <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
-          <h3>1 · Affiliate / Lead-gen</h3>
-          <p>Har bir ochilgan depozit / broker hisobi / fond uchun komissiya (<b style="color:var(--fg-0)">$3–30/lead</b>). Banklar uchun mijoz topish kanali. <span style="color:var(--accent)">Asosiy erta daromad.</span></p>
+          <h3 data-i18n="s7_c1_h">1 · Affiliate / Lead-gen</h3>
+          <p data-i18n-html="s7_c1_p">Har bir ochilgan depozit / broker hisobi / fond uchun komissiya (<b style="color:var(--fg-0)">$3–30/lead</b>). Banklar uchun mijoz topish kanali. <span style="color:var(--accent)">Asosiy erta daromad.</span></p>
         </div>
         <div class="card feat reveal r3">
           <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l2.4 6.8H22l-6 4.4 2.3 7L12 16l-6.3 4.2 2.3-7-6-4.4h7.6z"/></svg></div>
-          <h3>2 · Premium obuna</h3>
-          <p>Kengaytirilgan analitika, ogohlantirishlar, soliq-optimizatsiya, eksklyuziv data. <b style="color:var(--fg-0)">~$3–5/oy</b>, faol foydalanuvchilarning ~4% i.</p>
+          <h3 data-i18n="s7_c2_h">2 · Premium obuna</h3>
+          <p data-i18n-html="s7_c2_p">Kengaytirilgan analitika, ogohlantirishlar, soliq-optimizatsiya, eksklyuziv data. <b style="color:var(--fg-0)">~$3–5/oy</b>, faol foydalanuvchilarning ~4% i.</p>
         </div>
         <div class="card feat reveal r4">
           <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M7 20h10M9 10l2 2 4-4"/></svg></div>
-          <h3>3 · B2B · Data & White-label</h3>
-          <p>Banklarga benchmark data, white-label taqqoslash vidjeti, sponsorlik joylashuvi (ochiq belgilangan) va API. <span style="color:var(--accent)">Yuqori marja.</span></p>
+          <h3 data-i18n="s7_c3_h">3 · B2B · Data & White-label</h3>
+          <p data-i18n-html="s7_c3_p">Banklarga benchmark data, white-label taqqoslash vidjeti, sponsorlik joylashuvi (ochiq belgilangan) va API. <span style="color:var(--accent)">Yuqori marja.</span></p>
         </div>
       </div>
       <div class="grid g2" style="margin-top:20px;align-items:center">
         <div class="card reveal r5">
-          <span class="eyebrow">3-yillik ARR prognozi</span>
+          <span class="eyebrow" data-i18n="s7_chart_eyebrow">3-yillik ARR prognozi</span>
           <svg viewBox="0 0 360 120" style="width:100%;margin-top:14px">
             <line x1="8" y1="100" x2="352" y2="100" stroke="var(--line)" stroke-width="1"/>
             <rect x="40" y="88" width="60" height="12" rx="3" fill="var(--accent-deep)"/>
@@ -450,18 +470,18 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
             <text x="70" y="80" text-anchor="middle" fill="var(--fg-1)" font-family="JetBrains Mono" font-size="11">$0.15M</text>
             <text x="180" y="50" text-anchor="middle" fill="var(--fg-0)" font-family="JetBrains Mono" font-size="11">$0.9M</text>
             <text x="290" y="9" text-anchor="middle" fill="var(--accent)" font-family="JetBrains Mono" font-size="11" font-weight="600">$2.4M</text>
-            <text x="70" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10">Yil 1</text>
-            <text x="180" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10">Yil 2</text>
-            <text x="290" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10">Yil 3</text>
+            <text x="70" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10" data-i18n="s7_yr1">Yil 1</text>
+            <text x="180" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10" data-i18n="s7_yr2">Yil 2</text>
+            <text x="290" y="114" text-anchor="middle" fill="var(--fg-3)" font-family="JetBrains Mono" font-size="10" data-i18n="s7_yr3">Yil 3</text>
           </svg>
         </div>
         <div class="reveal r5">
           <div class="stats" style="gap:32px">
-            <div class="stat"><div class="v gold num">&gt;3x</div><div class="k">LTV / CAC nisbati (maqsad)</div></div>
-            <div class="stat"><div class="v num">~$10</div><div class="k">blended ARPU (yetuk)</div></div>
-            <div class="stat"><div class="v num">~$2</div><div class="k">CAC (organik + kontent)</div></div>
+            <div class="stat"><div class="v gold num">&gt;3x</div><div class="k" data-i18n="s7_stat1_k">LTV / CAC nisbati (maqsad)</div></div>
+            <div class="stat"><div class="v num">~$10</div><div class="k" data-i18n="s7_stat2_k">blended ARPU (yetuk)</div></div>
+            <div class="stat"><div class="v num">~$2</div><div class="k" data-i18n="s7_stat3_k">CAC (organik + kontent)</div></div>
           </div>
-          <p class="muted" style="font-size:13px;margin-top:18px">Nega hozir: open banking, 12% soliq imtiyozi va banklarning mijoz uchun kurashi → <em>har bir lead qiymati o'smoqda</em>.</p>
+          <p class="muted" style="font-size:13px;margin-top:18px" data-i18n-html="s7_note">Nega hozir: open banking, 12% soliq imtiyozi va banklarning mijoz uchun kurashi → <em>har bir lead qiymati o'smoqda</em>.</p>
         </div>
       </div>
     </div>
@@ -471,24 +491,24 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Investitsiya so'rovi</span><span class="ix">— 08</span></div>
-        <h2 class="reveal r1"><em>$300K</em> — Pre-seed · 18 oylik runway</h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s8_eyebrow">Investitsiya so'rovi</span><span class="ix">— 08</span></div>
+        <h2 class="reveal r1" data-i18n-html="s8_title"><em>$300K</em> — Pre-seed · 18 oylik runway</h2>
       </div>
       <div class="grid g2" style="align-items:center;gap:clamp(24px,4vw,52px)">
         <div class="fbar reveal r2">
-          <div class="row"><div class="top"><span class="lab">Jamoa — eng + product + analitik/kontent</span><span class="val">$150K <span class="pct">50%</span></span></div><div class="track"><i style="--w:100%"></i></div></div>
-          <div class="row"><div class="top"><span class="lab">Marketing & user acquisition</span><span class="val">$66K <span class="pct">22%</span></span></div><div class="track"><i style="--w:44%"></i></div></div>
-          <div class="row"><div class="top"><span class="lab">Data, hamkorlik & litsenziya/compliance</span><span class="val">$45K <span class="pct">15%</span></span></div><div class="track"><i style="--w:30%"></i></div></div>
-          <div class="row"><div class="top"><span class="lab">Mahsulot, infra & tooling</span><span class="val">$24K <span class="pct">8%</span></span></div><div class="track"><i style="--w:16%"></i></div></div>
-          <div class="row"><div class="top"><span class="lab">Operatsion & rezerv</span><span class="val">$15K <span class="pct">5%</span></span></div><div class="track"><i style="--w:10%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab" data-i18n="s8_f1_lab">Jamoa — eng + product + analitik/kontent</span><span class="val">$150K <span class="pct">50%</span></span></div><div class="track"><i style="--w:100%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab" data-i18n="s8_f2_lab">Marketing & user acquisition</span><span class="val">$66K <span class="pct">22%</span></span></div><div class="track"><i style="--w:44%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab" data-i18n="s8_f3_lab">Data, hamkorlik & litsenziya/compliance</span><span class="val">$45K <span class="pct">15%</span></span></div><div class="track"><i style="--w:30%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab" data-i18n="s8_f4_lab">Mahsulot, infra & tooling</span><span class="val">$24K <span class="pct">8%</span></span></div><div class="track"><i style="--w:16%"></i></div></div>
+          <div class="row"><div class="top"><span class="lab" data-i18n="s8_f5_lab">Operatsion & rezerv</span><span class="val">$15K <span class="pct">5%</span></span></div><div class="track"><i style="--w:10%"></i></div></div>
         </div>
         <div class="card reveal r4">
-          <span class="eyebrow">Nega aynan shuncha?</span>
+          <span class="eyebrow" data-i18n="s8_card_eyebrow">Nega aynan shuncha?</span>
           <ul style="list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:16px">
-            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> 4 kishilik yadro jamoasini <b style="color:var(--fg-0)">18 oy</b> ushlab turish</li>
-            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> Ommaviy ishga tushirish (web + mobil) va dastlabki o'sish</li>
-            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> 25+ muassasa bilan affiliate shartnomalari</li>
-            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span> Aniq traksiya bilan <b style="color:var(--accent)">seed roundga tayyor</b> bo'lish</li>
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span><span data-i18n-html="s8_li1">4 kishilik yadro jamoasini <b style="color:var(--fg-0)">18 oy</b> ushlab turish</span></li>
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span><span data-i18n="s8_li2">Ommaviy ishga tushirish (web + mobil) va dastlabki o'sish</span></li>
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span><span data-i18n="s8_li3">25+ muassasa bilan affiliate shartnomalari</span></li>
+            <li style="display:flex;gap:12px;font-size:14.5px;color:var(--fg-1)"><span class="dot-led" style="margin-top:7px"></span><span data-i18n-html="s8_li4">Aniq traksiya bilan <b style="color:var(--accent)">seed roundga tayyor</b> bo'lish</span></li>
           </ul>
         </div>
       </div>
@@ -499,35 +519,35 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Yo'l xaritasi</span><span class="ix">— 09</span></div>
-        <h2 class="reveal r1">Kelasi 12 oyda <em>nimaga erishamiz</em></h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s9_eyebrow">Yo'l xaritasi</span><span class="ix">— 09</span></div>
+        <h2 class="reveal r1" data-i18n-html="s9_title">Kelasi 12 oyda <em>nimaga erishamiz</em></h2>
       </div>
       <div class="tl reveal r2" style="position:relative;margin-bottom:26px;padding-top:18px">
         <div class="line"></div>
         <div class="q"><div class="qh">Q1</div><ul>
-          <li>Ommaviy ishga tushirish (web + mobil PWA)</li>
-          <li>20+ hamkor muassasa shartnomasi</li>
-          <li>Halol filtr 2.0</li></ul></div>
+          <li data-i18n="s9_q1_li1">Ommaviy ishga tushirish (web + mobil PWA)</li>
+          <li data-i18n="s9_q1_li2">20+ hamkor muassasa shartnomasi</li>
+          <li data-i18n="s9_q1_li3">Halol filtr 2.0</li></ul></div>
         <div class="q"><div class="qh">Q2</div><ul>
-          <li>25K ro'yxatdan o'tgan foydalanuvchi</li>
-          <li>Birinchi affiliate daromadi</li>
-          <li>Premium beta</li></ul></div>
+          <li data-i18n="s9_q2_li1">25K ro'yxatdan o'tgan foydalanuvchi</li>
+          <li data-i18n="s9_q2_li2">Birinchi affiliate daromadi</li>
+          <li data-i18n="s9_q2_li3">Premium beta</li></ul></div>
         <div class="q"><div class="qh">Q3</div><ul>
-          <li>50K ro'yxat · 12K MAU</li>
-          <li>2 bank bilan B2B pilot</li>
-          <li>Narx-ogohlantirish tizimi</li></ul></div>
+          <li data-i18n="s9_q3_li1">50K ro'yxat · 12K MAU</li>
+          <li data-i18n="s9_q3_li2">2 bank bilan B2B pilot</li>
+          <li data-i18n="s9_q3_li3">Narx-ogohlantirish tizimi</li></ul></div>
         <div class="q"><div class="qh">Q4</div><ul>
-          <li>80K ro'yxat · 15K MAU</li>
-          <li>3K premium obunachi</li>
-          <li><b style="color:var(--accent)">~$150K ARR · seed-ready</b></li></ul></div>
+          <li data-i18n="s9_q4_li1">80K ro'yxat · 15K MAU</li>
+          <li data-i18n="s9_q4_li2">3K premium obunachi</li>
+          <li data-i18n-html="s9_q4_li3"><b style="color:var(--accent)">~$150K ARR · seed-ready</b></li></ul></div>
       </div>
       <div class="card reveal r5">
         <div class="stats" style="justify-content:space-between">
-          <div class="stat"><div class="v gold num">80K</div><div class="k">ro'yxatdan o'tgan foydalanuvchi</div></div>
-          <div class="stat"><div class="v num">15K</div><div class="k">oylik faol (MAU)</div></div>
-          <div class="stat"><div class="v num">25+</div><div class="k">hamkor muassasa</div></div>
-          <div class="stat"><div class="v num">3K</div><div class="k">premium obunachi</div></div>
-          <div class="stat"><div class="v gold num">$150K</div><div class="k">ARR run-rate</div></div>
+          <div class="stat"><div class="v gold num">80K</div><div class="k" data-i18n="s9_stat1_k">ro'yxatdan o'tgan foydalanuvchi</div></div>
+          <div class="stat"><div class="v num">15K</div><div class="k" data-i18n="s9_stat2_k">oylik faol (MAU)</div></div>
+          <div class="stat"><div class="v num">25+</div><div class="k" data-i18n="s9_stat3_k">hamkor muassasa</div></div>
+          <div class="stat"><div class="v num">3K</div><div class="k" data-i18n="s9_stat4_k">premium obunachi</div></div>
+          <div class="stat"><div class="v gold num">$150K</div><div class="k" data-i18n="s9_stat5_k">ARR run-rate</div></div>
         </div>
       </div>
       <div class="card reveal r6" style="margin-top:18px;border-color:rgba(217,184,113,.3);background:linear-gradient(90deg,rgba(217,184,113,.07),transparent)">
@@ -538,9 +558,9 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
             </div>
           </div>
           <div>
-            <div class="eyebrow" style="margin-bottom:8px">Oliy maqsad · Seed+ bosqich</div>
-            <h3 style="font-size:clamp(15px,1.4vw,18px);margin-bottom:8px">P2P Universal Birja — <em>Markaziy Osiyoning ochiq investitsiya bozori</em></h3>
-            <p style="font-size:13.5px;color:var(--fg-2);line-height:1.55;max-width:80ch">Har bir foydalanuvchi o'z aktivini (depozit, qimmatli qog'oz, kriptovalyuta, biznes ulushi) bevosita bozorga chiqara oladi. Startap va kichik bizneslar <b style="color:var(--fg-1)">crowdfunding</b> orqali jamiyatdan investitsiya jalb qiladi — vositachisiz, shaffof, real vaqtda.</p>
+            <div class="eyebrow" style="margin-bottom:8px" data-i18n="s9_p2p_eyebrow">Oliy maqsad · Seed+ bosqich</div>
+            <h3 style="font-size:clamp(15px,1.4vw,18px);margin-bottom:8px" data-i18n-html="s9_p2p_h">P2P Universal Birja — <em>Markaziy Osiyoning ochiq investitsiya bozori</em></h3>
+            <p style="font-size:13.5px;color:var(--fg-2);line-height:1.55;max-width:80ch" data-i18n-html="s9_p2p_p">Har bir foydalanuvchi o'z aktivini (depozit, qimmatli qog'oz, kriptovalyuta, biznes ulushi) bevosita bozorga chiqara oladi. Startap va kichik bizneslar <b style="color:var(--fg-1)">crowdfunding</b> orqali jamiyatdan investitsiya jalb qiladi — vositachisiz, shaffof, real vaqtda.</p>
           </div>
         </div>
       </div>
@@ -551,29 +571,44 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <section class="slide">
     <div class="slide-inner">
       <div class="slide-head">
-        <div class="kicker reveal r1"><span class="eyebrow">Jamoa & Vizyon</span><span class="ix">— 10</span></div>
-        <h2 class="reveal r1">Buni quradigan <em>jamoa</em></h2>
+        <div class="kicker reveal r1"><span class="eyebrow" data-i18n="s10_eyebrow">Jamoa & Vizyon</span><span class="ix">— 10</span></div>
+        <h2 class="reveal r1" data-i18n-html="s10_title">Buni quradigan <em>jamoa</em></h2>
       </div>
       <div class="grid g2" style="align-items:start;gap:clamp(24px,4vw,48px)">
         <div class="card reveal r2">
           <div style="display:flex;gap:16px;align-items:center;margin-bottom:14px">
-            <div style="width:54px;height:54px;border-radius:14px;flex:none;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:18px;color:var(--bg-0);background:linear-gradient(135deg,var(--accent-soft),var(--accent-deep))">BZ</div>
-            <div><h3 style="font-size:18px">Bobur Zokirov</h3><p class="muted" style="font-size:13px">Asoschi · Product & Technology Leader</p></div>
+            <div style="width:54px;height:54px;border-radius:14px;flex:none;overflow:hidden;border:1px solid var(--line-2)">
+              <img src="https://drive.google.com/thumbnail?id=1WvKz6sEpY60X05e2baUtnv4GaQOYircD&sz=w200"
+                   style="width:100%;height:100%;object-fit:cover;display:block" alt="Bobur Zokirov"
+                   onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:100%;display:grid;place-items:center;font-family:var(--mono);font-weight:600;font-size:18px;color:#0E1014;background:linear-gradient(135deg,#E8CB8E,#B89150)\'>BZ</div>'" />
+            </div>
+            <div>
+              <h3 style="font-size:18px">Bobur Zokirov</h3>
+              <p class="muted" style="font-size:13px" data-i18n="s10_role">Asoschi · Product & Technology Leader</p>
+            </div>
           </div>
-          <p style="font-size:14px;color:var(--fg-1);line-height:1.55">10+ yil moliya-texnologiya tajribasi. <b style="color:var(--fg-0)">Trastbank</b> (CPO), banking & fintech (Xalq Banki, Paynet, Mediapark), xalqaro tajriba (EPAM, Geomotive). Islom moliyasi va Sharia-compliant mahsulotlar bo'yicha chuqur ekspertiza.</p>
-          <div class="mini" style="margin-top:16px">
-            <span class="chip">Fintech · Banking</span><span class="chip">Product</span><span class="chip gold">+ CTO / co-founder qidirilmoqda</span>
+          <p style="font-size:14px;color:var(--fg-1);line-height:1.55" data-i18n-html="s10_bio">10+ yil moliya-texnologiya tajribasi. <b style="color:var(--fg-0)">Trastbank</b> (CPO), banking & fintech (Xalq Banki, Paynet, Mediapark), xalqaro tajriba (EPAM, Geomotive). Islom moliyasi va Sharia-compliant mahsulotlar bo'yicha chuqur ekspertiza.</p>
+          <div class="mini" style="margin-top:16px;align-items:center">
+            <span class="chip" data-i18n="s10_chip1">Fintech · Banking</span>
+            <span class="chip" data-i18n="s10_chip2">Product</span>
+            <span class="chip gold" data-i18n="s10_chip3">+ CTO / co-founder qidirilmoqda</span>
+            <a href="https://zoboto.uz/about" target="_blank" rel="noopener"
+               style="display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:6px 11px;border-radius:99px;border:1px solid rgba(217,184,113,.4);color:var(--accent);background:rgba(217,184,113,.06);text-decoration:none;transition:all .15s"
+               onmouseover="this.style.background='rgba(217,184,113,.14)'" onmouseout="this.style.background='rgba(217,184,113,.06)'"
+               data-i18n="s10_more">To'liqroq →</a>
           </div>
         </div>
         <div class="reveal r3" style="display:flex;flex-direction:column;justify-content:center;height:100%">
-          <span class="eyebrow">Vizyon</span>
-          <p style="font-size:clamp(18px,2.2vw,26px);line-height:1.3;margin-top:14px;color:var(--fg-0)">
+          <span class="eyebrow" data-i18n="s10_vision_eyebrow">Vizyon</span>
+          <p style="font-size:clamp(18px,2.2vw,26px);line-height:1.3;margin-top:14px;color:var(--fg-0)" data-i18n-html="s10_vision">
             Har bir o'zbek o'z pulini <em>ishlatishni biladigan</em> davlat. Finport — Markaziy Osiyoning investitsiya operatsion tizimi.</p>
         </div>
       </div>
       <div class="card reveal r5" style="margin-top:22px;text-align:center;border-color:rgba(217,184,113,.35);background:linear-gradient(180deg,rgba(217,184,113,.08),rgba(21,24,31,.5))">
-        <h2 style="font-size:clamp(22px,3vw,34px)"><em>$300K pre-seed</em> · Keling, birga quramiz</h2>
-        <a href="https://finport.uz" target="_blank" rel="noopener" class="muted" style="margin-top:10px;font-family:var(--mono);font-size:13px;display:block;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.2);transition:color .15s" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color=''">finport.uz ↗</a>
+        <h2 style="font-size:clamp(22px,3vw,34px)" data-i18n-html="s10_closing_h"><em>$300K pre-seed</em> · Keling, birga quramiz</h2>
+        <a href="https://finport.uz" target="_blank" rel="noopener" class="muted"
+           style="margin-top:10px;font-family:var(--mono);font-size:13px;display:block;text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,.2);transition:color .15s"
+           onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color=''">finport.uz ↗</a>
       </div>
     </div>
   </section>
@@ -586,9 +621,331 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
   <button id="prev" aria-label="Oldingi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>
   <button id="next" aria-label="Keyingi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg></button>
 </div>
-<div class="hint">← → strelkalar bilan boshqaring</div>
+<div class="hint" id="hint">← → strelkalar bilan boshqaring</div>
 
 <script>
+// ============================================================
+// TRANSLATIONS
+// ============================================================
+const T = {
+uz: {
+  s1_eyebrow:"Investor Deck · 2026 · Pre-seed",
+  s1_title:"O'zbekistonning birinchi <em>neytral</em> investitsiya navigatori",
+  s1_lead:"Depozitdan sukuk, aksiya va kriptogacha — <b style=\"color:var(--fg-0)\">15+ yo'nalish</b> bir platformada. Taqqoslang, tushuning, portfelingizni boshqaring. Hech kim sotmaydi — biz yo'l ko'rsatamiz.",
+  s1_chip1:"Cross-asset aggregator", s1_chip2:"3 til · UZ / RU / EN", s1_chip3:"Ishlaydigan MVP v0.1",
+  s1_stat1_k:"aholi · ulkan bo'sh maydon", s1_stat2_k:"faol investor (jami ~800K hisobning <10%)", s1_stat3_k:"pre-seed so'rovi · 18 oy runway",
+
+  s2_eyebrow:"Muammo",
+  s2_title:"O'zbeklar pul jamg'aradi — <em>lekin qayerga qo'yishni bilishmaydi</em>",
+  s2_n1_h:"Tanlov ko'p — ravshanlik yo'q", s2_n1_p:"Depozit, obligatsiya, sukuk, aksiya, ETF, kripto, metall... har biri alohida ilova, alohida til, alohida shartlar. Yagona taqqoslash joyi mavjud emas.",
+  s2_n2_h:"Past ishtirok, yuqori ishonchsizlik", s2_n2_p:"~800K broker hisobidan 10% dan kami faol. Asosiy to'siq iqtisodiy emas — moliyaviy savodsizlik va ishonchsizlik.",
+  s2_n3_h:"Har bir o'yinchi faqat o'zini sotadi", s2_n3_p:"Jett — faqat aksiya, Iman — faqat islom moliyasi, Freedom — xalqaro. Neytral, xolis maslahatchi yo'q.",
+  s2_n4_h:"Shaffoflik yetishmaydi", s2_n4_p:"Spred, komissiya, minimal summa ko'pincha yashirin. \"Qaysi biri menga foydali?\" degan savol javobsiz qoladi.",
+  s2_card_eyebrow:"Bozor holati",
+  s2_stat1_k:"broker hisoblarining faol ulushi", s2_stat2_k:"tarqoq, bog'lanmagan kanal", s2_stat3_k:"neytral cross-asset aggregator",
+  s2_quote:"Jett asoschisi bu maydonni \"<a href=\"https://uz.kursiv.media/en/2025-07-02/uzbekistans-capital-market-what-works-and-what-still-holds-it-back/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(217,184,113,.4)\">blue ocean</a>\" deb ataydi — muqarrar o'sish kutilmoqda.",
+
+  s3_eyebrow:"Yechim",
+  s3_title:"Finport.uz — investitsiyaning <em>Google'i</em>",
+  s3_lead:"Izlang · Taqqoslang · Boshqaring. Bitta neytral platforma, barcha aktiv turlari.",
+  s3_c1_h:"Yagona katalog", s3_c1_p:"15+ yo'nalish, 69+ real taklif (Asaka, NBU, Agrobank, Iman Invest...) bir joyda. Risk, daromad, valyuta, likvidlik va shariatga muvofiqlik bo'yicha filtr.",
+  s3_c2_h:"Aqlli taqqoslash", s3_c2_p:"Bir nechta yo'nalishni bitta grafikda solishtiring. Real spred, komissiya, minimal kirish — hech narsa yashirilmaydi.",
+  s3_c3_h:"Portfel boshqaruvi", s3_c3_p:"Barcha aktivlaringizni qo'shing, taqsimotni kuzating va 1 yillik o'sish prognozini oling. Daromad — har bir pozitsiya bo'yicha.",
+  s3_chip1:"Neytral", s3_chip2:"Ta'limga yo'naltirilgan", s3_chip3:"3 tilli", s3_chip4:"$50 dan boshlanadi", s3_chip5:"Halol filtr",
+
+  s4_eyebrow:"Mahsulot · Proto",
+  s4_title:"Bu g'oya emas — <em>bugun ishlaydigan</em> prototip",
+  s4_ck1:"<b style=\"color:var(--fg-0)\">15+ kategoriya, 69+ taklif</b> — live ma'lumotlar bilan",
+  s4_ck2:"Interaktiv narx grafiklari (BTC, oltin, aleksandrit dinamikasi)",
+  s4_ck3:"<b style=\"color:var(--fg-0)\">Compare mode</b> — yo'nalishlarni yonma-yon bitta grafikda",
+  s4_ck4:"Portfel: donut taqsimot + bosqichli o'sish + 1y prognoz",
+  s4_ck5:"To'liq 3 tilli, mobil-responsiv interfeys",
+  s4_ck6:"Shariatga muvofiqlik belgisi (halol filtr)",
+  s4_chip1:"v0.1 MVP — jonli",
+
+  s5_eyebrow:"Bozor",
+  s5_title:"Bozor imkoniyati — <em>TAM · SAM · SOM</em>",
+  s5_tam_h:"$120M / yil", s5_tam_p:"O'zbekistonda retail moliyaviy mahsulotlarni taqsimlash daromad puli (~10M raqamli faol kattalar × ~$12 potensial yillik daromad/foydalanuvchi).",
+  s5_sam_h:"$24M / yil", s5_sam_p:"Investitsiyaga qiziquvchi shaharlik smartfon foydalanuvchilari — ~2M kishi × ~$12.",
+  s5_som_h:"$2.4M / yil — 3-yillik realistik ulush", s5_som_p:"~240K faol foydalanuvchi × ~$10 blended ARPU (SAMning ~10%).",
+  s5_chip1:"Smartfon ~77% · 27M+ internet", s5_chip2:"12% soliq imtiyozi (2024)", s5_chip3:"Digital invest +32% / yil",
+
+  s6_eyebrow:"Raqobat",
+  s6_title:"Nega <em>Finport</em>? — hech kim cross-asset taqqoslamaydi",
+  s6_th1:"Platforma", s6_th2:"Qamrov", s6_th3:"Neytralmi?", s6_th4:"Taqqoslash", s6_th5:"Portfel",
+  s6_r1_td1:"Jett", s6_r1_td2:"Faqat TSE aksiyalari", s6_r1_td3:"Yo'q (broker)", s6_r1_td4:"Cheklangan", s6_r1_td5:"Bazaviy",
+  s6_r2_td1:"Iman / IMANUM", s6_r2_td2:"Faqat islom moliyasi", s6_r2_td3:"Yo'q (o'z fondi)", s6_r2_td4:"Yo'q", s6_r2_td5:"Qisman",
+  s6_r3_td1:"Freedom Broker", s6_r3_td2:"Xalqaro aksiyalar", s6_r3_td3:"Yo'q (broker)", s6_r3_td4:"Yo'q", s6_r3_td5:"Bazaviy",
+  s6_r4_td1:"depozit.uz / bank.uz", s6_r4_td2:"Faqat depozit", s6_r4_td3:"Qisman", s6_r4_td4:"Faqat depozit", s6_r4_td5:"Yo'q",
+  s6_r5_td2:"15+ barcha aktiv turi", s6_r5_td3:"Ha — neytral", s6_r5_td4:"To'liq", s6_r5_td5:"To'liq",
+  s6_closing:"Finport = O'zbekiston uchun <em>NerdWallet + Morningstar</em>. <span class=\"muted\">Biz mahsulot sotmaymiz — to'g'ri qaror qabul qilishga yordam beramiz.</span>",
+
+  s7_eyebrow:"Biznes model",
+  s7_title:"Monetizatsiya — <em>Hybrid</em> uch oqim",
+  s7_c1_h:"1 · Affiliate / Lead-gen", s7_c1_p:"Har bir ochilgan depozit / broker hisobi / fond uchun komissiya (<b style=\"color:var(--fg-0)\">$3–30/lead</b>). Banklar uchun mijoz topish kanali. <span style=\"color:var(--accent)\">Asosiy erta daromad.</span>",
+  s7_c2_h:"2 · Premium obuna", s7_c2_p:"Kengaytirilgan analitika, ogohlantirishlar, soliq-optimizatsiya, eksklyuziv data. <b style=\"color:var(--fg-0)\">~$3–5/oy</b>, faol foydalanuvchilarning ~4% i.",
+  s7_c3_h:"3 · B2B · Data & White-label", s7_c3_p:"Banklarga benchmark data, white-label taqqoslash vidjeti, sponsorlik joylashuvi (ochiq belgilangan) va API. <span style=\"color:var(--accent)\">Yuqori marja.</span>",
+  s7_chart_eyebrow:"3-yillik ARR prognozi",
+  s7_yr1:"Yil 1", s7_yr2:"Yil 2", s7_yr3:"Yil 3",
+  s7_stat1_k:"LTV / CAC nisbati (maqsad)", s7_stat2_k:"blended ARPU (yetuk)", s7_stat3_k:"CAC (organik + kontent)",
+  s7_note:"Nega hozir: open banking, 12% soliq imtiyozi va banklarning mijoz uchun kurashi → <em>har bir lead qiymati o'smoqda</em>.",
+
+  s8_eyebrow:"Investitsiya so'rovi",
+  s8_title:"<em>$300K</em> — Pre-seed · 18 oylik runway",
+  s8_f1_lab:"Jamoa — eng + product + analitik/kontent", s8_f2_lab:"Marketing & user acquisition",
+  s8_f3_lab:"Data, hamkorlik & litsenziya/compliance", s8_f4_lab:"Mahsulot, infra & tooling", s8_f5_lab:"Operatsion & rezerv",
+  s8_card_eyebrow:"Nega aynan shuncha?",
+  s8_li1:"4 kishilik yadro jamoasini <b style=\"color:var(--fg-0)\">18 oy</b> ushlab turish",
+  s8_li2:"Ommaviy ishga tushirish (web + mobil) va dastlabki o'sish",
+  s8_li3:"25+ muassasa bilan affiliate shartnomalari",
+  s8_li4:"Aniq traksiya bilan <b style=\"color:var(--accent)\">seed roundga tayyor</b> bo'lish",
+
+  s9_eyebrow:"Yo'l xaritasi",
+  s9_title:"Kelasi 12 oyda <em>nimaga erishamiz</em>",
+  s9_q1_li1:"Ommaviy ishga tushirish (web + mobil PWA)", s9_q1_li2:"20+ hamkor muassasa shartnomasi", s9_q1_li3:"Halol filtr 2.0",
+  s9_q2_li1:"25K ro'yxatdan o'tgan foydalanuvchi", s9_q2_li2:"Birinchi affiliate daromadi", s9_q2_li3:"Premium beta",
+  s9_q3_li1:"50K ro'yxat · 12K MAU", s9_q3_li2:"2 bank bilan B2B pilot", s9_q3_li3:"Narx-ogohlantirish tizimi",
+  s9_q4_li1:"80K ro'yxat · 15K MAU", s9_q4_li2:"3K premium obunachi", s9_q4_li3:"<b style=\"color:var(--accent)\">~$150K ARR · seed-ready</b>",
+  s9_stat1_k:"ro'yxatdan o'tgan foydalanuvchi", s9_stat2_k:"oylik faol (MAU)", s9_stat3_k:"hamkor muassasa", s9_stat4_k:"premium obunachi", s9_stat5_k:"ARR run-rate",
+  s9_p2p_eyebrow:"Oliy maqsad · Seed+ bosqich",
+  s9_p2p_h:"P2P Universal Birja — <em>Markaziy Osiyoning ochiq investitsiya bozori</em>",
+  s9_p2p_p:"Har bir foydalanuvchi o'z aktivini (depozit, qimmatli qog'oz, kriptovalyuta, biznes ulushi) bevosita bozorga chiqara oladi. Startap va kichik bizneslar <b style=\"color:var(--fg-1)\">crowdfunding</b> orqali jamiyatdan investitsiya jalb qiladi — vositachisiz, shaffof, real vaqtda.",
+
+  s10_eyebrow:"Jamoa & Vizyon",
+  s10_title:"Buni quradigan <em>jamoa</em>",
+  s10_role:"Asoschi · Product & Technology Leader",
+  s10_bio:"10+ yil moliya-texnologiya tajribasi. <b style=\"color:var(--fg-0)\">Trastbank</b> (CPO), banking & fintech (Xalq Banki, Paynet, Mediapark), xalqaro tajriba (EPAM, Geomotive). Islom moliyasi va Sharia-compliant mahsulotlar bo'yicha chuqur ekspertiza.",
+  s10_chip1:"Fintech · Banking", s10_chip2:"Product", s10_chip3:"+ CTO / co-founder qidirilmoqda",
+  s10_more:"To'liqroq →",
+  s10_vision_eyebrow:"Vizyon",
+  s10_vision:"Har bir o'zbek o'z pulini <em>ishlatishni biladigan</em> davlat. Finport — Markaziy Osiyoning investitsiya operatsion tizimi.",
+  s10_closing_h:"<em>$300K pre-seed</em> · Keling, birga quramiz",
+
+  hint:"← → strelkalar bilan boshqaring"
+},
+
+ru: {
+  s1_eyebrow:"Investor Deck · 2026 · Pre-seed",
+  s1_title:"Первый <em>нейтральный</em> инвестиционный навигатор Узбекистана",
+  s1_lead:"От депозитов до сукук, акций и крипто — <b style=\"color:var(--fg-0)\">15+ направлений</b> на одной платформе. Сравнивайте, разбирайтесь, управляйте портфелем. Мы не продаём — мы показываем путь.",
+  s1_chip1:"Cross-asset агрегатор", s1_chip2:"3 языка · UZ / RU / EN", s1_chip3:"Работающий MVP v0.1",
+  s1_stat1_k:"население · огромный незанятый рынок", s1_stat2_k:"активных инвесторов (из ~800K счетов, <10%)", s1_stat3_k:"запрос pre-seed · 18 мес. runway",
+
+  s2_eyebrow:"Проблема",
+  s2_title:"Узбекистанцы копят деньги — <em>но не знают, куда вложить</em>",
+  s2_n1_h:"Много вариантов — нет ясности", s2_n1_p:"Депозит, облигации, сукук, акции, ETF, крипто, металлы... у каждого своё приложение, свой язык, свои условия. Единого места для сравнения нет.",
+  s2_n2_h:"Низкое участие, высокое недоверие", s2_n2_p:"Из ~800K брокерских счетов активны менее 10%. Главный барьер — не финансовый, а финансовая безграмотность и недоверие.",
+  s2_n3_h:"Каждый игрок продаёт только себя", s2_n3_p:"Jett — только акции, Iman — только исламские финансы, Freedom — международные. Нейтрального советника нет.",
+  s2_n4_h:"Нет прозрачности", s2_n4_p:"Спред, комиссии, минимальный порог — часто скрыты. Вопрос «Что выгоднее для меня?» остаётся без ответа.",
+  s2_card_eyebrow:"Состояние рынка",
+  s2_stat1_k:"активная доля брокерских счетов", s2_stat2_k:"разрозненных, несвязанных каналов", s2_stat3_k:"нейтральных cross-asset агрегаторов",
+  s2_quote:"Основатель Jett называет этот рынок \"<a href=\"https://uz.kursiv.media/en/2025-07-02/uzbekistans-capital-market-what-works-and-what-still-holds-it-back/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(217,184,113,.4)\">голубым океаном</a>\" — рост неизбежен.",
+
+  s3_eyebrow:"Решение",
+  s3_title:"Finport.uz — <em>Google</em> для инвестиций",
+  s3_lead:"Ищите · Сравнивайте · Управляйте. Одна нейтральная платформа, все типы активов.",
+  s3_c1_h:"Единый каталог", s3_c1_p:"15+ направлений, 69+ реальных предложений (Asaka, NBU, Agrobank, Iman Invest...) в одном месте. Фильтры по риску, доходности, валюте, ликвидности и соответствию шариату.",
+  s3_c2_h:"Умное сравнение", s3_c2_p:"Сравнивайте несколько направлений на одном графике. Реальный спред, комиссии, минимальный порог — ничего не скрыто.",
+  s3_c3_h:"Управление портфелем", s3_c3_p:"Добавляйте все активы, отслеживайте распределение и получайте прогноз роста на 1 год. Доходность — по каждой позиции.",
+  s3_chip1:"Нейтральный", s3_chip2:"Ориентирован на обучение", s3_chip3:"3 языка", s3_chip4:"От $50", s3_chip5:"Халяль-фильтр",
+
+  s4_eyebrow:"Продукт · Прототип",
+  s4_title:"Это не идея — <em>работающий прямо сейчас</em> прототип",
+  s4_ck1:"<b style=\"color:var(--fg-0)\">15+ категорий, 69+ предложений</b> — с живыми данными",
+  s4_ck2:"Интерактивные графики цен (BTC, золото, динамика александрита)",
+  s4_ck3:"<b style=\"color:var(--fg-0)\">Compare mode</b> — направления рядом на одном графике",
+  s4_ck4:"Портфель: donut-распределение + поэтапный рост + прогноз на 1 год",
+  s4_ck5:"Полностью трёхъязычный, мобильно-адаптивный интерфейс",
+  s4_ck6:"Метка соответствия шариату (халяль-фильтр)",
+  s4_chip1:"v0.1 MVP — в эфире",
+
+  s5_eyebrow:"Рынок",
+  s5_title:"Объём рынка — <em>TAM · SAM · SOM</em>",
+  s5_tam_h:"$120M / год", s5_tam_p:"Доход от дистрибуции розничных финансовых продуктов в Узбекистане (~10M цифровых активных взрослых × ~$12 потенциального годового дохода/пользователь).",
+  s5_sam_h:"$24M / год", s5_sam_p:"Городские пользователи смартфонов, интересующиеся инвестициями — ~2M человек × ~$12.",
+  s5_som_h:"$2.4M / год — реалистичная доля за 3 года", s5_som_p:"~240K активных пользователей × ~$10 blended ARPU (~10% от SAM).",
+  s5_chip1:"Смартфон ~77% · 27M+ интернет", s5_chip2:"12% налоговая льгота (2024)", s5_chip3:"Digital invest +32% / год",
+
+  s6_eyebrow:"Конкуренция",
+  s6_title:"Почему <em>Finport</em>? — никто не делает cross-asset сравнение",
+  s6_th1:"Платформа", s6_th2:"Охват", s6_th3:"Нейтральный?", s6_th4:"Сравнение", s6_th5:"Портфель",
+  s6_r1_td1:"Jett", s6_r1_td2:"Только акции TSE", s6_r1_td3:"Нет (брокер)", s6_r1_td4:"Ограниченно", s6_r1_td5:"Базовый",
+  s6_r2_td1:"Iman / IMANUM", s6_r2_td2:"Только исламские финансы", s6_r2_td3:"Нет (свои фонды)", s6_r2_td4:"Нет", s6_r2_td5:"Частично",
+  s6_r3_td1:"Freedom Broker", s6_r3_td2:"Международные акции", s6_r3_td3:"Нет (брокер)", s6_r3_td4:"Нет", s6_r3_td5:"Базовый",
+  s6_r4_td1:"depozit.uz / bank.uz", s6_r4_td2:"Только депозиты", s6_r4_td3:"Частично", s6_r4_td4:"Только депозиты", s6_r4_td5:"Нет",
+  s6_r5_td2:"15+ всех типов активов", s6_r5_td3:"Да — нейтральный", s6_r5_td4:"Полностью", s6_r5_td5:"Полностью",
+  s6_closing:"Finport = <em>NerdWallet + Morningstar</em> для Узбекистана. <span class=\"muted\">Мы не продаём продукты — мы помогаем принимать правильные решения.</span>",
+
+  s7_eyebrow:"Бизнес-модель",
+  s7_title:"Монетизация — <em>Hybrid</em>: три потока",
+  s7_c1_h:"1 · Affiliate / Lead-gen", s7_c1_p:"Комиссия за каждый открытый депозит / брокерский счёт / фонд (<b style=\"color:var(--fg-0)\">$3–30/lead</b>). Канал привлечения клиентов для банков. <span style=\"color:var(--accent)\">Основной ранний доход.</span>",
+  s7_c2_h:"2 · Premium подписка", s7_c2_p:"Расширенная аналитика, оповещения, налоговая оптимизация, эксклюзивные данные. <b style=\"color:var(--fg-0)\">~$3–5/мес</b>, ~4% активных пользователей.",
+  s7_c3_h:"3 · B2B · Data & White-label", s7_c3_p:"Бенчмарк-данные для банков, white-label виджет сравнения, спонсорское размещение (открытая маркировка) и API. <span style=\"color:var(--accent)\">Высокая маржа.</span>",
+  s7_chart_eyebrow:"Прогноз ARR на 3 года",
+  s7_yr1:"Год 1", s7_yr2:"Год 2", s7_yr3:"Год 3",
+  s7_stat1_k:"LTV / CAC (цель)", s7_stat2_k:"blended ARPU (зрелый)", s7_stat3_k:"CAC (органика + контент)",
+  s7_note:"Почему сейчас: open banking, 12% налоговая льгота и борьба банков за клиента → <em>стоимость каждого лида растёт</em>.",
+
+  s8_eyebrow:"Инвестиционный запрос",
+  s8_title:"<em>$300K</em> — Pre-seed · 18 месяцев runway",
+  s8_f1_lab:"Команда — разработка + продукт + аналитика/контент", s8_f2_lab:"Маркетинг & привлечение пользователей",
+  s8_f3_lab:"Данные, партнёрства & лицензирование/compliance", s8_f4_lab:"Продукт, инфра & инструменты", s8_f5_lab:"Операционные & резервы",
+  s8_card_eyebrow:"Почему именно столько?",
+  s8_li1:"Удержать команду из 4 человек на <b style=\"color:var(--fg-0)\">18 месяцев</b>",
+  s8_li2:"Публичный запуск (web + mobile) и первичный рост",
+  s8_li3:"Affiliate-соглашения с 25+ организациями",
+  s8_li4:"Выйти с чёткой тракцией готовыми к <b style=\"color:var(--accent)\">seed раунду</b>",
+
+  s9_eyebrow:"Дорожная карта",
+  s9_title:"Что достигнем <em>за следующие 12 месяцев</em>",
+  s9_q1_li1:"Публичный запуск (web + mobile PWA)", s9_q1_li2:"Договоры с 20+ партнёрскими организациями", s9_q1_li3:"Халяль-фильтр 2.0",
+  s9_q2_li1:"25K зарегистрированных пользователей", s9_q2_li2:"Первый affiliate-доход", s9_q2_li3:"Premium бета",
+  s9_q3_li1:"50K регистраций · 12K MAU", s9_q3_li2:"B2B пилот с 2 банками", s9_q3_li3:"Система ценовых уведомлений",
+  s9_q4_li1:"80K регистраций · 15K MAU", s9_q4_li2:"3K premium подписчиков", s9_q4_li3:"<b style=\"color:var(--accent)\">~$150K ARR · seed-ready</b>",
+  s9_stat1_k:"зарегистрированных пользователей", s9_stat2_k:"ежемесячно активных (MAU)", s9_stat3_k:"партнёрских организаций", s9_stat4_k:"premium подписчиков", s9_stat5_k:"ARR run-rate",
+  s9_p2p_eyebrow:"Главная цель · Seed+ этап",
+  s9_p2p_h:"P2P Универсальная Биржа — <em>открытый инвестиционный рынок Центральной Азии</em>",
+  s9_p2p_p:"Каждый пользователь сможет выставить свой актив (депозит, ценные бумаги, криптовалюту, долю в бизнесе) напрямую на рынок. Стартапы и малый бизнес привлекают инвестиции от сообщества через <b style=\"color:var(--fg-1)\">краудфандинг</b> — без посредников, прозрачно, в реальном времени.",
+
+  s10_eyebrow:"Команда & Видение",
+  s10_title:"<em>Команда</em>, которая это построит",
+  s10_role:"Основатель · Product & Technology Leader",
+  s10_bio:"10+ лет в финтехе. <b style=\"color:var(--fg-0)\">Trastbank</b> (CPO), banking & fintech (Xalq Banki, Paynet, Mediapark), международный опыт (EPAM, Geomotive). Глубокая экспертиза в исламских финансах и Sharia-compliant продуктах.",
+  s10_chip1:"Fintech · Banking", s10_chip2:"Product", s10_chip3:"+ ищем CTO / co-founder",
+  s10_more:"Подробнее →",
+  s10_vision_eyebrow:"Видение",
+  s10_vision:"Страна, где каждый узбекистанец умеет <em>управлять своими деньгами</em>. Finport — операционная система инвестиций Центральной Азии.",
+  s10_closing_h:"<em>$300K pre-seed</em> · Давайте строить вместе",
+
+  hint:"← → клавиши для навигации"
+},
+
+en: {
+  s1_eyebrow:"Investor Deck · 2026 · Pre-seed",
+  s1_title:"Uzbekistan's first <em>neutral</em> investment navigator",
+  s1_lead:"From deposits to sukuk, stocks and crypto — <b style=\"color:var(--fg-0)\">15+ asset types</b> on one platform. Compare, understand, manage your portfolio. No one sells here — we guide you.",
+  s1_chip1:"Cross-asset aggregator", s1_chip2:"3 languages · UZ / RU / EN", s1_chip3:"Working MVP v0.1",
+  s1_stat1_k:"population · vast untapped market", s1_stat2_k:"active investors (of ~800K accounts, <10%)", s1_stat3_k:"pre-seed ask · 18-month runway",
+
+  s2_eyebrow:"Problem",
+  s2_title:"Uzbeks save money — <em>but don't know where to invest</em>",
+  s2_n1_h:"Too many options — no clarity", s2_n1_p:"Deposits, bonds, sukuk, stocks, ETFs, crypto, metals... each has its own app, language, terms. No single place to compare.",
+  s2_n2_h:"Low participation, high distrust", s2_n2_p:"Fewer than 10% of ~800K broker accounts are active. The main barrier isn't financial — it's financial illiteracy and distrust.",
+  s2_n3_h:"Every player sells only themselves", s2_n3_p:"Jett — stocks only, Iman — Islamic finance only, Freedom — international. No neutral, unbiased advisor.",
+  s2_n4_h:"Lack of transparency", s2_n4_p:"Spreads, commissions, minimum amounts are often hidden. \"Which is best for me?\" goes unanswered.",
+  s2_card_eyebrow:"Market State",
+  s2_stat1_k:"active share of broker accounts", s2_stat2_k:"fragmented, disconnected channels", s2_stat3_k:"neutral cross-asset aggregators",
+  s2_quote:"Jett's founder calls this market a \"<a href=\"https://uz.kursiv.media/en/2025-07-02/uzbekistans-capital-market-what-works-and-what-still-holds-it-back/\" target=\"_blank\" rel=\"noopener\" style=\"color:var(--accent);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(217,184,113,.4)\">blue ocean</a>\" — inevitable growth ahead.",
+
+  s3_eyebrow:"Solution",
+  s3_title:"Finport.uz — the <em>Google</em> of investments",
+  s3_lead:"Search · Compare · Manage. One neutral platform, all asset types.",
+  s3_c1_h:"Unified Catalog", s3_c1_p:"15+ categories, 69+ real offers (Asaka, NBU, Agrobank, Iman Invest...) in one place. Filter by risk, return, currency, liquidity and Sharia compliance.",
+  s3_c2_h:"Smart Comparison", s3_c2_p:"Compare multiple options on one chart. Real spreads, commissions, minimum entry — nothing hidden.",
+  s3_c3_h:"Portfolio Management", s3_c3_p:"Add all your assets, track allocation and get a 1-year growth forecast. Returns broken down by each position.",
+  s3_chip1:"Neutral", s3_chip2:"Education-first", s3_chip3:"3 languages", s3_chip4:"From $50", s3_chip5:"Halal filter",
+
+  s4_eyebrow:"Product · Proto",
+  s4_title:"Not an idea — a <em>working prototype</em> today",
+  s4_ck1:"<b style=\"color:var(--fg-0)\">15+ categories, 69+ offers</b> — with live data",
+  s4_ck2:"Interactive price charts (BTC, gold, alexandrite dynamics)",
+  s4_ck3:"<b style=\"color:var(--fg-0)\">Compare mode</b> — directions side-by-side on one chart",
+  s4_ck4:"Portfolio: donut allocation + step growth + 1y forecast",
+  s4_ck5:"Fully trilingual, mobile-responsive interface",
+  s4_ck6:"Sharia compliance badge (halal filter)",
+  s4_chip1:"v0.1 MVP — live",
+
+  s5_eyebrow:"Market",
+  s5_title:"Market opportunity — <em>TAM · SAM · SOM</em>",
+  s5_tam_h:"$120M / year", s5_tam_p:"Revenue from retail financial product distribution in Uzbekistan (~10M digital active adults × ~$12 potential annual revenue/user).",
+  s5_sam_h:"$24M / year", s5_sam_p:"Urban smartphone users interested in investing — ~2M people × ~$12.",
+  s5_som_h:"$2.4M / year — realistic 3-year share", s5_som_p:"~240K active users × ~$10 blended ARPU (~10% of SAM).",
+  s5_chip1:"Smartphone ~77% · 27M+ internet", s5_chip2:"12% tax incentive (2024)", s5_chip3:"Digital invest +32% / year",
+
+  s6_eyebrow:"Competition",
+  s6_title:"Why <em>Finport</em>? — no one does cross-asset comparison",
+  s6_th1:"Platform", s6_th2:"Coverage", s6_th3:"Neutral?", s6_th4:"Comparison", s6_th5:"Portfolio",
+  s6_r1_td1:"Jett", s6_r1_td2:"TSE stocks only", s6_r1_td3:"No (broker)", s6_r1_td4:"Limited", s6_r1_td5:"Basic",
+  s6_r2_td1:"Iman / IMANUM", s6_r2_td2:"Islamic finance only", s6_r2_td3:"No (own funds)", s6_r2_td4:"No", s6_r2_td5:"Partial",
+  s6_r3_td1:"Freedom Broker", s6_r3_td2:"International stocks", s6_r3_td3:"No (broker)", s6_r3_td4:"No", s6_r3_td5:"Basic",
+  s6_r4_td1:"depozit.uz / bank.uz", s6_r4_td2:"Deposits only", s6_r4_td3:"Partial", s6_r4_td4:"Deposits only", s6_r4_td5:"No",
+  s6_r5_td2:"15+ all asset types", s6_r5_td3:"Yes — neutral", s6_r5_td4:"Full", s6_r5_td5:"Full",
+  s6_closing:"Finport = <em>NerdWallet + Morningstar</em> for Uzbekistan. <span class=\"muted\">We don't sell products — we help you make the right decision.</span>",
+
+  s7_eyebrow:"Business Model",
+  s7_title:"Monetisation — <em>Hybrid</em> three streams",
+  s7_c1_h:"1 · Affiliate / Lead-gen", s7_c1_p:"Commission for each opened deposit / broker account / fund (<b style=\"color:var(--fg-0)\">$3–30/lead</b>). Customer acquisition channel for banks. <span style=\"color:var(--accent)\">Primary early revenue.</span>",
+  s7_c2_h:"2 · Premium Subscription", s7_c2_p:"Advanced analytics, alerts, tax optimisation, exclusive data. <b style=\"color:var(--fg-0)\">~$3–5/mo</b>, ~4% of active users.",
+  s7_c3_h:"3 · B2B · Data & White-label", s7_c3_p:"Benchmark data for banks, white-label comparison widget, sponsored placement (clearly labelled) and API. <span style=\"color:var(--accent)\">High margin.</span>",
+  s7_chart_eyebrow:"3-year ARR forecast",
+  s7_yr1:"Year 1", s7_yr2:"Year 2", s7_yr3:"Year 3",
+  s7_stat1_k:"LTV / CAC ratio (target)", s7_stat2_k:"blended ARPU (mature)", s7_stat3_k:"CAC (organic + content)",
+  s7_note:"Why now: open banking, 12% tax incentive and banks competing for customers → <em>each lead's value is growing</em>.",
+
+  s8_eyebrow:"Investment Ask",
+  s8_title:"<em>$300K</em> — Pre-seed · 18-month runway",
+  s8_f1_lab:"Team — eng + product + analytics/content", s8_f2_lab:"Marketing & user acquisition",
+  s8_f3_lab:"Data, partnerships & licensing/compliance", s8_f4_lab:"Product, infra & tooling", s8_f5_lab:"Operational & reserve",
+  s8_card_eyebrow:"Why this amount?",
+  s8_li1:"Keep a 4-person core team for <b style=\"color:var(--fg-0)\">18 months</b>",
+  s8_li2:"Public launch (web + mobile) and initial growth",
+  s8_li3:"Affiliate agreements with 25+ institutions",
+  s8_li4:"Reach clear traction and be <b style=\"color:var(--accent)\">seed-round ready</b>",
+
+  s9_eyebrow:"Roadmap",
+  s9_title:"What we'll achieve <em>in the next 12 months</em>",
+  s9_q1_li1:"Public launch (web + mobile PWA)", s9_q1_li2:"20+ partner institution agreements", s9_q1_li3:"Halal filter 2.0",
+  s9_q2_li1:"25K registered users", s9_q2_li2:"First affiliate revenue", s9_q2_li3:"Premium beta",
+  s9_q3_li1:"50K registrations · 12K MAU", s9_q3_li2:"B2B pilot with 2 banks", s9_q3_li3:"Price alert system",
+  s9_q4_li1:"80K registrations · 15K MAU", s9_q4_li2:"3K premium subscribers", s9_q4_li3:"<b style=\"color:var(--accent)\">~$150K ARR · seed-ready</b>",
+  s9_stat1_k:"registered users", s9_stat2_k:"monthly active (MAU)", s9_stat3_k:"partner institutions", s9_stat4_k:"premium subscribers", s9_stat5_k:"ARR run-rate",
+  s9_p2p_eyebrow:"Ultimate Goal · Seed+ Stage",
+  s9_p2p_h:"P2P Universal Exchange — <em>Central Asia's open investment marketplace</em>",
+  s9_p2p_p:"Every user can list their asset (deposit, securities, crypto, business equity) directly on the market. Startups and small businesses raise investment from the community via <b style=\"color:var(--fg-1)\">crowdfunding</b> — no intermediaries, transparent, real-time.",
+
+  s10_eyebrow:"Team & Vision",
+  s10_title:"The <em>team</em> that will build it",
+  s10_role:"Founder · Product & Technology Leader",
+  s10_bio:"10+ years in fintech. <b style=\"color:var(--fg-0)\">Trastbank</b> (CPO), banking & fintech (Xalq Banki, Paynet, Mediapark), international experience (EPAM, Geomotive). Deep expertise in Islamic finance and Sharia-compliant products.",
+  s10_chip1:"Fintech · Banking", s10_chip2:"Product", s10_chip3:"+ seeking CTO / co-founder",
+  s10_more:"Full profile →",
+  s10_vision_eyebrow:"Vision",
+  s10_vision:"A country where every Uzbek knows how to <em>make their money work</em>. Finport — the investment operating system of Central Asia.",
+  s10_closing_h:"<em>$300K pre-seed</em> · Let's build it together",
+
+  hint:"← → arrow keys to navigate"
+}
+};
+
+// ============================================================
+// I18N ENGINE
+// ============================================================
+let currentLang = localStorage.getItem('fp_lang') || 'uz';
+
+function setLang(lang) {
+  if (!T[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('fp_lang', lang);
+  document.documentElement.lang = lang;
+  const t = T[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (t[k] !== undefined) el.textContent = t[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.dataset.i18nHtml;
+    if (t[k] !== undefined) el.innerHTML = t[k];
+  });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('on', b.dataset.lang === lang));
+}
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => setLang(btn.dataset.lang));
+});
+
+// ============================================================
+// SLIDE ENGINE
+// ============================================================
 (function(){
   const slides=[...document.querySelectorAll('.slide')];
   const dotsWrap=document.getElementById('dots');
@@ -614,11 +971,12 @@ tr.me td:first-child{border-left:2px solid var(--accent)}
     if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(i-1);}
     if(e.key==='Home')go(0); if(e.key==='End')go(slides.length-1);
   });
-  // swipe
   let x0=null;
   window.addEventListener('touchstart',e=>x0=e.touches[0].clientX,{passive:true});
   window.addEventListener('touchend',e=>{if(x0===null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>50)go(i+(dx<0?1:-1));x0=null;},{passive:true});
   go(0);
+  // Apply saved language on load
+  setLang(currentLang);
 })();
 </script>
 </body>
