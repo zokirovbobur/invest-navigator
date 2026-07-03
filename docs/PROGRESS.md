@@ -121,8 +121,14 @@ steps" below). Run `npm run db:push` once that's set.
       `vercel.json` cron, README setup section. DONE — see notes below.
 - [x] **Phase 1** — market data provider layer + caching + cron endpoint. DONE — see notes below.
 - [x] **Phase 2** — wire charts (category/compare/detail) to real series. DONE — see notes below (badge UI is category-detail-only, see gaps).
-- [ ] **Phase 3** — auth (register/login/me/logout).
-- [ ] **Phase 4** — portfolio in DB + migration + trajectory charts.
+- [x] **Phase 3** — auth backend (register/login/me/logout). DONE, backend
+      only — see notes below for the scope refinement (frontend auth UI
+      moved into Phase 4, bundled with portfolio wiring).
+- [ ] **Phase 4** — frontend auth UI (login/register modal + topbar user
+      chip) **plus** portfolio in DB + localStorage migration + trajectory
+      charts. (Scope note: originally the auth UI was scoped to Phase 3;
+      moved here so login and "what do I do once logged in" ship as one
+      testable flow instead of a login modal with nothing behind it.)
 - [ ] **Phase 5** — polish (i18n, rate-limit guard, disclaimers, README).
 
 ## Status log
@@ -130,6 +136,53 @@ steps" below). Run `npm run db:push` once that's set.
 (Newest entry on top. Every session MUST add an entry here before stopping,
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
+
+- **2026-07-03** — Phase 3 done and committed on `feature/fullstack-mvp`
+  (**backend only** — see the scope-refinement note added to the Phase 4
+  checklist entry above: frontend login/register UI moved into Phase 4).
+  Added `src/server/lib/auth.ts` (`signAuthToken`/`verifyAuthToken` via
+  `jose`, HS256, 30-day expiry, subject = user id; `AUTH_COOKIE =
+  "fp_session"`; cookie options — `httpOnly`, `sameSite: "Lax"`, and
+  `secure` conditional on `process.env.VERCEL === "1"` so `vercel dev`/
+  plain local HTTP still works), `src/server/lib/schemas/auth.ts` (zod:
+  register requires email/password min 8 chars/name, login just requires
+  well-formed email + non-empty password), `src/server/lib/
+  authMiddleware.ts` (`requireAuth` Hono middleware + the shared `AppEnv`
+  type — `{ Variables: { userId, userEmail } }` — that Phase 4's
+  portfolio routes will reuse), and `src/server/routes/auth.ts`:
+  - `POST /register` — pre-checks email uniqueness (friendly 409 before
+    paying for a bcrypt hash), bcryptjs cost 10, and also catches a
+    unique-constraint violation from the insert itself as a race-condition
+    backstop (409 either way, never a raw DB error leaked to the client).
+  - `POST /login` — bcrypt.compare, generic "Invalid email or password"
+    on both not-found and wrong-password (doesn't leak which one failed).
+  - `POST /logout` — clears the cookie.
+  - `GET /me` — returns `{user: null}` (200, not a 401) when there's no
+    valid session; this is the one route that never needs a DB round
+    trip for the "logged out" case, which is what most page loads will be.
+  Mounted at `/api/auth/*` in `src/server/app.ts`.
+  **Verified** via `npx tsx` running the Hono app in-process (JWT_SECRET
+  set to a dummy value, still no real `DATABASE_URL`/network in this
+  sandbox): `GET /me` with no cookie → `200 {"user":null}`, no DB touched;
+  `POST /register` with malformed email/short password → `400` with the
+  zod message; `POST /register` with valid input → clean `500` (correct:
+  account creation genuinely requires a DB, there's no fallback); `POST
+  /login` with malformed input → `400`. Also isolated the JWT layer:
+  `signAuthToken`/`verifyAuthToken` round-trip correctly, and
+  `verifyAuthToken` returns `null` (not a throw) for a garbage token.
+  `npm run typecheck` passes clean.
+  **Known gaps**: never exercised the actual DB-backed register→login→me
+  round trip (needs a real Neon `DATABASE_URL`) — next session with a
+  provisioned DB should `db:push` then hit these three routes for real
+  before trusting them in production. No frontend UI yet (by design,
+  see scope note above).
+  **Next**: Phase 4 — portfolio routes (`GET/POST/DELETE
+  /api/portfolio/positions`, `GET /api/portfolio/series`, using
+  `requireAuth`/`AppEnv` from this phase), plus the frontend: login/
+  register modal + topbar user chip (new `data.badge.*`-style I18N
+  entries), wiring the portfolio page to the API when logged in with a
+  one-time localStorage→DB migration, logged-out users keep today's
+  localStorage behavior unchanged.
 
 - **2026-07-03** — Phase 2 done and committed on `feature/fullstack-mvp`.
   Added `api.js` (new file, loaded via `<script>` before `offers.js`/

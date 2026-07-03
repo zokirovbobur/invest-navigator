@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception";
 import market from "./routes/market.js";
 import fx from "./routes/fx.js";
 import cron from "./routes/cron.js";
+import auth from "./routes/auth.js";
 
 const app = new Hono().basePath("/api");
 
@@ -14,6 +15,7 @@ app.get("/health", (c) => c.json({ ok: true, ts: new Date().toISOString() }));
 app.route("/market", market);
 app.route("/fx", fx);
 app.route("/cron", cron);
+app.route("/auth", auth);
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
