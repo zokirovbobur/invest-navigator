@@ -66,6 +66,11 @@ tse, startup, gems, gaming                                 -> model (existing se
 - `GET  /api/market/series?category={id}&months=24` → `{ source, symbol, currency, points:[{date,pct}] }`,
   pct = % change vs first point. Reads from `price_history`; backfills from
   provider on cache miss/stale.
+  **Implemented in Phase 1** with `source: "live" | "accrual" | "model"`
+  (refined from the original 2-way live/model split — accrual categories
+  are deterministic curves from a real published rate, not randomness, so
+  they get their own badge value; frontend Phase 2 should render 3 badge
+  variants, not 2).
 - `GET  /api/market/latest?symbols=...` → cached latest prices (TTL 15min, `price_cache`).
 - `GET  /api/fx/uzs` → current + historical USD/UZS (cached daily, `fx_rates`).
 - `POST /api/auth/register` `{email,password,name}` — bcryptjs, zod.
@@ -114,7 +119,7 @@ steps" below). Run `npm run db:push` once that's set.
 
 - [x] **Phase 0** — TS + Hono + Drizzle + Neon scaffolding, `.env.example`,
       `vercel.json` cron, README setup section. DONE — see notes below.
-- [ ] **Phase 1** — market data provider layer + caching + cron endpoint.
+- [x] **Phase 1** — market data provider layer + caching + cron endpoint. DONE — see notes below.
 - [ ] **Phase 2** — wire charts (category/compare/detail) to real series.
 - [ ] **Phase 3** — auth (register/login/me/logout).
 - [ ] **Phase 4** — portfolio in DB + migration + trajectory charts.
@@ -125,6 +130,63 @@ steps" below). Run `npm run db:push` once that's set.
 (Newest entry on top. Every session MUST add an entry here before stopping,
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
+
+- **2026-07-03** — Phase 1 done and committed on `feature/fullstack-mvp`.
+  Added: `src/server/lib/providers/{coingecko,stooq,cbu}.ts` (fetchers,
+  no API keys needed), `src/server/lib/accrual.ts` (synthetic accrual
+  curve for deposit-uzs/deposit-usd/ozbonds/sukuk/mudaraba/p2p, rates
+  duplicated from app.js's `INSTRUMENTS[].retMid` — **keep these two
+  numbers in sync by hand**, there's no shared import since offers.js/app.js
+  are plain `<script>` globals, not ES modules the backend can import),
+  `src/server/lib/model.ts` (server-side port of app.js's `seededRand` +
+  `generateSeries`, used only for tse/startup/gems/gaming which have no
+  public market — NOT required to bit-match the frontend's own local
+  fallback generator, they're independent implementations of the same
+  idea), `src/server/lib/categoryMap.ts` (the category→source config
+  table), `src/server/lib/cache.ts` (`withCache()`: TTL read-through over
+  the `price_cache` table, serves stale data on fetch failure instead of
+  erroring if a prior cache row exists), `src/server/lib/marketSeries.ts`
+  (`getCategorySeries()`: the one function that ties source-kind →
+  provider/accrual/model → monthly resampling → % change normalization),
+  and three routes: `GET /api/market/series`, `GET /api/market/latest`,
+  `GET /api/fx/uzs` (backed by `fx_rates` table + CBU), `GET
+  /api/cron/snapshot` (bearer-guarded by `CRON_SECRET`, best-effort per
+  symbol, refreshes `price_cache` + `price_history` + `fx_rates` daily).
+  All mounted in `src/server/app.ts`.
+  **Verified** (via `npx tsx` running the Hono app in-process, since this
+  sandbox's network policy blocks outbound calls to coingecko.uz/stooq.com/
+  cbu.uz and there's no real `DATABASE_URL` here — see "Known gaps" below):
+  `/api/health` 200; `/api/market/series?category=deposit-uzs` (accrual)
+  and `?category=tse` (model) both return clean 200 JSON with sane `pct`
+  curves and don't touch the DB at all; `?category=unknown-cat` → 400;
+  `?category=crypto` (needs DB for caching) → clean 502, not a crash;
+  `/api/market/latest?categories=deposit-uzs,tse,crypto` → 200 with
+  per-category partial failure (`{"category":"crypto","error":"unavailable"}`)
+  instead of failing the whole request; `/api/fx/uzs` and
+  `/api/cron/snapshot` → clean 500 when `DATABASE_URL` is unset (correct:
+  these two hard-require a DB, there's no meaningful fallback). `npm run
+  typecheck` passes clean.
+  **Known gaps / not yet verified for real** (next session with real
+  network + a provisioned Neon DB should check these before trusting
+  Phase 1 in production):
+  1. Never made a live HTTP call to coingecko.com, stooq.com, or cbu.uz —
+     this sandbox's egress policy 403s all three. The provider parsing
+     logic (esp. `cbu.ts`'s field names `Ccy`/`Rate`/`Date` and date
+     format `DD.MM.YYYY`, and `stooq.ts`'s CSV column names) is written
+     from documented/remembered API shapes, not verified against a live
+     response. **Test these three fetchers for real before relying on
+     them** — easiest way: `vercel dev` or a plain Node script with
+     working internet, hitting `/api/market/series?category=crypto`,
+     `?category=etf`, and `/api/fx/uzs` once `DATABASE_URL` is set.
+  2. Never ran `npm run db:push` against a real Postgres — the Drizzle
+     schema has not been validated to actually create tables without
+     migration errors.
+  3. `price_history` is currently only written by the cron job (one row
+     per symbol per day) — nothing reads it yet. It exists for Phase 4's
+     position `entryPrice` resolution.
+  **Next**: Phase 2 — frontend `api.js` client, wire the category/compare/
+  detail charts in app.js to `/api/market/series`, add LIVE/ACCRUAL/MODEL
+  badges (i18n'd uz/ru/en).
 
 - **2026-07-03** — Phase 0 done and committed on `feature/fullstack-mvp`.
   Added: `package.json` deps (hono, drizzle-orm, @neondatabase/serverless,
