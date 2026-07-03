@@ -3,8 +3,14 @@
   "version": "1.0.0",
   "description": "Investment navigator catalog for Uzbekistan",
   "main": "app.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vercel dev",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
   },
   "repository": {
     "type": "git",
@@ -22,6 +28,19 @@
   },
   "homepage": "https://github.com/zokirovbobur/invest-navigator#readme",
   "dependencies": {
-    "@vercel/analytics": "^2.0.1"
+    "@neondatabase/serverless": "^0.10.4",
+    "@vercel/analytics": "^2.0.1",
+    "bcryptjs": "^2.4.3",
+    "drizzle-orm": "^0.36.4",
+    "hono": "^4.6.13",
+    "jose": "^5.9.6",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^22.10.1",
+    "drizzle-kit": "^0.28.1",
+    "typescript": "^5.7.2",
+    "vercel": "^39.1.3"
   }
 }

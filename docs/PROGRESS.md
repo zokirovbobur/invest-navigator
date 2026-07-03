@@ -88,7 +88,12 @@ positions(id uuid pk, user_id fk, category_id text, offer_id text?, symbol text?
 price_history(symbol text, date date, price numeric, pk(symbol,date))
 price_cache(key text pk, payload jsonb, fetched_at timestamptz)
 fx_rates(date date pk, usd_uzs numeric)
+rate_limits(key text pk, count numeric, window_start timestamptz)   -- added in Phase 0, for Phase 5's per-IP guard
 ```
+
+This is implemented in `src/db/schema.ts` (Drizzle). Nothing has been pushed
+to a real DB yet — that requires the owner's `DATABASE_URL` (see "Manual
+steps" below). Run `npm run db:push` once that's set.
 
 ## Frontend changes (surgical, inside app.js/index.html — not a rewrite)
 
@@ -107,8 +112,8 @@ fx_rates(date date pk, usd_uzs numeric)
 
 ## Phase checklist (update this as you go — check off + add notes)
 
-- [ ] **Phase 0** — TS + Hono + Drizzle + Neon scaffolding, `.env.example`,
-      `vercel.json` cron, README setup section.
+- [x] **Phase 0** — TS + Hono + Drizzle + Neon scaffolding, `.env.example`,
+      `vercel.json` cron, README setup section. DONE — see notes below.
 - [ ] **Phase 1** — market data provider layer + caching + cron endpoint.
 - [ ] **Phase 2** — wire charts (category/compare/detail) to real series.
 - [ ] **Phase 3** — auth (register/login/me/logout).
@@ -121,8 +126,26 @@ fx_rates(date date pk, usd_uzs numeric)
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
 
-- **2026-07-03** — Branch `feature/fullstack-mvp` created off `main`.
-  PROGRESS.md written. Starting Phase 0 now.
+- **2026-07-03** — Phase 0 done and committed on `feature/fullstack-mvp`.
+  Added: `package.json` deps (hono, drizzle-orm, @neondatabase/serverless,
+  bcryptjs, jose, zod + drizzle-kit/typescript/@types/node/vercel CLI as
+  dev deps), `tsconfig.json`, `src/db/schema.ts` (users, positions,
+  price_history, price_cache, fx_rates, rate_limits), `src/db/client.ts`
+  (lazy Neon+Drizzle client, throws a clear error if `DATABASE_URL` is
+  unset), `drizzle.config.ts`, `src/server/app.ts` (Hono app, basePath
+  `/api`, CORS, error handler, `/api/health`), `api/[[...route]].ts`
+  (Vercel catch-all entry via `hono/vercel`'s `handle()`, `runtime: nodejs`),
+  `.env.example`, `README.md`, `vercel.json` now declares the daily cron
+  `/api/cron/snapshot` at 03:00 UTC (route not implemented yet — Phase 1).
+  Verified: `npm run typecheck` passes clean; `/api/health` smoke-tested
+  directly via Node (`app.request('/api/health')` → 200). Did NOT run
+  `vercel dev` end-to-end (no Vercel login/token in this sandbox) — the
+  repo owner should sanity-check `vercel dev` once, and must do the
+  "Manual steps" below before Phase 1's endpoints will actually work in
+  Preview/Production.
+  **Next**: Phase 1 — provider modules (CoinGecko/Stooq/CBU), the
+  category→series mapping table, `/api/market/*`, `/api/fx/uzs`, and
+  `/api/cron/snapshot`.
 
 ## Manual steps required from the repo owner (cannot be done by the agent)
 
