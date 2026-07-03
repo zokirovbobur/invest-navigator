@@ -8,10 +8,11 @@ import { users } from "../../db/schema.js";
 import { registerSchema, loginSchema } from "../lib/schemas/auth.js";
 import { AUTH_COOKIE, authCookieOptions, signAuthToken, verifyAuthToken } from "../lib/auth.js";
 import type { AppEnv } from "../lib/authMiddleware.js";
+import { rateLimit } from "../lib/rateLimit.js";
 
 const auth = new Hono<AppEnv>();
 
-auth.post("/register", async (c) => {
+auth.post("/register", rateLimit("auth-register", 5), async (c) => {
   const body = await c.req.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
   if (!parsed.success) {
@@ -45,7 +46,7 @@ auth.post("/register", async (c) => {
   return c.json({ user }, 201);
 });
 
-auth.post("/login", async (c) => {
+auth.post("/login", rateLimit("auth-login", 15), async (c) => {
   const body = await c.req.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {

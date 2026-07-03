@@ -125,13 +125,93 @@ steps" below). Run `npm run db:push` once that's set.
       only — see notes below for the scope refinement (frontend auth UI
       moved into Phase 4, bundled with portfolio wiring).
 - [x] **Phase 4** — DONE (backend + frontend). See notes below.
-- [ ] **Phase 5** — polish (i18n, rate-limit guard, disclaimers, README).
+- [x] **Phase 5** — polish (i18n, rate-limit guard, disclaimers, README). DONE.
 
 ## Status log
 
 (Newest entry on top. Every session MUST add an entry here before stopping,
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
+
+- **2026-07-03** — Phase 5 done and committed on `feature/fullstack-mvp`.
+  **This closes out the full 6-phase roadmap** (Phases 0-5 all done). What
+  shipped in this pass:
+  1. **i18n audit**: cross-checked every `t("...")` call site in `app.js`
+     against both `I18N` (app.js) and `OFFERS_I18N` (offers.js, merged
+     into `I18N` at script load) across all 3 languages. Zero real gaps —
+     the large initial "missing" list from a naive grep was a false
+     positive (most catalog-detail keys live in `offers.js`'s
+     `OFFERS_I18N`, not `app.js`'s `I18N`, and one grep false-positive
+     came from `e.target.closest("a")` matching the `t\("...")` pattern).
+     No code changes needed here, just verification — logged so a future
+     session doesn't redo this from scratch.
+  2. **Rate limiting**: `src/server/lib/rateLimit.ts` — a fixed-window
+     (60s) per-IP counter backed by the `rate_limits` table (added but
+     unused since Phase 0). Applied to `POST /api/auth/register` (5/min),
+     `POST /api/auth/login` (15/min), and all of
+     `/api/portfolio/positions*` (60/min, covers GET/POST/PATCH/DELETE
+     together). Explicitly documented as a *soft* limit — there's a small
+     TOCTOU race between the read and the write under concurrent requests
+     from the same IP, which is an acceptable tradeoff for MVP abuse
+     protection, not a strict security guarantee. One side effect worth
+     remembering: since the limiter is DB-backed and runs *before* the
+     route handler (including zod validation), a request with a
+     malformed body now fails with a `500` instead of a `400` when there's
+     no `DATABASE_URL` — confirmed via smoke test, and it's correct
+     behavior (the rate limiter itself requires the DB, so if the DB is
+     down every DB-dependent route should fail, not silently skip its
+     protection).
+  3. **Disclaimers**: already fully covered — the `disclaimer.title`/
+     `disclaimer.body` card in the page footer (`index.html`) is static
+     markup outside the JS-swapped route content, so it's visible on
+     every route (catalog, detail, portfolio) with no changes needed.
+     Chart-level forecast disclaimers (`expand.disclaimer`) were already
+     in place from before this project started. No new disclaimer needed
+     for the auth modal (it doesn't make any financial claims).
+  4. **README**: added a "Status" section summarizing what's implemented
+     and explicitly flagging that none of it has been verified against a
+     real deployment (real DB, real outbound network) — this sandbox
+     blocks both, see every phase's "Known gaps" above for specifics.
+     Updated the project layout listing to include the files added since
+     Phase 0 (`api.js`, `src/server/lib/providers/`, `src/server/lib/
+     schemas/`).
+  **Verified**: `npm run typecheck` passes clean; `node --check app.js`/
+  `api.js` pass; rate-limited routes still compose correctly with
+  `requireAuth` and the existing DB-unavailable-graceful-500 behavior
+  (smoke-tested).
+  **What's deliberately NOT done** (out of scope for this pass, not
+  forgotten — see each phase's own "Known gaps" for the authoritative
+  list): real DB verification, real provider network verification, Phase
+  4's known gap #3 (wiring `/api/portfolio/series` into the actual
+  portfolio charts instead of the client-side-computed trajectory),
+  toast/retry UI for failed optimistic portfolio writes.
+
+## What a fresh session should do next
+
+The roadmap is code-complete. The highest-value next steps, roughly in
+order:
+
+1. **Provision a real Neon DB** (see README's "One-time cloud setup") and
+   run `npm run db:push`, then re-run every phase's smoke tests for real
+   — register→login→me, add/remove/edit a portfolio position, and check
+   `/api/market/series` for a `crypto`/`etf` category actually returns
+   live data (needs real network to coingecko.com/stooq.com, also
+   unavailable in the sandbox this was built in).
+2. **Deploy to Vercel** and confirm the daily cron fires
+   (`/api/cron/snapshot`) and the cookie-based auth survives a real HTTPS
+   round trip (the `secure` cookie flag is conditional on
+   `process.env.VERCEL === "1"`, untested against a real Vercel request).
+3. Wire `GET /api/portfolio/series` into `buildPortfolioStackedChart` /
+   the position cards (Phase 4's known gap #3) so logged-in users' charts
+   use the server's authoritative trajectory instead of the client-side
+   recomputation — most valuable for price-based positions (crypto/etf/
+   div-stocks/real-estate/precious-metals), where the server has the real
+   historical price and the client currently doesn't.
+4. Nice-to-haves noted along the way but not done: LIVE/ACCRUAL/MODEL
+   badges on the compare-chart legend and portfolio charts (currently
+   only the single-category detail chart shows one — Phase 2's known gap
+   #1), a toast/retry affordance for failed background portfolio writes
+   (Phase 4's known gap #2).
 
 - **2026-07-03** — Phase 4 **frontend half** done and committed on
   `feature/fullstack-mvp` — Phase 4 is now fully complete (backend +

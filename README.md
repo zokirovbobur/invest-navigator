@@ -7,7 +7,33 @@ The app is a vanilla JS SPA (`index.html`, `app.js`, `offers.js`) backed by a
 single serverless API (`api/[[...route]].ts`, built with [Hono](https://hono.dev))
 and a [Neon](https://neon.tech) Postgres database, deployed entirely on the
 **Vercel Hobby (free) plan**. See `docs/PROGRESS.md` for the full build
-roadmap and current status.
+roadmap and status log.
+
+## Status
+
+All 6 build phases are implemented and typecheck clean:
+
+- Real market data (CoinGecko for crypto, Stooq for ETF/dividend
+  stocks/REIT/precious metals, CBU for USD/UZS) with a daily refresh cron,
+  DB-backed caching, and a graceful synthetic fallback when a category has
+  no public market (deposits, bonds, sukuk, mudaraba, p2p, and a handful
+  of local-only categories) — surfaced in the UI as a LIVE / RATE-BASED /
+  MODEL badge on each category's chart.
+- Email+password accounts (bcrypt + JWT cookie) with a login/register
+  modal and a topbar account chip.
+- Portfolio positions persisted per-account in Postgres, with a one-time
+  migration of any existing anonymous (localStorage) portfolio on first
+  login, and a value-trajectory endpoint (`GET /api/portfolio/series`)
+  for tracking a position's growth over time.
+- A simple per-IP rate limiter on auth and portfolio-write endpoints.
+
+**Not yet verified against a real deployment**: everything above has been
+tested locally (typecheck, in-process request smoke tests, and full
+browser flows via Playwright with mocked API responses), but this
+codebase has never been run against a real Neon database or made live
+outbound calls to CoinGecko/Stooq/CBU — the sandbox this was built in
+blocks that network access. See `docs/PROGRESS.md`'s "Known gaps"
+entries for exactly what to double-check after the first real deploy.
 
 ## Local development
 
@@ -42,11 +68,14 @@ locally.
 
 ```
 index.html, app.js, offers.js   static SPA (frontend, unchanged in spirit)
+api.js                          frontend fetch client (window.API)
 pitch.html                      investor pitch deck
 api/[[...route]].ts             Vercel serverless entry (Hono catch-all)
 src/server/app.ts                Hono app + route mounting
-src/server/routes/               API route handlers (market, auth, portfolio, cron)
-src/server/lib/                  shared server helpers (env, providers, auth)
+src/server/routes/               API route handlers (market, fx, auth, portfolio, cron)
+src/server/lib/                  auth, rate limiting, market-data providers, position valuation
+src/server/lib/providers/        CoinGecko / Stooq / CBU fetchers
+src/server/lib/schemas/          zod request validation
 src/db/schema.ts                 Drizzle ORM schema
 src/db/client.ts                 Neon/Drizzle client
 drizzle.config.ts, drizzle/      migration config + generated SQL migrations

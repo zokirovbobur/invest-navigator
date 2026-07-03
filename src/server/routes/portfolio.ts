@@ -13,9 +13,12 @@ import {
   priceOnOrBefore,
 } from "../lib/positionValue.js";
 import type { PricePoint } from "../lib/providers/coingecko.js";
+import { rateLimit } from "../lib/rateLimit.js";
 
 const portfolio = new Hono<AppEnv>();
 portfolio.use("*", requireAuth);
+portfolio.use("/positions", rateLimit("portfolio-write", 60));
+portfolio.use("/positions/*", rateLimit("portfolio-write", 60));
 
 portfolio.get("/positions", async (c) => {
   const db = getDb();
