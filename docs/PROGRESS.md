@@ -124,12 +124,7 @@ steps" below). Run `npm run db:push` once that's set.
 - [x] **Phase 3** — auth backend (register/login/me/logout). DONE, backend
       only — see notes below for the scope refinement (frontend auth UI
       moved into Phase 4, bundled with portfolio wiring).
-- [~] **Phase 4** — IN PROGRESS. Backend portfolio routes DONE (see notes
-      below). Still TODO: frontend auth UI (login/register modal + topbar
-      user chip) + wiring the portfolio page to the API + localStorage
-      migration. (Scope note: originally the auth UI was scoped to Phase
-      3; moved here so login and "what do I do once logged in" ship as
-      one testable flow instead of a login modal with nothing behind it.)
+- [x] **Phase 4** — DONE (backend + frontend). See notes below.
 - [ ] **Phase 5** — polish (i18n, rate-limit guard, disclaimers, README).
 
 ## Status log
@@ -137,6 +132,133 @@ steps" below). Run `npm run db:push` once that's set.
 (Newest entry on top. Every session MUST add an entry here before stopping,
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
+
+- **2026-07-03** — Phase 4 **frontend half** done and committed on
+  `feature/fullstack-mvp` — Phase 4 is now fully complete (backend +
+  frontend). This closes out the original 6-phase roadmap; only Phase 5
+  (polish) is left.
+  **Backend additions in this pass**: added `positions.customRatePct`
+  (nullable numeric) to the schema — when a portfolio item comes from a
+  *specific* offer (e.g. one particular bank's 21% deposit, not the
+  category's blended `retMid`), the frontend now sends that offer's exact
+  rate and `accrualMultiplier()` prefers it over the category default.
+  This preserves the precision the existing localStorage-based portfolio
+  UI already had (each item stored its own `retMid`) instead of silently
+  collapsing every position in a category to one shared rate. Also added
+  `PATCH /api/portfolio/positions/:id` (amount-only update) since the
+  existing portfolio UI lets you edit a position's invested amount
+  in-place and the DB needed a way to persist that without a full
+  remove+re-add.
+  **Frontend integration strategy** (surgical, not a rewrite): kept
+  `state.portfolio` as the *single* in-memory shape every existing render
+  function already works with (`renderPortfolio`, `buildPortfolioPositionCard`,
+  `buildPortfolioStackedChart`, etc. — untouched). Only the persistence
+  layer changed:
+  - `savePortfolio()` now no-ops when logged in (server is authoritative)
+    and writes to `localStorage` exactly as before when logged out.
+  - `loadPortfolio()` is now `async`: logged in → `GET /positions` +
+    `hydratePositionFromApi()` reconstructs the full local item shape
+    (name/avatar/color aren't stored server-side, they're re-derived from
+    `OFFERS[categoryId].items` by `offerId`, falling back to the bare
+    category via `INSTRUMENTS` if there's no matching offer, e.g. a
+    symbol-only crypto position). Logged out → localStorage, unchanged.
+  - `addToPortfolio`/`removeFromPortfolio`/the per-position amount input
+    are optimistic: they mutate `state.portfolio` and `render()`
+    immediately (snappy UI, unchanged feel), then — only when logged in —
+    fire the matching `POST`/`DELETE`/`PATCH` in the background and patch
+    in the real DB id on success. A failed background call just logs a
+    warning; the item stays local-only for the rest of that session
+    (documented gap below, not silently wrong — logs are visible in devtools).
+  - `buildPortfolioItemFromOffer()` extracted from the old inline body of
+    `addToPortfolio` so both "adding a new item" and "hydrating one from
+    the API" build the exact same shape from one place.
+  - `maybeMigrateLocalPortfolio()`: on first successful login, if the DB
+    has zero positions and localStorage has items, POSTs each one
+    (mapping `retMid` → `customRatePct` for fidelity) then clears the
+    `inv_nav_portfolio` key. If the DB already has positions (e.g.
+    logged in on another device before), it just clears the stale local
+    copy without double-adding.
+  **New UI**: `#account-area` placeholder in the topbar (index.html,
+  next to the basket button) — `renderAccountArea()` renders either a
+  "Kirish"/Login pill button (logged out) or an avatar+name chip with a
+  dropdown menu (email + Logout) when logged in, called from the main
+  `render()` dispatcher so it stays in sync across every navigation.
+  `openAuthModal()` builds a single login/register modal from scratch
+  (no prior modal component existed in this codebase) with a mode
+  switch, styled with the existing design tokens (`--bg-1`, `--accent`,
+  `--radius-lg`, etc.) — CSS added to `index.html` (`.account-*`,
+  `.auth-modal-*`, `.auth-field`, `.auth-error`, `.auth-submit`,
+  `.auth-switch`). 17 new `auth.*` I18N keys × 3 languages.
+  **Bug found and fixed during browser testing**: the register-mode
+  "Name" field was marked `required` unconditionally at creation, but
+  gets `hidden` in login mode — a `hidden`-but-`required` form field
+  makes the browser refuse to fire the `submit` event at all (console:
+  "An invalid form control with name='' is not focusable"), silently
+  breaking login. Fixed by toggling `nameInput.required` in `applyMode()`
+  instead of setting it once at creation. Worth remembering for any
+  future conditionally-hidden required field in this codebase.
+  **Cosmetic bug found and fixed**: the no-matching-offer hydration
+  fallback used a synthetic `kind: "category"` with no corresponding
+  `pf.kind.category` I18N key, so the UI literally showed the string
+  `"pf.kind.category"` instead of a translated label (this codebase's
+  `t()` returns the key itself when missing, so `t(key) || fallback`
+  never falls through) — added the key in all 3 languages.
+  **Verified in a real Chromium browser** (Playwright + mocked
+  `/api/auth/*` and `/api/portfolio/*` routes, since this sandbox still
+  has no real DB or network to test against for real):
+  1. Full login flow: seeded `localStorage` with one anonymous position →
+     reloaded → logged-out topbar shows "Kirish" → opened modal → toggled
+     to register mode (name field appears) and back to login → submitted
+     login → mock server received `POST /auth/login` → `GET
+     /portfolio/positions` (empty) → `POST /portfolio/positions` (the
+     migrated local item, with `customRatePct: "18"` matching its
+     original `retMid`) → modal closed → topbar chip shows "Test User" →
+     `localStorage` key cleared (`null`) → confirmed the exact migration
+     contract end-to-end.
+  2. Account menu: click chip → dropdown opens (email + Logout) → click
+     Logout → `POST /auth/logout` fires → topbar reverts to the "Kirish"
+     button.
+  3. Logged-in portfolio page with 2 mocked DB positions (one with a
+     matching `offerId` → resolved to "Hayot depoziti" via `OFFERS`
+     lookup; one symbol-only crypto position with no `offerId` → correctly
+     fell back to the category-based hydration path) — both position
+     cards rendered, the allocation donut and growth chart both rendered
+     without errors, numbers looked sane ($800 total, both positions'
+     annualized/12-month figures present). Screenshots confirm the
+     layout matches the existing design system.
+  `node --check app.js` / `node --check api.js` pass; `npm run typecheck`
+  passes clean (backend).
+  **Known gaps for a future session**:
+  1. Never tested against a real DB (only mocked responses) — the exact
+     wire format Drizzle returns for `numeric`/`date` columns (all
+     strings) should be spot-checked against a live Neon DB once
+     provisioned, in case any parsing assumption in `hydratePositionFromApi`
+     or `accrualMultiplier` is off.
+  2. Optimistic-UI failure handling is minimal: if a background
+     `POST`/`PATCH`/`DELETE` fails after the UI already updated, the user
+     gets no visible error — just a console warning — and the change can
+     silently not persist past a reload. A toast/retry affordance would
+     be a good Phase 5+ addition.
+  3. `GET /api/portfolio/series` (the real per-position/total trajectory
+     endpoint from the backend half of this phase) is still **not wired
+     into the portfolio charts** — `buildPortfolioStackedChart` and the
+     position cards still compute their own client-side trajectory via
+     `generateSeries(pseudo)`/`accrualMultiplier`-equivalent logic
+     duplicated in app.js, not by fetching the server's authoritative
+     series. This means logged-in portfolio charts today are consistent
+     with the localStorage-era behavior (good for continuity) but don't
+     yet benefit from the server's real price-based trajectories for
+     crypto/etf/etc. positions. Wiring `buildPortfolioStackedChart` to
+     `window.API.portfolioSeries()` (already stubbed in `api.js`) is the
+     natural next increment — flagged here rather than done now to keep
+     this phase's diff reviewable.
+  **Next**: Phase 5 — i18n completeness pass, a simple per-IP rate-limit
+  guard (the `rate_limits` table from Phase 0 is still unused), the
+  "not investment advice" disclaimer (the pitch/catalog pages already
+  have one — check portfolio/auth surfaces too), empty/error states
+  polish, and finalize the README. Optionally also close known gap #3
+  above (wire `/api/portfolio/series` into the actual charts) if there's
+  room in the phase.
 
 - **2026-07-03** — Phase 4 **backend half** done and committed on
   `feature/fullstack-mvp` (frontend half — auth UI + portfolio page

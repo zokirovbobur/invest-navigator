@@ -34,9 +34,19 @@ function monthsBetween(a: Date, b: Date): number {
   );
 }
 
-/** Value multiplier (>=1 typically) for a rate-based/model position as of `asOf`. */
-export function accrualMultiplier(categoryId: string, entryDate: string, asOf: Date = new Date()): number {
-  const annualRate = annualRateFor(categoryId);
+/**
+ * Value multiplier (>=1 typically) for a rate-based/model position as of
+ * `asOf`. `customRatePct`, when given, overrides the category's blended
+ * rate with the specific offer's actual rate (e.g. one particular bank's
+ * deposit %) for better fidelity with what the user actually picked.
+ */
+export function accrualMultiplier(
+  categoryId: string,
+  entryDate: string,
+  asOf: Date = new Date(),
+  customRatePct?: number | null
+): number {
+  const annualRate = customRatePct ?? annualRateFor(categoryId);
   if (annualRate == null) {
     throw new Error(`No accrual/model rate configured for category "${categoryId}"`);
   }

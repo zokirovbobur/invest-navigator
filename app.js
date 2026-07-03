@@ -119,6 +119,23 @@ const I18N = {
     "data.badge.model": "MODEL",
     "data.badge.model.hint": "Ochiq bozor ma'lumoti mavjud emas — bu taxminiy modellashtirilgan dinamika.",
 
+    "auth.login": "Kirish",
+    "auth.logout": "Chiqish",
+    "auth.login.title": "Hisobga kirish",
+    "auth.register.title": "Hisob yaratish",
+    "auth.login.submit": "Kirish",
+    "auth.register.submit": "Ro'yxatdan o'tish",
+    "auth.switch.toRegister": "Hisobingiz yo'qmi? Ro'yxatdan o'ting",
+    "auth.switch.toLogin": "Hisobingiz bormi? Kiring",
+    "auth.email": "Email",
+    "auth.email.ph": "sizning@email.com",
+    "auth.password": "Parol",
+    "auth.password.ph": "Kamida 8 belgi",
+    "auth.name": "Ism",
+    "auth.name.ph": "Ismingiz",
+    "auth.loading": "Yuklanmoqda…",
+    "auth.error.generic": "Xatolik yuz berdi, qayta urinib ko'ring.",
+
     "chart.amount":     "Investitsiya summasi",
     "chart.date":       "Kiritish sanasi",
     "chart.date.today": "Bugun",
@@ -149,6 +166,7 @@ const I18N = {
     "pf.kind.precious-metals":"Qimmatbaho metallar",
     "pf.kind.gems":           "Qimmatbaho toshlar",
     "pf.kind.gaming":         "O'yin aktivlari",
+    "pf.kind.category":       "Investitsiya",
     "pf.legend.total":   "Jami portfel",
     "pf.legend.pos":     "Pozitsiyalar",
     "pf.added":          "Qo'shilgan sana",
@@ -281,6 +299,23 @@ const I18N = {
     "data.badge.model": "МОДЕЛЬ",
     "data.badge.model.hint": "Открытых рыночных данных нет — это смоделированная динамика.",
 
+    "auth.login": "Войти",
+    "auth.logout": "Выйти",
+    "auth.login.title": "Вход в аккаунт",
+    "auth.register.title": "Создать аккаунт",
+    "auth.login.submit": "Войти",
+    "auth.register.submit": "Зарегистрироваться",
+    "auth.switch.toRegister": "Нет аккаунта? Зарегистрируйтесь",
+    "auth.switch.toLogin": "Уже есть аккаунт? Войдите",
+    "auth.email": "Email",
+    "auth.email.ph": "your@email.com",
+    "auth.password": "Пароль",
+    "auth.password.ph": "Минимум 8 символов",
+    "auth.name": "Имя",
+    "auth.name.ph": "Ваше имя",
+    "auth.loading": "Загрузка…",
+    "auth.error.generic": "Произошла ошибка, попробуйте ещё раз.",
+
     "chart.amount":     "Сумма инвестиции",
     "chart.date":       "Дата входа",
     "chart.date.today": "Сегодня",
@@ -311,6 +346,7 @@ const I18N = {
     "pf.kind.precious-metals":"Дрaг. металлы",
     "pf.kind.gems":           "Дрaг. камни",
     "pf.kind.gaming":         "Игровые активы",
+    "pf.kind.category":       "Инвестиция",
     "pf.legend.total":   "Весь портфель",
     "pf.legend.pos":     "Позиции",
     "pf.added":          "Дата добавления",
@@ -444,6 +480,23 @@ const I18N = {
     "data.badge.model": "MODEL",
     "data.badge.model.hint": "No public market data exists — this is a modeled estimate.",
 
+    "auth.login": "Log in",
+    "auth.logout": "Log out",
+    "auth.login.title": "Log in",
+    "auth.register.title": "Create an account",
+    "auth.login.submit": "Log in",
+    "auth.register.submit": "Sign up",
+    "auth.switch.toRegister": "No account? Sign up",
+    "auth.switch.toLogin": "Already have an account? Log in",
+    "auth.email": "Email",
+    "auth.email.ph": "your@email.com",
+    "auth.password": "Password",
+    "auth.password.ph": "At least 8 characters",
+    "auth.name": "Name",
+    "auth.name.ph": "Your name",
+    "auth.loading": "Loading…",
+    "auth.error.generic": "Something went wrong, please try again.",
+
     "chart.amount":     "Investment amount",
     "chart.date":       "Entry date",
     "chart.date.today": "Today",
@@ -474,6 +527,7 @@ const I18N = {
     "pf.kind.precious-metals":"Precious metals",
     "pf.kind.gems":           "Precious stones",
     "pf.kind.gaming":         "Gaming assets",
+    "pf.kind.category":       "Investment",
     "pf.legend.total":   "Total portfolio",
     "pf.legend.pos":     "Positions",
     "pf.added":          "Date added",
@@ -834,7 +888,8 @@ const state = {
   offerExpandedId: null, // currently-expanded offer card on detail page
   offerCompareIds: [],   // offer ids toggled into compare view on detail page
   chartParams: { amount: 100, startOffset: 0 }, // 0=today 12=1yr 24=2yr
-  portfolio: [],         // [{uid, offerId, kind, directionId, displayNames, avatarCode, color, retMid, risk, currency, amount, addedAt}]
+  portfolio: [],         // [{uid, dbId, offerId, kind, directionId, displayNames, avatarCode, color, retMid, risk, currency, amount, addedAt}]
+  auth: { user: null, checked: false }, // user: {id,email,name} | null
   filters: {
     search: "",
     sort: "relevance",
@@ -1607,6 +1662,7 @@ function render() {
   else renderDetail();
   renderActiveFilters();
   updateBasketButton();
+  renderAccountArea();
 }
 
 function syncTogglesPressed() {
@@ -1621,25 +1677,33 @@ function syncTogglesPressed() {
 
 /* ============================================================
    PORTFOLIO — persistence helpers
+   Once logged in, the DB (via /api/portfolio/*) is the source of
+   truth and localStorage is left untouched (well, cleared once by
+   maybeMigrateLocalPortfolio()); logged-out users keep the original
+   localStorage-only behavior unchanged.
 ============================================================ */
 function savePortfolio() {
+  if (state.auth.user) return; // server-backed once logged in — see addToPortfolio/removeFromPortfolio
   try { localStorage.setItem("inv_nav_portfolio", JSON.stringify(state.portfolio)); } catch(e) {}
 }
-function loadPortfolio() {
+
+async function loadPortfolio() {
+  if (state.auth.user) {
+    try {
+      const { positions } = await window.API.listPositions();
+      state.portfolio = positions.map(hydratePositionFromApi);
+    } catch (err) {
+      console.warn("[portfolio] failed to load positions from server", err);
+      state.portfolio = [];
+    }
+    return;
+  }
   try { state.portfolio = JSON.parse(localStorage.getItem("inv_nav_portfolio") || "[]"); } catch(e) { state.portfolio = []; }
 }
 
-function updateBasketButton() {
-  const btn = $("#basket-btn");
-  const cnt = $("#basket-count");
-  if (!btn || !cnt) return;
-  const n = state.portfolio.length;
-  btn.classList.toggle("has-items", n > 0);
-  if (n > 0) { cnt.style.display = ""; cnt.textContent = String(n); }
-  else { cnt.style.display = "none"; }
-}
-
-function addToPortfolio(offer, kind) {
+/** Shared builder for a local portfolio-item shape, used both when adding
+ * a new position and when hydrating one loaded from the API. */
+function buildPortfolioItemFromOffer(offer, kind, directionId, amount, opts) {
   const pseudo = makeOfferPseudoInst(offer, kind);
   const KIND_COLORS = {
     deposit: "#D9B871", mudaraba: "#4CAF82", stock: "#56CCF2",
@@ -1653,28 +1717,130 @@ function addToPortfolio(offer, kind) {
   else if (kind === "gaming") avatarCode = (offer.game || "??").slice(0, 2).toUpperCase();
   else avatarCode = offer.id.slice(0, 2).toUpperCase();
 
-  state.portfolio.push({
-    uid: "pf_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+  return {
+    uid: (opts && opts.uid) || ("pf_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6)),
+    dbId: (opts && opts.dbId) || null,
     offerId: offer.id,
     kind,
-    directionId: state.detailId,
+    directionId,
     displayNames: { uz: offerDisplayName(offer, kind, "uz"), ru: offerDisplayName(offer, kind, "ru"), en: offerDisplayName(offer, kind, "en") },
     avatarCode,
     color: KIND_COLORS[kind] || "#D9B871",
     retMid:   pseudo.retMid,
     risk:     pseudo.risk,
     currency: pseudo.currency,
-    amount:   state.chartParams.amount,
-    addedAt:  new Date().toISOString().slice(0, 10),
-  });
+    amount,
+    addedAt: (opts && opts.addedAt) || new Date().toISOString().slice(0, 10),
+  };
+}
+
+/** Reconstructs a local portfolio-item from a /api/portfolio/positions row.
+ * Presentation fields (name/avatar/color) aren't stored server-side, so
+ * they're re-derived from the offer catalog when the position still has a
+ * matching offerId; otherwise falls back to the category itself. */
+function hydratePositionFromApi(row) {
+  const meta = (typeof OFFERS !== "undefined") ? OFFERS[row.categoryId] : null;
+  const offer = meta && row.offerId ? meta.items.find((o) => o.id === row.offerId) : null;
+  const amount = Number(row.amountUsd);
+
+  if (offer) {
+    return buildPortfolioItemFromOffer(offer, meta.kind, row.categoryId, amount, {
+      uid: "db_" + row.id, dbId: row.id, addedAt: row.entryDate,
+    });
+  }
+
+  const inst = INSTRUMENTS.find((i) => i.id === row.categoryId);
+  return {
+    uid: "db_" + row.id,
+    dbId: row.id,
+    offerId: row.offerId || row.categoryId,
+    kind: "category",
+    directionId: row.categoryId,
+    displayNames: inst ? inst.name : { uz: row.categoryId, ru: row.categoryId, en: row.categoryId },
+    avatarCode: row.categoryId.slice(0, 3).toUpperCase(),
+    color: "#D9B871",
+    retMid: row.customRatePct != null ? Number(row.customRatePct) : (inst ? inst.retMid : 0),
+    risk: inst ? inst.risk : "mid",
+    currency: inst ? inst.currency : "USD",
+    amount,
+    addedAt: row.entryDate,
+  };
+}
+
+/** One-time migration of an anonymous localStorage portfolio into the DB
+ * on first login. No-ops (and just clears the stale local copy) if the
+ * account already has positions, so re-logging-in never double-adds. */
+async function maybeMigrateLocalPortfolio() {
+  if (!state.auth.user) return;
+  let localItems = [];
+  try { localItems = JSON.parse(localStorage.getItem("inv_nav_portfolio") || "[]"); } catch (e) { localItems = []; }
+  if (localItems.length === 0) return;
+
+  if (state.portfolio.length > 0) {
+    try { localStorage.removeItem("inv_nav_portfolio"); } catch (e) {}
+    return;
+  }
+
+  for (const item of localItems) {
+    try {
+      const { position } = await window.API.addPosition({
+        categoryId: item.directionId,
+        offerId: item.offerId,
+        amountUsd: item.amount,
+        entryDate: item.addedAt,
+        customRatePct: Number.isFinite(item.retMid) ? item.retMid : undefined,
+      });
+      state.portfolio.push(hydratePositionFromApi(position));
+    } catch (err) {
+      console.warn("[portfolio] migration failed for item", item.uid, err);
+    }
+  }
+  try { localStorage.removeItem("inv_nav_portfolio"); } catch (e) {}
+}
+
+function updateBasketButton() {
+  const btn = $("#basket-btn");
+  const cnt = $("#basket-count");
+  if (!btn || !cnt) return;
+  const n = state.portfolio.length;
+  btn.classList.toggle("has-items", n > 0);
+  if (n > 0) { cnt.style.display = ""; cnt.textContent = String(n); }
+  else { cnt.style.display = "none"; }
+}
+
+function addToPortfolio(offer, kind) {
+  const item = buildPortfolioItemFromOffer(offer, kind, state.detailId, state.chartParams.amount);
+  state.portfolio.push(item);
   savePortfolio();
   render();
+
+  if (state.auth.user) {
+    window.API.addPosition({
+      categoryId: item.directionId,
+      offerId: item.offerId,
+      amountUsd: item.amount,
+      entryDate: item.addedAt,
+      customRatePct: Number.isFinite(item.retMid) ? item.retMid : undefined,
+    }).then(({ position }) => {
+      item.dbId = position.id;
+      item.uid = "db_" + position.id;
+    }).catch((err) => {
+      console.warn("[portfolio] failed to sync new position to server", err);
+    });
+  }
 }
 
 function removeFromPortfolio(uid) {
+  const item = state.portfolio.find((p) => p.uid === uid);
   state.portfolio = state.portfolio.filter((p) => p.uid !== uid);
   savePortfolio();
   render();
+
+  if (state.auth.user && item && item.dbId) {
+    window.API.removePosition(item.dbId).catch((err) => {
+      console.warn("[portfolio] failed to delete position on server", err);
+    });
+  }
 }
 
 function isInPortfolio(offerId) {
@@ -2020,7 +2186,16 @@ function buildPortfolioPositionCard(item) {
   const amtInput = el("input", { type: "number", min: "1", max: "1000000", value: item.amount });
   amtInput.addEventListener("change", (e) => {
     const v = parseFloat(e.target.value);
-    if (v > 0) { item.amount = v; savePortfolio(); render(); }
+    if (v > 0) {
+      item.amount = v;
+      savePortfolio();
+      render();
+      if (state.auth.user && item.dbId) {
+        window.API.updatePosition(item.dbId, v).catch((err) => {
+          console.warn("[portfolio] failed to update amount on server", err);
+        });
+      }
+    }
   });
 
   return el("div", { class: "pf-pos-card" },
@@ -4361,6 +4536,156 @@ function clearAll() {
 }
 
 /* ============================================================
+   AUTH — topbar chip + login/register modal
+   Auth state is checked once at boot (async, non-blocking — the first
+   render still happens synchronously off localStorage/logged-out state,
+   exactly like before this feature existed) and re-synced on login/logout.
+============================================================ */
+async function checkAuthAndSync() {
+  if (typeof window === "undefined" || !window.API) { state.auth.checked = true; return; }
+  try {
+    const { user } = await window.API.me();
+    state.auth.user = user || null;
+  } catch (err) {
+    state.auth.user = null;
+  }
+  state.auth.checked = true;
+  if (state.auth.user) {
+    await loadPortfolio();
+    await maybeMigrateLocalPortfolio();
+  }
+  render();
+}
+
+function renderAccountArea() {
+  const root = $("#account-area");
+  if (!root) return;
+  root.innerHTML = "";
+
+  if (state.auth.user) {
+    const label = state.auth.user.name || state.auth.user.email;
+    const initials = label.trim().slice(0, 1).toUpperCase() || "?";
+
+    const logoutBtn = el("button", { class: "account-menu-item" }, t("auth.logout"));
+    logoutBtn.addEventListener("click", () => {
+      menu.classList.remove("open");
+      handleLogout();
+    });
+    const menu = el("div", { class: "account-menu" },
+      el("div", { class: "account-menu-email" }, state.auth.user.email),
+      logoutBtn
+    );
+    const chip = el("button", { class: "account-chip", type: "button" },
+      el("span", { class: "account-avatar" }, initials),
+      el("span", { class: "account-name" }, label)
+    );
+    chip.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.classList.toggle("open");
+    });
+    document.addEventListener("click", () => menu.classList.remove("open"), { once: true });
+    root.appendChild(el("div", { class: "account-wrap" }, chip, menu));
+  } else {
+    const btn = el("button", { class: "account-login-btn", type: "button" }, t("auth.login"));
+    btn.addEventListener("click", openAuthModal);
+    root.appendChild(btn);
+  }
+}
+
+let _authModalEl = null;
+
+function closeAuthModal() {
+  if (_authModalEl) { _authModalEl.remove(); _authModalEl = null; }
+}
+
+function openAuthModal() {
+  closeAuthModal();
+  let mode = "login"; // "login" | "register"
+
+  const errorEl = el("div", { class: "auth-error", hidden: true });
+  const emailInput = el("input", { type: "email", required: "required", autocomplete: "email", placeholder: t("auth.email.ph") });
+  const nameInput = el("input", { type: "text", autocomplete: "name", placeholder: t("auth.name.ph") });
+  const passwordInput = el("input", { type: "password", required: "required", autocomplete: "current-password", placeholder: t("auth.password.ph") });
+  const nameField = el("div", { class: "auth-field" }, el("label", null, t("auth.name")), nameInput);
+
+  const title = el("h3", { class: "auth-title" }, t("auth.login.title"));
+  const submitBtn = el("button", { class: "auth-submit", type: "submit" }, t("auth.login.submit"));
+  const switchLink = el("button", { class: "auth-switch", type: "button" }, t("auth.switch.toRegister"));
+
+  function applyMode() {
+    title.textContent = mode === "login" ? t("auth.login.title") : t("auth.register.title");
+    submitBtn.textContent = mode === "login" ? t("auth.login.submit") : t("auth.register.submit");
+    switchLink.textContent = mode === "login" ? t("auth.switch.toRegister") : t("auth.switch.toLogin");
+    nameField.hidden = mode === "login";
+    nameInput.required = mode === "register"; // hidden required fields block native form submission
+    passwordInput.setAttribute("autocomplete", mode === "login" ? "current-password" : "new-password");
+    errorEl.hidden = true;
+  }
+  applyMode();
+
+  switchLink.addEventListener("click", () => {
+    mode = mode === "login" ? "register" : "login";
+    applyMode();
+  });
+
+  const form = el("form", { class: "auth-form" },
+    nameField,
+    el("div", { class: "auth-field" }, el("label", null, t("auth.email")), emailInput),
+    el("div", { class: "auth-field" }, el("label", null, t("auth.password")), passwordInput),
+    errorEl,
+    submitBtn,
+    switchLink
+  );
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl.hidden = true;
+    submitBtn.disabled = true;
+    const prevLabel = submitBtn.textContent;
+    submitBtn.textContent = t("auth.loading");
+    try {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const result = mode === "login"
+        ? await window.API.login(email, password)
+        : await window.API.register(email, password, nameInput.value.trim());
+      await handleLoginSuccess(result.user);
+    } catch (err) {
+      errorEl.textContent = (err && err.message) || t("auth.error.generic");
+      errorEl.hidden = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = prevLabel;
+    }
+  });
+
+  const closeBtn = el("button", { class: "auth-modal-close", type: "button", "aria-label": t("card.close") }, "✕");
+  closeBtn.addEventListener("click", closeAuthModal);
+
+  const card = el("div", { class: "auth-modal-card" }, closeBtn, title, form);
+  const overlay = el("div", { class: "auth-modal-overlay" }, card);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeAuthModal(); });
+
+  document.body.appendChild(overlay);
+  _authModalEl = overlay;
+  emailInput.focus();
+}
+
+async function handleLoginSuccess(user) {
+  state.auth.user = user;
+  closeAuthModal();
+  await loadPortfolio();
+  await maybeMigrateLocalPortfolio();
+  render();
+}
+
+async function handleLogout() {
+  try { await window.API.logout(); } catch (e) { /* cookie may already be gone */ }
+  state.auth.user = null;
+  await loadPortfolio();
+  render();
+}
+
+/* ============================================================
    BOOT
 ============================================================ */
 function boot() {
@@ -4381,6 +4706,8 @@ function boot() {
   $("#clear-all").addEventListener("click", clearAll);
 
   window.addEventListener("hashchange", syncRouteFromHash);
+
+  checkAuthAndSync();
 }
 
 if (document.readyState !== "loading") boot();

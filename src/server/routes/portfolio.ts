@@ -29,13 +29,14 @@ portfolio.post("/positions", async (c) => {
   if (!parsed.success) {
     throw new HTTPException(400, { message: parsed.error.issues[0]?.message ?? "Invalid input" });
   }
-  const { categoryId, offerId, symbol, amountUsd, entryDate } = parsed.data;
+  const { categoryId, offerId, symbol, amountUsd, entryDate, customRatePct } = parsed.data;
   if (!(categoryId in CATEGORY_SOURCES)) {
     throw new HTTPException(400, { message: `Unknown category "${categoryId}"` });
   }
+  const priceBased = isPriceBased(categoryId);
 
   let entryPrice: string | null = null;
-  if (isPriceBased(categoryId)) {
+  if (priceBased) {
     try {
       const sorted = await fetchRawSeriesCached(categoryId);
       const price = priceOnOrBefore(sorted, entryDate);
@@ -60,9 +61,31 @@ portfolio.post("/positions", async (c) => {
       amountUsd: String(amountUsd),
       entryDate,
       entryPrice,
+      // customRatePct only makes sense for rate-based categories.
+      customRatePct: !priceBased && customRatePct != null ? String(customRatePct) : null,
     })
     .returning();
   return c.json({ position: row }, 201);
+});
+
+portfolio.patch("/positions/:id", async (c) => {
+  const body = await c.req.json().catch(() => null);
+  const amountUsd = body && typeof body.amountUsd === "number" ? body.amountUsd : null;
+  if (amountUsd == null || !(amountUsd > 0) || amountUsd > 1_000_000_000) {
+    throw new HTTPException(400, { message: "amountUsd must be a positive number" });
+  }
+
+  const db = getDb();
+  const id = c.req.param("id");
+  const [row] = await db
+    .update(positions)
+    .set({ amountUsd: String(amountUsd) })
+    .where(and(eq(positions.id, id), eq(positions.userId, c.get("userId"))))
+    .returning();
+  if (!row) {
+    throw new HTTPException(404, { message: "Position not found" });
+  }
+  return c.json({ position: row });
 });
 
 portfolio.delete("/positions/:id", async (c) => {
@@ -123,7 +146,8 @@ portfolio.get("/series", async (c) => {
           const priceNow = priceOnOrBefore(series, d);
           valueUsd = entryPrice && priceNow ? amount * (priceNow / entryPrice) : amount;
         } else {
-          valueUsd = amount * accrualMultiplier(p.categoryId, p.entryDate, new Date(d + "T00:00:00Z"));
+          const customRate = p.customRatePct != null ? Number(p.customRatePct) : null;
+          valueUsd = amount * accrualMultiplier(p.categoryId, p.entryDate, new Date(d + "T00:00:00Z"), customRate);
         }
         return { date: d, valueUsd };
       });

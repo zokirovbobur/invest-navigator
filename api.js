@@ -53,6 +53,12 @@
     addPosition(position) {
       return request("/portfolio/positions", { method: "POST", body: JSON.stringify(position) });
     },
+    updatePosition(id, amountUsd) {
+      return request("/portfolio/positions/" + encodeURIComponent(id), {
+        method: "PATCH",
+        body: JSON.stringify({ amountUsd }),
+      });
+    },
     removePosition(id) {
       return request("/portfolio/positions/" + encodeURIComponent(id), { method: "DELETE" });
     },

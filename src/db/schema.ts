@@ -28,6 +28,10 @@ export const positions = pgTable("positions", {
   amountUsd: numeric("amount_usd", { precision: 18, scale: 2 }).notNull(),
   entryDate: date("entry_date").notNull(),
   entryPrice: numeric("entry_price", { precision: 18, scale: 8 }),
+  /** Overrides the category's blended accrual rate with the specific
+   * offer's actual rate (e.g. a specific bank's deposit %), when known.
+   * Ignored for price-based categories. Null = use the category default. */
+  customRatePct: numeric("custom_rate_pct", { precision: 6, scale: 3 }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
