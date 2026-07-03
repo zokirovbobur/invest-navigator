@@ -112,6 +112,13 @@ const I18N = {
     "expand.month": "oy",
     "expand.disclaimer": "Tahmin tarixiy o'rtacha asosida modellashtirilgan, kafolat emas.",
 
+    "data.badge.live": "JONLI",
+    "data.badge.live.hint": "Ochiq bozor ma'lumotlaridan olingan haqiqiy narx dinamikasi.",
+    "data.badge.accrual": "STAVKA",
+    "data.badge.accrual.hint": "E'lon qilingan rasmiy stavka asosida hisoblangan o'sish egri chizig'i.",
+    "data.badge.model": "MODEL",
+    "data.badge.model.hint": "Ochiq bozor ma'lumoti mavjud emas — bu taxminiy modellashtirilgan dinamika.",
+
     "chart.amount":     "Investitsiya summasi",
     "chart.date":       "Kiritish sanasi",
     "chart.date.today": "Bugun",
@@ -266,6 +273,13 @@ const I18N = {
     "expand.axis.today": "Сегодня",
     "expand.month": "мес",
     "expand.disclaimer": "Прогноз построен на исторических средних, не является гарантией.",
+
+    "data.badge.live": "ЖИВЫЕ",
+    "data.badge.live.hint": "Реальная динамика цены на основе открытых рыночных данных.",
+    "data.badge.accrual": "СТАВКА",
+    "data.badge.accrual.hint": "Кривая роста рассчитана на основе официально объявленной ставки.",
+    "data.badge.model": "МОДЕЛЬ",
+    "data.badge.model.hint": "Открытых рыночных данных нет — это смоделированная динамика.",
 
     "chart.amount":     "Сумма инвестиции",
     "chart.date":       "Дата входа",
@@ -422,6 +436,13 @@ const I18N = {
     "expand.axis.today": "Today",
     "expand.month": "mo",
     "expand.disclaimer": "Forecast modeled from historical averages, not a guarantee.",
+
+    "data.badge.live": "LIVE",
+    "data.badge.live.hint": "Real price trajectory sourced from open market data.",
+    "data.badge.accrual": "RATE-BASED",
+    "data.badge.accrual.hint": "Growth curve computed from a published official rate.",
+    "data.badge.model": "MODEL",
+    "data.badge.model.hint": "No public market data exists — this is a modeled estimate.",
 
     "chart.amount":     "Investment amount",
     "chart.date":       "Entry date",
@@ -2399,7 +2420,7 @@ function seededRand(seed) {
   };
 }
 
-function generateSeries(inst) {
+function generateSyntheticSeries(inst) {
   const rand = seededRand(inst.id);
   const monthly = inst.retMid / 12;
   // volatility (monthly stddev of returns, in % points)
@@ -2424,13 +2445,91 @@ function generateSeries(inst) {
   const bench = [];
   for (let i = 0; i <= PAST + FUT; i++) bench.push(i * benchMonthly);
 
-  return { hist, fut, bench, PAST, FUT };
+  return { hist, fut, bench, PAST, FUT, source: "model" };
+}
+
+/* ============================================================
+   REAL MARKET DATA — async fetch/cache layer over generateSeries()
+   ============================================================
+   generateSeries() stays a *synchronous* drop-in for every existing
+   call site (buildChart, buildCompareChart, portfolio charts…). It
+   returns real data immediately if already cached; otherwise it kicks
+   off a background fetch (once per category) and falls back to the
+   seeded synthetic curve for this render — the real curve replaces it
+   on the next render() once the fetch resolves.
+============================================================ */
+let _knownCategoryIds = null;
+function isKnownCategory(id) {
+  if (!_knownCategoryIds) _knownCategoryIds = new Set(INSTRUMENTS.map((i) => i.id));
+  return _knownCategoryIds.has(id);
+}
+
+const realSeriesCache = {}; // categoryId -> { source, currency, points:[{date,pct}] } | "loading" | "error"
+
+function ensureRealSeries(categoryId) {
+  if (realSeriesCache[categoryId] || typeof window === "undefined" || !window.API) return;
+  realSeriesCache[categoryId] = "loading";
+  window.API.marketSeries(categoryId, 24)
+    .then((data) => {
+      if (!data || !Array.isArray(data.points) || data.points.length < 2) {
+        throw new Error("empty series");
+      }
+      realSeriesCache[categoryId] = data;
+      render();
+    })
+    .catch((err) => {
+      console.warn("[market] series fetch failed for", categoryId, err);
+      realSeriesCache[categoryId] = "error";
+    });
+}
+
+/** Builds the same {hist, fut, bench, PAST, FUT} shape from a real % series. */
+function seriesFromRealPoints(inst, real) {
+  const PAST = 24, FUT = 12;
+  let hist = real.points.map((p) => p.pct);
+  if (hist.length > PAST + 1) hist = hist.slice(hist.length - (PAST + 1));
+  while (hist.length < PAST + 1) hist.unshift(hist[0] ?? 0);
+
+  // Derive forecast drift/volatility from the real historical steps
+  // instead of the category's static retMid guess.
+  const steps = [];
+  for (let i = 1; i < hist.length; i++) steps.push(hist[i] - hist[i - 1]);
+  const drift = steps.length ? steps.reduce((a, b) => a + b, 0) / steps.length : 0;
+  const variance = steps.length
+    ? steps.reduce((a, b) => a + (b - drift) * (b - drift), 0) / steps.length
+    : 0;
+  const vol = Math.sqrt(variance) * 0.5; // tighter band, matches the synthetic model's fut damping
+
+  const rand = seededRand(inst.id + ":fut");
+  const fut = [hist[hist.length - 1]];
+  for (let i = 1; i <= FUT; i++) {
+    const noise = (rand() - 0.5) * vol;
+    fut.push(fut[i - 1] + drift + noise);
+  }
+
+  const benchAnnual = inst.currency === "USD" ? 3 : 10;
+  const benchMonthly = benchAnnual / 12;
+  const bench = [];
+  for (let i = 0; i <= PAST + FUT; i++) bench.push(i * benchMonthly);
+
+  return { hist, fut, bench, PAST, FUT, source: real.source };
+}
+
+function generateSeries(inst) {
+  if (isKnownCategory(inst.id)) {
+    const cached = realSeriesCache[inst.id];
+    if (cached && typeof cached === "object") {
+      return seriesFromRealPoints(inst, cached);
+    }
+    ensureRealSeries(inst.id);
+  }
+  return generateSyntheticSeries(inst);
 }
 
 function buildChart(inst, chartParams) {
   const cp = chartParams || state.chartParams;
   const { amount, startOffset } = cp;
-  const { hist, fut, bench, PAST, FUT } = generateSeries(inst);
+  const { hist, fut, bench, PAST, FUT, source } = generateSeries(inst);
   const N = PAST + FUT; // 36
 
   // Entry index: 0 = invested 2yr ago, 12 = 1yr ago, 24 = today
@@ -2632,6 +2731,7 @@ function buildChart(inst, chartParams) {
     pastGrowth:    hist[hist.length - 1],
     forecastDelta: fut[fut.length - 1] - hist[hist.length - 1],
     benchTotal:    bench[bench.length - 1] - bench[0],
+    source,
   };
 }
 
@@ -2738,8 +2838,14 @@ function buildChartControls() {
   );
 }
 
+function buildDataSourceBadge(source) {
+  if (!source) return null;
+  const key = source === "live" ? "data.badge.live" : source === "accrual" ? "data.badge.accrual" : "data.badge.model";
+  return el("span", { class: "data-badge data-badge-" + source, title: t(key + ".hint") }, t(key));
+}
+
 function buildExpandedPanel(inst) {
-  const { svg, setupHover, pastGrowth, forecastDelta, benchTotal } = buildChart(inst, state.chartParams);
+  const { svg, setupHover, pastGrowth, forecastDelta, benchTotal, source } = buildChart(inst, state.chartParams);
   const topOffers = pickTopOffers(inst);
 
   const fmtPct = (v) => (v >= 0 ? "+" : "") + v.toFixed(1) + "%";
@@ -2752,7 +2858,10 @@ function buildExpandedPanel(inst) {
   // header / stats
   const header = el("div", { class: "ep-header" },
     el("div", { class: "ep-title" },
-      el("div", { class: "ep-eyebrow eyebrow" }, t("expand.eyebrow")),
+      el("div", { class: "ep-eyebrow eyebrow" },
+        t("expand.eyebrow"),
+        buildDataSourceBadge(source)
+      ),
       el("h3", null, inst.name[state.lang])
     ),
     controls,

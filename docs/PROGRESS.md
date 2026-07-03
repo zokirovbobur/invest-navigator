@@ -120,7 +120,7 @@ steps" below). Run `npm run db:push` once that's set.
 - [x] **Phase 0** — TS + Hono + Drizzle + Neon scaffolding, `.env.example`,
       `vercel.json` cron, README setup section. DONE — see notes below.
 - [x] **Phase 1** — market data provider layer + caching + cron endpoint. DONE — see notes below.
-- [ ] **Phase 2** — wire charts (category/compare/detail) to real series.
+- [x] **Phase 2** — wire charts (category/compare/detail) to real series. DONE — see notes below (badge UI is category-detail-only, see gaps).
 - [ ] **Phase 3** — auth (register/login/me/logout).
 - [ ] **Phase 4** — portfolio in DB + migration + trajectory charts.
 - [ ] **Phase 5** — polish (i18n, rate-limit guard, disclaimers, README).
@@ -130,6 +130,77 @@ steps" below). Run `npm run db:push` once that's set.
 (Newest entry on top. Every session MUST add an entry here before stopping,
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
+
+- **2026-07-03** — Phase 2 done and committed on `feature/fullstack-mvp`.
+  Added `api.js` (new file, loaded via `<script>` before `offers.js`/
+  `app.js` in index.html — plain global `window.API`, not an ES module,
+  matching the existing frontend's no-bundler style). It only wires up
+  `marketSeries`/`marketLatest`/`fxUzs` for real use right now;
+  `register/login/logout/me/listPositions/addPosition/removePosition/
+  portfolioSeries` methods are stubbed ahead of time for Phases 3-4 and
+  will 404 until those routes exist — harmless, unused by the UI yet.
+  **app.js changes** (surgical, no rewrite): renamed the original
+  `generateSeries` → `generateSyntheticSeries` (body untouched, now
+  tags its output `source:"model"`). New `generateSeries(inst)` is a
+  synchronous wrapper: if `inst.id` is one of the 14 catalog category
+  ids, it returns cached real data immediately if present
+  (`seriesFromRealPoints`), else kicks off a background
+  `window.API.marketSeries()` fetch (`ensureRealSeries`, one in-flight
+  fetch per category, cached in module-level `realSeriesCache`) and
+  falls back to the synthetic curve for *this* render — a `render()`
+  call fires when the fetch resolves so the chart upgrades in place.
+  Non-category ids (per-offer pseudo-instruments used by the portfolio
+  and offer-compare charts) always go straight to synthetic, since
+  Phase 1's API is category-level only. `seriesFromRealPoints` derives
+  the 12-month forecast's drift/volatility from the *real* historical
+  monthly steps (not the static `retMid` guess) — satisfies the "derive
+  forecast from real series stats" requirement.
+  Because every call site (`buildChart`, `buildCompareChart`, the two
+  portfolio chart builders) already goes through `generateSeries(inst)`,
+  none of them needed to change to start receiving real data — only
+  `buildChart` was touched, to thread `source` out through its return
+  value so the UI can show a badge.
+  **Badge UI**: added `buildDataSourceBadge()` + a small pill next to
+  the "Kategoriya dinamikasi" eyebrow in `buildExpandedPanel` (the
+  single-category detail chart) — 3 states, LIVE/RATE-BASED/MODEL
+  (uz: JONLI/STAVKA/MODEL, ru: ЖИВЫЕ/СТАВКА/МОДЕЛЬ), each with a
+  `title=` hover hint, i18n'd in all 3 languages under the `data.badge.*`
+  keys in `I18N`. CSS in `index.html` (`.data-badge*` rules, next to
+  `.eyebrow`).
+  **Verified in a real Chromium browser** (Playwright, `playwright-core`
+  + the pre-installed browser at `/opt/pw-browsers/chromium`, served via
+  `python3 -m http.server` from the repo root — no bundler/build step
+  needed since this is a plain static SPA):
+  1. Offline/API-down path: expanded the `deposit-uzs` card
+     (`state.expandedId = "deposit-uzs"; render()`) against the plain
+     static server (no `/api/*` routes exist there → 404) — chart
+     rendered, badge showed **MODEL**, `realSeriesCache.deposit-uzs`
+     correctly settled to `"error"` (no retry loop), console showed only
+     the expected graceful warning, no crash. Screenshot confirms layout
+     (badge pill renders correctly next to the eyebrow, matches design
+     tokens).
+  2. Live-data path: mocked `**/api/market/series*` via
+     `page.route()` to return a realistic 25-point payload with
+     `source:"live"` for `crypto` — badge correctly showed **JONLI**
+     (LIVE) and `realSeriesCache.crypto` held the exact mocked payload.
+  `npm run typecheck` still passes (TS side untouched by this phase);
+  `node --check app.js` / `node --check api.js` both pass.
+  **Known gaps for a future session**:
+  1. The LIVE/ACCRUAL/MODEL badge only appears on the single-category
+     detail panel (`buildExpandedPanel`). The compare-chart legend and
+     the two portfolio charts silently benefit from real data (via
+     `generateSeries`) but don't show a badge — nice-to-have, not done.
+  2. The offer-level "expand" chart (pseudo-instrument keyed by a bank/
+     stock offer id, around the `offer.expand.eyebrow` i18n key) always
+     stays synthetic — Phase 1's API has no per-offer granularity, only
+     per-category. This is intentional/acceptable for the MVP, not a bug.
+  3. Never tested against a real deployed `/api/market/series` (only
+     mocked) — once Phase 1's "Known gaps" (real provider network calls)
+     are verified, re-check this phase's browser flow end-to-end again
+     for good measure.
+  **Next**: Phase 3 — auth (register/login/me/logout with JWT cookie),
+  then Phase 4 wires the already-stubbed `api.js` portfolio methods to
+  real backend routes.
 
 - **2026-07-03** — Phase 1 done and committed on `feature/fullstack-mvp`.
   Added: `src/server/lib/providers/{coingecko,stooq,cbu}.ts` (fetchers,
