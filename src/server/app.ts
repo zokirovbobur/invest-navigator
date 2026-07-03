@@ -5,6 +5,7 @@ import market from "./routes/market.js";
 import fx from "./routes/fx.js";
 import cron from "./routes/cron.js";
 import auth from "./routes/auth.js";
+import portfolioRoutes from "./routes/portfolio.js";
 
 const app = new Hono().basePath("/api");
 
@@ -16,6 +17,7 @@ app.route("/market", market);
 app.route("/fx", fx);
 app.route("/cron", cron);
 app.route("/auth", auth);
+app.route("/portfolio", portfolioRoutes);
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {

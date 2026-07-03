@@ -124,11 +124,12 @@ steps" below). Run `npm run db:push` once that's set.
 - [x] **Phase 3** — auth backend (register/login/me/logout). DONE, backend
       only — see notes below for the scope refinement (frontend auth UI
       moved into Phase 4, bundled with portfolio wiring).
-- [ ] **Phase 4** — frontend auth UI (login/register modal + topbar user
-      chip) **plus** portfolio in DB + localStorage migration + trajectory
-      charts. (Scope note: originally the auth UI was scoped to Phase 3;
-      moved here so login and "what do I do once logged in" ship as one
-      testable flow instead of a login modal with nothing behind it.)
+- [~] **Phase 4** — IN PROGRESS. Backend portfolio routes DONE (see notes
+      below). Still TODO: frontend auth UI (login/register modal + topbar
+      user chip) + wiring the portfolio page to the API + localStorage
+      migration. (Scope note: originally the auth UI was scoped to Phase
+      3; moved here so login and "what do I do once logged in" ship as
+      one testable flow instead of a login modal with nothing behind it.)
 - [ ] **Phase 5** — polish (i18n, rate-limit guard, disclaimers, README).
 
 ## Status log
@@ -136,6 +137,76 @@ steps" below). Run `npm run db:push` once that's set.
 (Newest entry on top. Every session MUST add an entry here before stopping,
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
+
+- **2026-07-03** — Phase 4 **backend half** done and committed on
+  `feature/fullstack-mvp` (frontend half — auth UI + portfolio page
+  wiring — still TODO, see below).
+  **Key design decision**: a position's value trajectory needs to be
+  stable across repeat calls on different days (a user should see a
+  coherent line, not one that reshuffles daily), but the category charts'
+  "model" source (tse/startup/gems/gaming) is a seeded random walk that's
+  only stable *relative to today* — it redraws its whole 24-month window
+  every day. That's fine for a catalog chart, not for tracking a specific
+  entry from a specific date. So portfolio positions use exactly **two**
+  valuation modes, not three:
+  1. **Price-based** (crypto/etf/div-stocks/real-estate/precious-metals —
+     anything with a real coingecko/stooq symbol): store the actual
+     historical price on the entry date (`positions.entryPrice`,
+     resolved at creation time from the same cached raw series Phase 1
+     already fetches), then value(t) = amountUsd × price(t)/entryPrice.
+  2. **Rate-based** (everything else — accrual categories AND the 4
+     "model" categories): value(t) = amountUsd × (1 + annualRate/100/12)
+     ^monthsBetween(entryDate, t), using `ACCRUAL_RATES` for accrual
+     categories and `MODEL_META[id].retMid` for model categories as the
+     rate. `entryPrice` stays `null` in the DB for these — not needed,
+     the formula is self-contained given `categoryId` + `entryDate`.
+  This is a deliberate, documented simplification for the model
+  categories: their portfolio trajectory is the category's *expected
+  average* growth, not the same noisy curve shown on the catalog chart.
+  **Added**: `src/server/lib/positionValue.ts` (`isPriceBased`,
+  `accrualMultiplier`, `fetchRawSeriesCached`, `priceOnOrBefore`,
+  `resolvePriceAtDate`), `src/server/lib/schemas/portfolio.ts` (zod:
+  positive `amountUsd` capped at 1e9, `entryDate` must be `YYYY-MM-DD`
+  and not in the future), `src/server/routes/portfolio.ts` — all routes
+  behind `requireAuth` (from Phase 3):
+  - `GET /positions` — list the caller's positions.
+  - `POST /positions` — validates, resolves `entryPrice` for price-based
+    categories (502 if the provider/cache can't be reached — no silent
+    wrong price), inserts, returns the created row.
+  - `DELETE /positions/:id` — scoped to `eq(userId)` so you can't delete
+    someone else's position by guessing an id; 404 if not found/not
+    yours (same response either way, doesn't leak existence).
+  - `GET /series` — builds a 24-month-back-to-today monthly grid, fetches
+    each distinct price-based symbol's raw series **once** (not once per
+    position — positions sharing a symbol, e.g. two crypto entries,
+    reuse the same fetch), returns each position's own value trajectory
+    plus a summed `total` trajectory. A position's points start at its
+    own `entryDate` (no phantom pre-investment history).
+  Mounted at `/api/portfolio/*` in `src/server/app.ts`.
+  **Verified**: `requireAuth` correctly 401s all four routes with no
+  cookie, *without* touching the DB (checked via stack trace absence);
+  with a validly-signed JWT cookie (crafted via `signAuthToken` directly,
+  no real user needed for this check) the same requests correctly get
+  past auth and fail at the DB layer with a clean 500 (no DATABASE_URL
+  in this sandbox — expected, not a bug). Unit-checked the value math in
+  isolation (no DB needed): `accrualMultiplier("deposit-uzs", ...)` over
+  exactly 12 months from a 21%-annual rate gives 1.2314× — matches
+  `(1+0.21/12)^12` by hand; 0 months gives exactly 1.0×;
+  `priceOnOrBefore` correctly picks the latest price ≤ the target date
+  and clamps to the earliest/latest available point outside the data
+  range. `npm run typecheck` passes clean.
+  **Known gaps**: never exercised `POST /positions` → `GET /series`
+  against a real DB + real price data (needs `DATABASE_URL` and working
+  network to coingecko/stooq — both unavailable in this sandbox, see
+  Phase 1's gaps). The `502` path on `POST /positions` when entryPrice
+  resolution fails is untested against a real provider outage.
+  **Next** (same session likely, or a fresh one): frontend half of
+  Phase 4 — login/register modal + topbar user chip (new I18N strings),
+  wire `api.js`'s already-stubbed `register/login/logout/me/
+  listPositions/addPosition/removePosition/portfolioSeries` methods into
+  the UI, one-time migration of existing `localStorage` positions into
+  the DB on first login (then clear the key), logged-out users keep
+  today's localStorage behavior unchanged. After that: Phase 5 polish.
 
 - **2026-07-03** — Phase 3 done and committed on `feature/fullstack-mvp`
   (**backend only** — see the scope-refinement note added to the Phase 4
