@@ -9,13 +9,21 @@ export interface PricePoint {
  */
 export async function fetchStooqSeries(symbol: string): Promise<PricePoint[]> {
   const url = `https://stooq.com/q/d/l/?s=${encodeURIComponent(symbol)}&i=d`;
-  const res = await fetch(url);
+  const res = await fetch(url, {
+    headers: {
+      // Stooq's CSV export blocks requests without a browser-like UA
+      // (bare fetch/undici UAs get a JS bot-check page instead of CSV).
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      accept: "text/csv,text/plain,*/*",
+    },
+  });
   if (!res.ok) {
     throw new Error(`Stooq error ${res.status} for ${symbol}`);
   }
   const text = (await res.text()).trim();
-  if (!text || /^n\/d/i.test(text)) {
-    throw new Error(`Stooq: no data for symbol ${symbol}`);
+  if (!text || /^n\/d/i.test(text) || /<!DOCTYPE|<html/i.test(text)) {
+    throw new Error(`Stooq: no data (or a bot-check page) for symbol ${symbol}`);
   }
 
   const [header, ...rows] = text.split("\n");
