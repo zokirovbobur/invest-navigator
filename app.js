@@ -2752,6 +2752,51 @@ function applyCryptoLivePrices() {
   }
 }
 
+/* ============================================================
+   REAL MARKET DATA — live prices for the precious-metals offers list
+   Same pattern as the crypto live prices above, for the 4 metals with a
+   reliable keyless Yahoo Finance futures ticker (gold/silver/platinum/
+   palladium). Rhodium and the industrial metals (copper/aluminum/
+   nickel/titanium/cobalt) have no confidently-mapped free ticker and
+   stay static — see docs/PROGRESS.md.
+============================================================ */
+const METAL_YAHOO_SYMBOLS = {
+  "metal-gold": "GC=F",
+  "metal-silver": "SI=F",
+  "metal-platinum": "PL=F",
+  "metal-palladium": "PA=F",
+};
+
+let metalLiveState = null; // null | "loading" | "error" | { [yahooSymbol]: {priceUsd, changePct} }
+
+function ensureMetalLivePrices() {
+  if (metalLiveState || typeof window === "undefined" || !window.API) return;
+  metalLiveState = "loading";
+  window.API.yahooQuotes(Object.values(METAL_YAHOO_SYMBOLS))
+    .then((data) => {
+      metalLiveState = (data && data.quotes) || {};
+      applyMetalLivePrices();
+      render();
+    })
+    .catch((err) => {
+      console.warn("[market] live metal prices fetch failed", err);
+      metalLiveState = "error";
+    });
+}
+
+function applyMetalLivePrices() {
+  if (!metalLiveState || metalLiveState === "loading" || metalLiveState === "error") return;
+  if (typeof PRECIOUS_METALS_OFFERS === "undefined") return;
+  for (const o of PRECIOUS_METALS_OFFERS) {
+    const symbol = METAL_YAHOO_SYMBOLS[o.id];
+    const live = symbol && metalLiveState[symbol];
+    if (!live) continue;
+    o.priceUSD = live.priceUsd;
+    if (live.changePct != null) o.change1y = live.changePct;
+    o.isLive = true;
+  }
+}
+
 function buildChart(inst, chartParams) {
   const cp = chartParams || state.chartParams;
   const { amount, startOffset } = cp;
@@ -3845,6 +3890,8 @@ function renderDetail() {
     if (list.length === 0) { grid.appendChild(emptyEl()); return; }
     renderOfferList(list, "stock", (o) => buildStockCard(o));
   } else if (meta.kind === "precious-metals") {
+    ensureMetalLivePrices();
+    applyMetalLivePrices();
     const list = filterAndSortMetals(meta.items);
     renderLiveStatsMetals(list);
     if (list.length === 0) { grid.appendChild(emptyEl()); return; }
@@ -4285,7 +4332,8 @@ function buildMetalCard(o) {
         el("div", null,
           el("div", { class: "ticker-row" },
             el("span", { class: "ticker" }, o.symbol),
-            el("span", { class: "change-badge " + changeCls }, changeStr)
+            el("span", { class: "change-badge " + changeCls }, changeStr),
+            o.isLive ? buildDataSourceBadge("live") : null
           ),
           el("div", { class: "pcat" }, catLabel + " · " + unitLabel)
         )

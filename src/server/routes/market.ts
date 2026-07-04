@@ -3,11 +3,14 @@ import { HTTPException } from "hono/http-exception";
 import { getCategorySeries } from "../lib/marketSeries.js";
 import { CATEGORY_SOURCES } from "../lib/categoryMap.js";
 import { fetchCoingeckoMarkets } from "../lib/providers/coingecko.js";
+import { fetchYahooSeries, quoteFromSeries } from "../lib/providers/yahoo.js";
 import { withCache } from "../lib/cache.js";
 
 const market = new Hono();
 const PRICES_TTL_MS = 5 * 60 * 1000;
 const MAX_PRICE_IDS = 50;
+const YAHOO_QUOTE_TTL_MS = 12 * 60 * 60 * 1000; // matches marketSeries.ts's LIVE_SERIES_TTL_MS
+const MAX_YAHOO_SYMBOLS = 20;
 
 market.get("/series", async (c) => {
   const category = c.req.query("category");
@@ -92,6 +95,43 @@ market.get("/prices", async (c) => {
     console.error(`GET /api/market/prices?ids=${idsParam}`, err);
     throw new HTTPException(502, { message: "Failed to load live prices" });
   }
+});
+
+/**
+ * Batch live quote for a set of Yahoo Finance symbols (e.g. the precious
+ * metals offers grid) — reuses the same `series:yahoo:{symbol}` cache
+ * entries the category-level chart already populates, so this rarely
+ * costs an extra real fetch on top of what Phase 1/2 already does.
+ */
+market.get("/yahoo-quotes", async (c) => {
+  const symbolsParam = c.req.query("symbols");
+  if (!symbolsParam) {
+    throw new HTTPException(400, { message: `Missing "symbols" query param (comma-separated)` });
+  }
+  const symbols = [...new Set(symbolsParam.split(",").map((s) => s.trim()).filter(Boolean))].slice(
+    0,
+    MAX_YAHOO_SYMBOLS
+  );
+  if (symbols.length === 0) {
+    throw new HTTPException(400, { message: `"symbols" must contain at least one symbol` });
+  }
+
+  const entries = await Promise.all(
+    symbols.map(async (symbol) => {
+      try {
+        const { data } = await withCache(`series:yahoo:${symbol}`, YAHOO_QUOTE_TTL_MS, () =>
+          fetchYahooSeries(symbol)
+        );
+        return [symbol, quoteFromSeries(data)] as const;
+      } catch (err) {
+        console.error(`GET /api/market/yahoo-quotes: failed for ${symbol}`, err);
+        return [symbol, null] as const;
+      }
+    })
+  );
+
+  const quotes = Object.fromEntries(entries.filter((entry): entry is [string, NonNullable<(typeof entries)[number][1]>] => entry[1] != null));
+  return c.json({ quotes });
 });
 
 export default market;

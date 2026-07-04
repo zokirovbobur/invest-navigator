@@ -36,6 +36,10 @@
       const q = new URLSearchParams({ ids: ids.join(",") });
       return request("/market/prices?" + q.toString());
     },
+    yahooQuotes(symbols) {
+      const q = new URLSearchParams({ symbols: symbols.join(",") });
+      return request("/market/yahoo-quotes?" + q.toString());
+    },
     fxUzs() {
       return request("/fx/uzs");
     },

@@ -50,3 +50,20 @@ export async function fetchYahooSeries(symbol: string, range = "1y"): Promise<Pr
   }
   return points;
 }
+
+export interface YahooQuote {
+  priceUsd: number;
+  changePct: number | null; // % change from the first to the last point of the series
+}
+
+/** Derives a "latest price + % change over the fetched range" quote from a series. */
+export function quoteFromSeries(points: PricePoint[]): YahooQuote {
+  if (points.length === 0) throw new Error("quoteFromSeries: empty series");
+  const sorted = [...points].sort((a, b) => a.date.localeCompare(b.date));
+  const first = sorted[0]!;
+  const last = sorted[sorted.length - 1]!;
+  return {
+    priceUsd: last.price,
+    changePct: first.price ? (last.price / first.price - 1) * 100 : null,
+  };
+}
