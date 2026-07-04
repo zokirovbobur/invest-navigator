@@ -186,6 +186,19 @@ concrete step.)
   portfolio charts instead of the client-side-computed trajectory),
   toast/retry UI for failed optimistic portfolio writes.
 
+- **2026-07-04** — Added `GET /api/admin/migrate` (`src/server/routes/admin.ts`)
+  as a terminal-less fallback for creating the DB schema: idempotent
+  `CREATE TABLE IF NOT EXISTS` statements mirroring `src/db/schema.ts`,
+  gated by `CRON_SECRET` (Bearer header or `?secret=` query param — the
+  query param exists specifically so it can be triggered by clicking a
+  link in a browser that's already past Vercel's Preview deployment
+  protection, no curl/terminal needed). Use `npm run db:push` instead
+  whenever a real terminal + `DATABASE_URL` is available; this route is
+  a fallback, not a replacement. Smoke-tested the auth gating (both
+  secret forms correctly 401 without it); actual table creation is
+  unverified in this sandbox (no DB access, same as every other DB-
+  touching route).
+
 ## What a fresh session should do next
 
 The roadmap is code-complete. The highest-value next steps, roughly in
