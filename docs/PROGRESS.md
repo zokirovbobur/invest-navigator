@@ -24,8 +24,11 @@ condensed version is reproduced below so a fresh session doesn't need it.
 
 - Do NOT rewrite the frontend framework — keep vanilla JS SPA, its design
   tokens, i18n (uz/ru/en) and hash routing; extend it, don't replace it.
-- Backend = **one** catch-all Vercel Serverless Function at
-  `api/[[...route]].ts` using **Hono** (avoids Hobby's function-count cap).
+- Backend = **one** catch-all Vercel Function at `api/index.ts` (Edge
+  runtime) using **Hono**, with `vercel.json` rewriting `/api/:path*` →
+  `/api` (avoids Hobby's function-count cap; see the 2026-07-04 deployment
+  post-mortem below for why it's `index.ts` + a rewrite, not a bracket
+  catch-all filename, and why Edge runtime not Node).
 - DB = **Neon Postgres** (free tier, provisioned via Vercel Marketplace) +
   **Drizzle ORM** with migrations.
 - Cron: Hobby allows only **daily** crons → exactly one cron,
@@ -132,6 +135,94 @@ steps" below). Run `npm run db:push` once that's set.
 (Newest entry on top. Every session MUST add an entry here before stopping,
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
+
+- **2026-07-04** — **First real deployment verification, on the actual
+  Vercel Preview for `feature/fullstack-mvp`.** This is the first time any
+  of this code ran with a real DB and real network — every prior phase's
+  "verified" claims were in-process/mocked only (see each phase's "Known
+  gaps" above). Two real, deployment-only bugs were found and fixed, plus
+  one third-party API policy change. **If you're debugging a fresh
+  deployment and see 404s or hangs on `/api/*`, check these first before
+  re-deriving them from scratch:**
+  1. **`/api/*` returned Vercel's own 404 page (not our JSON 404), for
+     every path.** Confirmed via `mcp__Vercel__get_runtime_logs`:
+     `404 [info/static]` — the request never reached the Lambda at all,
+     despite the function building successfully (`lambdaRuntimeStats`
+     showed 1 function). Root cause: the catch-all filename
+     `api/[[...route]].ts` (optional catch-all, double brackets) is a
+     **Next.js-only** routing convention — Vercel's zero-config routing
+     for non-framework ("Other") projects doesn't recognize it, so no
+     route ever got registered for the function. **Fix**: renamed to
+     `api/index.ts` and added an explicit rewrite in `vercel.json`:
+     `{ "source": "/api/:path*", "destination": "/api" }` — the same
+     mechanism already used for the `/pitch` rewrite, just pointed at a
+     function. This is Hono's own documented pattern for standalone
+     (non-Next) Vercel deployments; don't reintroduce bracket-catch-all
+     filenames for `/api`.
+  2. **After fixing #1, `/api/health` hung until Vercel's 300-second
+     function timeout killed it** (confirmed via `get_runtime_logs`:
+     `Vercel Runtime Timeout Error: Task timed out after 300 seconds`,
+     preceded by `WARN: default export returned a Response... returns
+     are ignored`). Root cause: `hono/vercel`'s `handle()` returns a
+     Web-standard `Response` object; Vercel's **Node.js** function
+     signature is the classic `(req, res) => void` and silently ignores
+     a returned `Response` instead of writing it through `res` — so the
+     function completes but nothing is ever sent back, and the request
+     hangs. **Fix**: changed `api/index.ts`'s `export const config` to
+     `runtime: "edge"` — Edge Runtime expects exactly a returned
+     `Response`, matching Hono's output. Confirmed no code anywhere in
+     `src/server/`, `src/db/`, or `api/` touches Node-core APIs (`fs`,
+     `Buffer`, `node:crypto`, etc.) that would be Edge-incompatible;
+     bcryptjs, jose, and `@neondatabase/serverless` are all explicitly
+     designed to be Edge-compatible. **After both fixes, `GET
+     /api/health` returned a real `200 {"ok":true,...}` for the first
+     time.**
+  3. **`GET /api/admin/migrate` (bootstrap endpoint, run once by the repo
+     owner via a browser click, since this sandbox still can't reach
+     Neon or any deployment behind Vercel Authentication) succeeded** —
+     all 6 tables created (`{"steps":[{"name":"users","status":"ok"},
+     ...]}` for users/positions/price_history/price_cache/fx_rates/
+     rate_limits). **The DB schema is now live for the first time** —
+     Phase 1-4's "never verified against a real DB" gap is closed for
+     the schema itself (register/login/portfolio round-trips through
+     the live DB are still not yet confirmed end-to-end — ask the repo
+     owner for that result if it's not in a later log entry above this
+     one).
+  4. **CoinGecko now 401s anonymous requests** to
+     `/coins/{id}/market_chart` on `api.coingecko.com` — confirmed via
+     `get_runtime_logs`: `Error: CoinGecko series error 401 for
+     bitcoin`. CoinGecko's free tier changed to require a (still free,
+     no-card) "Demo" API key even for basic endpoints; this wasn't
+     knowable when Phase 1 was written blind in a network-isolated
+     sandbox. **Fix**: `src/server/lib/providers/coingecko.ts` now sends
+     `x-cg-demo-api-key: $COINGECKO_API_KEY` when that env var is set
+     (added to `.env.example`); without it, the crypto category simply
+     falls back to the modeled curve (graceful, not a crash — this is
+     exactly the fallback behavior Phase 2 was designed for). **Action
+     needed**: repo owner signs up for a free key at
+     https://www.coingecko.com/en/api/pricing and sets
+     `COINGECKO_API_KEY` in Vercel. Stooq (etf/div-stocks/real-estate/
+     precious-metals) and CBU (fx) have not yet been confirmed working
+     on this deployment — check those next; they're different providers
+     and may or may not have similar auth requirements (unknown as of
+     this entry).
+  **Tooling note for whoever debugs the next deployment**: this sandbox
+  cannot directly curl/fetch the deployment or Neon (network policy
+  blocks `*.vercel.app` and `*.neon.tech`) — use
+  `mcp__Vercel__get_runtime_logs`/`get_runtime_errors` (by
+  `projectId`/`deploymentId`, get these via `list_projects`/
+  `list_deployments`) to see what actually happened server-side, and
+  `mcp__Vercel__web_fetch_vercel_url` to attempt direct fetches (works
+  sometimes, but this project's Preview deployments have "Vercel
+  Authentication" protection enabled, which intermittently blocks even
+  this tool with a redirect to `vercel.com/sso-api` — when that happens,
+  ask the repo owner to test the URL in their own logged-in browser
+  instead of retrying the tool indefinitely). **Do not** pass secrets
+  (DB connection strings, API keys) as tool arguments that end up in a
+  logged URL — the auto-mode permission classifier will (correctly)
+  block it; ask the human to click the link themselves instead, which is
+  exactly why `/api/admin/migrate` accepts the secret via `?secret=` in
+  addition to a Bearer header.
 
 - **2026-07-03** — Phase 5 done and committed on `feature/fullstack-mvp`.
   **This closes out the full 6-phase roadmap** (Phases 0-5 all done). What
