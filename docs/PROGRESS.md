@@ -136,6 +136,65 @@ steps" below). Run `npm run db:push` once that's set.
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
 
+- **2026-07-04 (later)** — **All three live data providers confirmed
+  working end-to-end on the real Vercel Preview deployment**, closing out
+  the deployment-verification gap that every prior phase flagged as
+  unverified. Two more real bugs found and fixed beyond the entry below:
+  1. **CoinGecko's free plan caps historical data at 365 days**, not the
+     730 (2 years) this project defaulted to — requesting more returns a
+     401 even with a valid API key (confirmed via CoinGecko's own docs).
+     Added `COINGECKO_MAX_DAYS = 365` in `coingecko.ts` and updated every
+     call site. `resampleMonthly()` already clamps to the earliest
+     available price for out-of-range dates, so a 24-month chart still
+     renders fine — the oldest ~12 months just flat-line.
+  2. **Stooq (the original ETF/div-stocks/real-estate/precious-metals
+     source) now runs a real JS bot-check challenge** on its CSV export —
+     a browser-like `User-Agent` header was NOT enough to pass it (tried
+     first, still blocked). Replaced Stooq entirely with **Yahoo
+     Finance's keyless public chart API**
+     (`query1.finance.yahoo.com/v8/finance/chart/{symbol}`) — new
+     provider `src/server/lib/providers/yahoo.ts`, `stooq.ts` deleted.
+     New symbols in `categoryMap.ts`: `SPY` (etf), `SCHD` (div-stocks),
+     `VNQ` (real-estate), `GC=F` (gold futures, standing in for
+     precious-metals — Yahoo has no direct spot XAUUSD ticker on this
+     endpoint).
+  **Verified live** (via `mcp__Vercel__web_fetch_vercel_url` + a manual
+  browser check by the repo owner for the one request the tool's SSO
+  bypass didn't get through on):
+  - `GET /api/market/series?category=crypto` → `200`,
+    `{"source":"live","symbol":"bitcoin",...}` with real BTC price points
+    (needs `COINGECKO_API_KEY` set — see "Manual steps" below).
+  - `GET /api/market/series?category=etf` → `200`,
+    `{"source":"live","symbol":"SPY",...}` with real S&P 500 price points.
+  - `GET /api/fx/uzs` → `200`, real CBU USD/UZS rate (confirmed by repo
+    owner in their own browser: `{"date":"2026-07-03","rate":11909.66,...}`).
+  - `GET /api/admin/migrate` → all 6 tables created successfully against
+    the real Neon DB (confirmed earlier in this same log).
+  **Not individually re-verified after the Yahoo swap** (same code path
+  as the confirmed-working `etf`/`SPY` request, low risk, but flag if
+  something looks off): `real-estate` (`VNQ`) and `precious-metals`
+  (`GC=F`).
+  **Tooling note added to**: `mcp__Vercel__web_fetch_vercel_url`
+  intermittently gets through this project's "Vercel Authentication"
+  Preview protection and intermittently gets redirected to
+  `vercel.com/sso-api` — no pattern found for why; just retry once or
+  two, and fall back to asking the repo owner to test the URL in their
+  own logged-in browser if it keeps failing.
+  **Manual steps still needed from the repo owner** (added to the
+  existing list further down): sign up for a free CoinGecko Demo API key
+  at https://www.coingecko.com/en/api/pricing and set `COINGECKO_API_KEY`
+  in Vercel (done once already in this session — keep it working, it's
+  what made the crypto category go live).
+  **Next**: this branch's core functionality is now confirmed working
+  against real infrastructure end-to-end (DB, auth is still worth a
+  real register/login smoke test if not already done — check above/ask
+  the repo owner — and all 3 live market data providers). Remaining
+  open items are the "Known gaps"/"nice-to-haves" listed in each phase
+  above (portfolio-series wiring into charts, badges on compare/
+  portfolio charts, toast/retry UI for failed background writes) plus
+  eventually merging this branch to `main` once the repo owner is happy
+  with it.
+
 - **2026-07-04** — **First real deployment verification, on the actual
   Vercel Preview for `feature/fullstack-mvp`.** This is the first time any
   of this code ran with a real DB and real network — every prior phase's
