@@ -6,6 +6,7 @@ import fx from "./routes/fx.js";
 import cron from "./routes/cron.js";
 import auth from "./routes/auth.js";
 import portfolioRoutes from "./routes/portfolio.js";
+import admin from "./routes/admin.js";
 
 const app = new Hono().basePath("/api");
 
@@ -18,6 +19,7 @@ app.route("/fx", fx);
 app.route("/cron", cron);
 app.route("/auth", auth);
 app.route("/portfolio", portfolioRoutes);
+app.route("/admin", admin);
 
 app.onError((err, c) => {
   if (err instanceof HTTPException) {
