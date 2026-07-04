@@ -2,7 +2,7 @@ import { resolveCategorySource } from "./categoryMap.js";
 import { buildAccrualSeries } from "./accrual.js";
 import { buildModelSeries } from "./model.js";
 import { fetchCoingeckoSeries, type PricePoint } from "./providers/coingecko.js";
-import { fetchStooqSeries } from "./providers/stooq.js";
+import { fetchYahooSeries } from "./providers/yahoo.js";
 import { withCache } from "./cache.js";
 
 export type SeriesSource = "live" | "accrual" | "model";
@@ -77,10 +77,10 @@ export async function getCategorySeries(
     return { source: "live", symbol, currency: cfg.currency, points: toPctSeries(monthly) };
   }
 
-  // cfg.kind === "stooq"
+  // cfg.kind === "yahoo"
   const symbol = cfg.symbol!;
-  const { data } = await withCache(`series:stooq:${symbol}`, LIVE_SERIES_TTL_MS, () =>
-    fetchStooqSeries(symbol)
+  const { data } = await withCache(`series:yahoo:${symbol}`, LIVE_SERIES_TTL_MS, () =>
+    fetchYahooSeries(symbol)
   );
   const monthly = resampleMonthly(data, months);
   return { source: "live", symbol, currency: cfg.currency, points: toPctSeries(monthly) };

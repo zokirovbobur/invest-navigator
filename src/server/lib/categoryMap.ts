@@ -1,8 +1,8 @@
-export type SourceKind = "accrual" | "coingecko" | "stooq" | "model";
+export type SourceKind = "accrual" | "coingecko" | "yahoo" | "model";
 
 export interface CategorySource {
   kind: SourceKind;
-  /** CoinGecko coin id or Stooq ticker symbol; unused for accrual/model. */
+  /** CoinGecko coin id or Yahoo Finance ticker symbol; unused for accrual/model. */
   symbol?: string;
   currency: "USD" | "UZS";
 }
@@ -20,10 +20,10 @@ export const CATEGORY_SOURCES: Record<string, CategorySource> = {
   mudaraba: { kind: "accrual", currency: "UZS" },
   p2p: { kind: "accrual", currency: "UZS" },
   crypto: { kind: "coingecko", symbol: "bitcoin", currency: "USD" },
-  etf: { kind: "stooq", symbol: "spy.us", currency: "USD" },
-  "div-stocks": { kind: "stooq", symbol: "schd.us", currency: "USD" },
-  "real-estate": { kind: "stooq", symbol: "vnq.us", currency: "USD" },
-  "precious-metals": { kind: "stooq", symbol: "xauusd", currency: "USD" },
+  etf: { kind: "yahoo", symbol: "SPY", currency: "USD" },
+  "div-stocks": { kind: "yahoo", symbol: "SCHD", currency: "USD" },
+  "real-estate": { kind: "yahoo", symbol: "VNQ", currency: "USD" },
+  "precious-metals": { kind: "yahoo", symbol: "GC=F", currency: "USD" },
   tse: { kind: "model", currency: "UZS" },
   startup: { kind: "model", currency: "USD" },
   gems: { kind: "model", currency: "USD" },

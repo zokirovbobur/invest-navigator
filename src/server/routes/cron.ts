@@ -3,7 +3,7 @@ import { HTTPException } from "hono/http-exception";
 import { getDb } from "../../db/client.js";
 import { priceHistory, priceCache, fxRates } from "../../db/schema.js";
 import { fetchCoingeckoSeries } from "../lib/providers/coingecko.js";
-import { fetchStooqSeries } from "../lib/providers/stooq.js";
+import { fetchYahooSeries } from "../lib/providers/yahoo.js";
 import { fetchCbuLatestRate } from "../lib/providers/cbu.js";
 import { CATEGORY_SOURCES } from "../lib/categoryMap.js";
 
@@ -27,7 +27,7 @@ cron.get("/snapshot", async (c) => {
   const seen = new Set<string>();
 
   for (const cfg of Object.values(CATEGORY_SOURCES)) {
-    if (cfg.kind !== "coingecko" && cfg.kind !== "stooq") continue;
+    if (cfg.kind !== "coingecko" && cfg.kind !== "yahoo") continue;
     const dedupeKey = `${cfg.kind}:${cfg.symbol}`;
     if (seen.has(dedupeKey)) continue;
     seen.add(dedupeKey);
@@ -36,7 +36,7 @@ cron.get("/snapshot", async (c) => {
       const series =
         cfg.kind === "coingecko"
           ? await fetchCoingeckoSeries(cfg.symbol!)
-          : await fetchStooqSeries(cfg.symbol!);
+          : await fetchYahooSeries(cfg.symbol!);
 
       const cacheKey = `series:${cfg.kind}:${cfg.symbol}`;
       await db

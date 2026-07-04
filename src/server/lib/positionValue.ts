@@ -2,14 +2,14 @@ import { resolveCategorySource } from "./categoryMap.js";
 import { ACCRUAL_RATES } from "./accrual.js";
 import { MODEL_META } from "./model.js";
 import { fetchCoingeckoSeries, type PricePoint } from "./providers/coingecko.js";
-import { fetchStooqSeries } from "./providers/stooq.js";
+import { fetchYahooSeries } from "./providers/yahoo.js";
 import { withCache } from "./cache.js";
 
 const LIVE_SERIES_TTL_MS = 12 * 60 * 60 * 1000;
 
 export function isPriceBased(categoryId: string): boolean {
   const cfg = resolveCategorySource(categoryId);
-  return cfg.kind === "coingecko" || cfg.kind === "stooq";
+  return cfg.kind === "coingecko" || cfg.kind === "yahoo";
 }
 
 /**
@@ -57,13 +57,13 @@ export function accrualMultiplier(
 /** Full raw (calendar-anchored) price history for a price-based category, cached. */
 export async function fetchRawSeriesCached(categoryId: string): Promise<PricePoint[]> {
   const cfg = resolveCategorySource(categoryId);
-  if (cfg.kind !== "coingecko" && cfg.kind !== "stooq") {
+  if (cfg.kind !== "coingecko" && cfg.kind !== "yahoo") {
     throw new Error(`fetchRawSeriesCached: category "${categoryId}" is not price-based`);
   }
   const symbol = cfg.symbol!;
   const cacheKey = `series:${cfg.kind}:${symbol}`;
   const { data } = await withCache(cacheKey, LIVE_SERIES_TTL_MS, () =>
-    cfg.kind === "coingecko" ? fetchCoingeckoSeries(symbol) : fetchStooqSeries(symbol)
+    cfg.kind === "coingecko" ? fetchCoingeckoSeries(symbol) : fetchYahooSeries(symbol)
   );
   return [...data].sort((a, b) => a.date.localeCompare(b.date));
 }

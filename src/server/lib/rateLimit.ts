@@ -17,8 +17,8 @@ function clientIp(c: Context): string {
  * table. Soft limit, not a hard security boundary — there's a small race
  * window between the read and the write under concurrent requests from
  * the same IP, which is an acceptable tradeoff for MVP abuse protection
- * (protects our own CoinGecko/Stooq/CBU quota and discourages credential
- * stuffing) rather than a strict guarantee.
+ * (protects our own CoinGecko/Yahoo Finance/CBU quota and discourages
+ * credential stuffing) rather than a strict guarantee.
  */
 export function rateLimit(bucket: string, limit: number) {
   return async (c: Context, next: Next) => {
