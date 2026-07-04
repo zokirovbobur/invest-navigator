@@ -5,12 +5,25 @@ export interface PricePoint {
 
 const BASE = "https://api.coingecko.com/api/v3";
 
+/**
+ * CoinGecko's free tier now requires a (still free, no-card) Demo API key
+ * on api.coingecko.com — anonymous requests get a 401. Sign up at
+ * https://www.coingecko.com/en/api/pricing and set COINGECKO_API_KEY.
+ * Falls back to no header if unset (will 401 until one is configured).
+ */
+function authHeaders(): Record<string, string> {
+  const key = process.env.COINGECKO_API_KEY;
+  const headers: Record<string, string> = { accept: "application/json" };
+  if (key) headers["x-cg-demo-api-key"] = key;
+  return headers;
+}
+
 export async function fetchCoingeckoSeries(
   coinId: string,
   days = 730
 ): Promise<PricePoint[]> {
   const url = `${BASE}/coins/${encodeURIComponent(coinId)}/market_chart?vs_currency=usd&days=${days}&interval=daily`;
-  const res = await fetch(url, { headers: { accept: "application/json" } });
+  const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) {
     throw new Error(`CoinGecko series error ${res.status} for ${coinId}`);
   }
@@ -32,7 +45,7 @@ export async function fetchCoingeckoSeries(
 
 export async function fetchCoingeckoLatest(coinId: string): Promise<number> {
   const url = `${BASE}/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=usd`;
-  const res = await fetch(url, { headers: { accept: "application/json" } });
+  const res = await fetch(url, { headers: authHeaders() });
   if (!res.ok) {
     throw new Error(`CoinGecko latest error ${res.status} for ${coinId}`);
   }
