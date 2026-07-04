@@ -1,6 +1,7 @@
 {
   "rewrites": [
-    { "source": "/pitch", "destination": "/pitch.html" }
+    { "source": "/pitch", "destination": "/pitch.html" },
+    { "source": "/api/:path*", "destination": "/api" }
   ],
   "crons": [
     { "path": "/api/cron/snapshot", "schedule": "0 3 * * *" }
