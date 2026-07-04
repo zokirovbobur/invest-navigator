@@ -71,7 +71,7 @@ export async function getCategorySeries(
   if (cfg.kind === "coingecko") {
     const symbol = cfg.symbol!;
     const { data } = await withCache(`series:coingecko:${symbol}`, LIVE_SERIES_TTL_MS, () =>
-      fetchCoingeckoSeries(symbol, 730)
+      fetchCoingeckoSeries(symbol)
     );
     const monthly = resampleMonthly(data, months);
     return { source: "live", symbol, currency: cfg.currency, points: toPctSeries(monthly) };

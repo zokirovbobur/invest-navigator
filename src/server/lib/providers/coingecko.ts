@@ -5,6 +5,10 @@ export interface PricePoint {
 
 const BASE = "https://api.coingecko.com/api/v3";
 
+/** CoinGecko's free Demo/Public plan caps historical data at 365 days;
+ * requesting more (e.g. the 730 this used to ask for) returns a 401. */
+export const COINGECKO_MAX_DAYS = 365;
+
 /**
  * CoinGecko's free tier now requires a (still free, no-card) Demo API key
  * on api.coingecko.com — anonymous requests get a 401. Sign up at
@@ -20,7 +24,7 @@ function authHeaders(): Record<string, string> {
 
 export async function fetchCoingeckoSeries(
   coinId: string,
-  days = 730
+  days = COINGECKO_MAX_DAYS
 ): Promise<PricePoint[]> {
   const url = `${BASE}/coins/${encodeURIComponent(coinId)}/market_chart?vs_currency=usd&days=${days}&interval=daily`;
   const res = await fetch(url, { headers: authHeaders() });

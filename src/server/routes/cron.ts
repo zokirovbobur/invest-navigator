@@ -35,7 +35,7 @@ cron.get("/snapshot", async (c) => {
     try {
       const series =
         cfg.kind === "coingecko"
-          ? await fetchCoingeckoSeries(cfg.symbol!, 730)
+          ? await fetchCoingeckoSeries(cfg.symbol!)
           : await fetchStooqSeries(cfg.symbol!);
 
       const cacheKey = `series:${cfg.kind}:${cfg.symbol}`;

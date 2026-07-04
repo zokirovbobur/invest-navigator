@@ -63,7 +63,7 @@ export async function fetchRawSeriesCached(categoryId: string): Promise<PricePoi
   const symbol = cfg.symbol!;
   const cacheKey = `series:${cfg.kind}:${symbol}`;
   const { data } = await withCache(cacheKey, LIVE_SERIES_TTL_MS, () =>
-    cfg.kind === "coingecko" ? fetchCoingeckoSeries(symbol, 730) : fetchStooqSeries(symbol)
+    cfg.kind === "coingecko" ? fetchCoingeckoSeries(symbol) : fetchStooqSeries(symbol)
   );
   return [...data].sort((a, b) => a.date.localeCompare(b.date));
 }
