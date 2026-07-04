@@ -136,6 +136,43 @@ steps" below). Run `npm run db:push` once that's set.
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
 
+- **2026-07-04 (scope extension)** — The repo owner asked why the crypto
+  *catalog list* (BTC/ETH/BNB/... cards on the "Kripto aktivlar" page)
+  still showed static demo numbers — the original Phase 2 scope only
+  wired the **category-level trajectory chart** to real data, not the
+  individual per-coin cards in `offers.js`'s `CRYPTO_OFFERS`. Extended
+  scope: added `GET /api/market/prices?ids=<coingecko-ids>` (one batched
+  CoinGecko `/coins/markets` call, cached 5min — `fetchCoingeckoMarkets`
+  in `coingecko.ts`) and wired the frontend
+  (`CRYPTO_COINGECKO_IDS` map, `ensureCryptoLivePrices`/
+  `applyCryptoLivePrices` in app.js) to overlay real price/market-cap/
+  30d-change onto the static offer objects in place, so
+  `buildCryptoCard`/`filterAndSortCrypto` needed zero changes. A small
+  LIVE badge (reusing Phase 2's `data-badge` component) appears per-coin
+  once its live data lands; coins with no CoinGecko id mapped or a
+  failed fetch just keep the static fallback, no crash.
+  **Only crypto was done** — TSE (local stocks), gems, and gaming skins
+  still have no data source (as established in Phase 1) and stay fully
+  static by design. Precious metals' *individual* item list (gold/
+  silver/platinum/palladium/rhodium cards, distinct from the
+  `precious-metals` category's single aggregate chart) was **not**
+  extended in this pass — Yahoo Finance futures tickers exist for gold/
+  silver/platinum/palladium (`GC=F`/`SI=F`/`PL=F`/`PA=F`) but rhodium
+  has no standard futures ticker; this is a reasonable next increment
+  if requested, using the same `market/prices`-style pattern but with a
+  generic multi-symbol Yahoo batch (Yahoo's chart API is one-symbol-per-
+  call, so it'd need N parallel calls rather than one batched call like
+  CoinGecko — worth designing carefully, not a copy-paste of this).
+  **Verified** in a real Chromium browser via Playwright with a mocked
+  `/api/market/prices` response: requested ids matched the ticker→
+  CoinGecko-id map exactly; BTC/ETH cards updated to live numbers with
+  the LIVE badge; untouched coins (no mock data for them) kept their
+  normal static values with no errors. Not yet re-verified against the
+  real CoinGecko API on a live deployment (should be — same
+  `COINGECKO_API_KEY` already configured should make it work, but the
+  batched `/coins/markets` endpoint hasn't been hit for real yet, only
+  `/coins/{id}/market_chart` has).
+
 - **2026-07-04 (later)** — **All three live data providers confirmed
   working end-to-end on the real Vercel Preview deployment**, closing out
   the deployment-verification gap that every prior phase flagged as
