@@ -2,8 +2,12 @@ import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { getCategorySeries } from "../lib/marketSeries.js";
 import { CATEGORY_SOURCES } from "../lib/categoryMap.js";
+import { fetchCoingeckoMarkets } from "../lib/providers/coingecko.js";
+import { withCache } from "../lib/cache.js";
 
 const market = new Hono();
+const PRICES_TTL_MS = 5 * 60 * 1000;
+const MAX_PRICE_IDS = 50;
 
 market.get("/series", async (c) => {
   const category = c.req.query("category");
@@ -62,6 +66,32 @@ market.get("/latest", async (c) => {
   );
 
   return c.json({ results });
+});
+
+/**
+ * Batch live quote for a catalog item list (e.g. the crypto offers grid) —
+ * one shared request per set of ids instead of one per coin. Cached 5min.
+ */
+market.get("/prices", async (c) => {
+  const idsParam = c.req.query("ids");
+  if (!idsParam) {
+    throw new HTTPException(400, { message: `Missing "ids" query param (comma-separated CoinGecko ids)` });
+  }
+  const ids = [...new Set(idsParam.split(",").map((s) => s.trim()).filter(Boolean))]
+    .sort()
+    .slice(0, MAX_PRICE_IDS);
+  if (ids.length === 0) {
+    throw new HTTPException(400, { message: `"ids" must contain at least one id` });
+  }
+
+  try {
+    const cacheKey = `prices:coingecko:${ids.join(",")}`;
+    const { data } = await withCache(cacheKey, PRICES_TTL_MS, () => fetchCoingeckoMarkets(ids));
+    return c.json({ prices: data });
+  } catch (err) {
+    console.error(`GET /api/market/prices?ids=${idsParam}`, err);
+    throw new HTTPException(502, { message: "Failed to load live prices" });
+  }
 });
 
 export default market;

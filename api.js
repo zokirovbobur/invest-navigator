@@ -32,6 +32,10 @@
       const q = new URLSearchParams({ categories: categories.join(",") });
       return request("/market/latest?" + q.toString());
     },
+    marketPrices(ids) {
+      const q = new URLSearchParams({ ids: ids.join(",") });
+      return request("/market/prices?" + q.toString());
+    },
     fxUzs() {
       return request("/fx/uzs");
     },

@@ -2701,6 +2701,57 @@ function generateSeries(inst) {
   return generateSyntheticSeries(inst);
 }
 
+/* ============================================================
+   REAL MARKET DATA — live prices for the crypto offers list
+   Overlays real CoinGecko price/market-cap/30d-change onto the static
+   CRYPTO_OFFERS entries (offers.js) in place, so buildCryptoCard() and
+   the existing sort/filter code need no changes — they just read
+   updated numbers off the same objects once the fetch resolves.
+============================================================ */
+const CRYPTO_COINGECKO_IDS = {
+  "crypto-btc": "bitcoin",
+  "crypto-eth": "ethereum",
+  "crypto-bnb": "binancecoin",
+  "crypto-sol": "solana",
+  "crypto-xrp": "ripple",
+  "crypto-ton": "the-open-network",
+  "crypto-ada": "cardano",
+  "crypto-avax": "avalanche-2",
+  "crypto-dot": "polkadot",
+  "crypto-link": "chainlink",
+};
+
+let cryptoLiveState = null; // null | "loading" | "error" | { [coingeckoId]: {priceUsd, marketCapB, change30d} }
+
+function ensureCryptoLivePrices() {
+  if (cryptoLiveState || typeof window === "undefined" || !window.API) return;
+  cryptoLiveState = "loading";
+  window.API.marketPrices(Object.values(CRYPTO_COINGECKO_IDS))
+    .then((data) => {
+      cryptoLiveState = (data && data.prices) || {};
+      applyCryptoLivePrices();
+      render();
+    })
+    .catch((err) => {
+      console.warn("[market] live crypto prices fetch failed", err);
+      cryptoLiveState = "error";
+    });
+}
+
+function applyCryptoLivePrices() {
+  if (!cryptoLiveState || cryptoLiveState === "loading" || cryptoLiveState === "error") return;
+  if (typeof CRYPTO_OFFERS === "undefined") return;
+  for (const o of CRYPTO_OFFERS) {
+    const cgId = CRYPTO_COINGECKO_IDS[o.id];
+    const live = cgId && cryptoLiveState[cgId];
+    if (!live) continue;
+    o.priceUSD = live.priceUsd;
+    o.marketCapB = live.marketCapB;
+    if (live.change30d != null) o.change30d = live.change30d;
+    o.isLive = true;
+  }
+}
+
 function buildChart(inst, chartParams) {
   const cp = chartParams || state.chartParams;
   const { amount, startOffset } = cp;
@@ -3799,6 +3850,8 @@ function renderDetail() {
     if (list.length === 0) { grid.appendChild(emptyEl()); return; }
     renderOfferList(list, "precious-metals", (o) => buildMetalCard(o));
   } else if (meta.kind === "crypto") {
+    ensureCryptoLivePrices();
+    applyCryptoLivePrices();
     const list = filterAndSortCrypto(meta.items);
     renderLiveStatsCrypto(list);
     if (list.length === 0) { grid.appendChild(emptyEl()); return; }
@@ -4281,7 +4334,8 @@ function buildCryptoCard(o) {
         el("div", null,
           el("div", { class: "ticker-row" },
             el("span", { class: "ticker" }, o.ticker),
-            el("span", { class: "change-badge " + changeCls }, changeStr)
+            el("span", { class: "change-badge " + changeCls }, changeStr),
+            o.isLive ? buildDataSourceBadge("live") : null
           ),
           el("div", { class: "pcat" }, t("crypt.network") + " · " + (t("net." + o.network) || o.network))
         )

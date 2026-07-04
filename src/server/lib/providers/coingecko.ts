@@ -47,6 +47,49 @@ export async function fetchCoingeckoSeries(
     .map(([date, price]) => ({ date, price }));
 }
 
+export interface MarketQuote {
+  priceUsd: number;
+  marketCapB: number;
+  change30d: number | null;
+}
+
+/**
+ * Batch quote for a list of CoinGecko coin ids in a single request —
+ * used to keep a catalog list (e.g. the crypto offers grid) live without
+ * one API call per coin. Unknown/invalid ids are silently omitted from
+ * the result rather than erroring the whole batch.
+ */
+export async function fetchCoingeckoMarkets(coinIds: string[]): Promise<Record<string, MarketQuote>> {
+  if (coinIds.length === 0) return {};
+  const url = `${BASE}/coins/markets?vs_currency=usd&ids=${encodeURIComponent(coinIds.join(","))}&price_change_percentage=30d`;
+  const res = await fetch(url, { headers: authHeaders() });
+  if (!res.ok) {
+    throw new Error(`CoinGecko markets error ${res.status}`);
+  }
+  const json = (await res.json()) as Array<{
+    id?: string;
+    current_price?: number;
+    market_cap?: number;
+    price_change_percentage_30d_in_currency?: number;
+  }>;
+  if (!Array.isArray(json)) {
+    throw new Error("CoinGecko: unexpected /coins/markets response shape");
+  }
+  const out: Record<string, MarketQuote> = {};
+  for (const row of json) {
+    if (!row.id || typeof row.current_price !== "number") continue;
+    out[row.id] = {
+      priceUsd: row.current_price,
+      marketCapB: (row.market_cap ?? 0) / 1_000_000_000,
+      change30d:
+        typeof row.price_change_percentage_30d_in_currency === "number"
+          ? row.price_change_percentage_30d_in_currency
+          : null,
+    };
+  }
+  return out;
+}
+
 export async function fetchCoingeckoLatest(coinId: string): Promise<number> {
   const url = `${BASE}/simple/price?ids=${encodeURIComponent(coinId)}&vs_currencies=usd`;
   const res = await fetch(url, { headers: authHeaders() });
