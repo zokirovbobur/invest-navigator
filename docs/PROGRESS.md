@@ -154,18 +154,16 @@ concrete step.)
   mock data supplied) kept their static fallback values with no console
   errors. This confirms the client-side wiring matches the real
   `/api/market/yahoo-quotes` response shape correctly.
-  **Deployed** as commit `ab0349f` (deployment `dpl_5i7KUkQDgSXXz4excEGQaeuUSYVB`,
-  `https://invest-navigator-6n92mjpo2-zokirovbobur93-2714s-projects.vercel.app`).
-  **Not yet confirmed against the real Yahoo Finance API in production** —
-  three consecutive `web_fetch_vercel_url` attempts against
-  `/api/market/yahoo-quotes?symbols=GC=F,SI=F,PL=F,PA=F` all hit Vercel's
-  Preview-deployment SSO wall (302 to `vercel.com/sso-api`) rather than
-  reaching the function. Same underlying `fetchYahooSeries()` code path is
-  already proven working in production for the `etf`/`SPY` category
-  series request, so confidence is high this also works — but a fresh
-  session should re-attempt `web_fetch_vercel_url` on that exact URL (or
-  ask the repo owner to open it in their own logged-in browser) before
-  calling this fully closed.
+  **Deployed** as commit `ab0349f` and **confirmed working against the
+  real Yahoo Finance API in production** on the next deployment
+  (`dpl_33V7FUGEQY7PhofZ7ojA6RBU1C8P`,
+  `https://invest-navigator-o8crfn59v-zokirovbobur93-2714s-projects.vercel.app`):
+  `GET /api/market/yahoo-quotes?symbols=GC=F,SI=F,PL=F,PA=F` returned real
+  quotes for all 4 metals (gold $4,161.50/+24.9%, silver $62.09/+69.6%,
+  platinum $1,644.70/+20.8%, palladium $1,269.00/+15.0%). The precious-
+  metals live-price feature is now fully verified end-to-end, both
+  locally (mocked API, Playwright) and in production (real API). This
+  closes the last open verification gap from the 2026-07-04 entries below.
   **Also outstanding, unrelated to this feature**: the repo owner pasted
   a real Neon DATABASE_URL with a plaintext password into chat during the
   DB-setup phase. They should be reminded to rotate that password via the
