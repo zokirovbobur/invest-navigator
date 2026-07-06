@@ -136,6 +136,41 @@ steps" below). Run `npm run db:push` once that's set.
 even mid-phase — note exactly what's done, what's broken, and the next
 concrete step.)
 
+- **2026-07-06** — Extended the scope-extension work to precious metals'
+  individual item list (gold/silver/platinum/palladium cards in
+  `PRECIOUS_METALS_OFFERS`), same pattern as the crypto catalog fix:
+  added `GET /api/market/yahoo-quotes?symbols=...` (batched-per-symbol,
+  reuses the `series:yahoo:{symbol}` cache key at a 12h TTL so it rarely
+  costs an extra real fetch beyond what the `precious-metals` category
+  chart already does), and wired the frontend (`METAL_YAHOO_SYMBOLS` map,
+  `ensureMetalLivePrices`/`applyMetalLivePrices` in app.js) to overlay
+  live price/% change onto the static offer objects in place. Rhodium has
+  no Yahoo futures ticker so it stays static by design (matches the
+  Phase-1 precedent of leaving no-data-source items alone).
+  **Verified locally** in a real Chromium browser via Playwright with a
+  mocked `/api/market/yahoo-quotes` response (`GC=F: $2650.4/+22.1%`,
+  `SI=F: $31.2/+15.8%`): gold and silver cards updated to the exact
+  mocked numbers with the LIVE badge attached; platinum/palladium (no
+  mock data supplied) kept their static fallback values with no console
+  errors. This confirms the client-side wiring matches the real
+  `/api/market/yahoo-quotes` response shape correctly.
+  **Deployed** as commit `ab0349f` (deployment `dpl_5i7KUkQDgSXXz4excEGQaeuUSYVB`,
+  `https://invest-navigator-6n92mjpo2-zokirovbobur93-2714s-projects.vercel.app`).
+  **Not yet confirmed against the real Yahoo Finance API in production** —
+  three consecutive `web_fetch_vercel_url` attempts against
+  `/api/market/yahoo-quotes?symbols=GC=F,SI=F,PL=F,PA=F` all hit Vercel's
+  Preview-deployment SSO wall (302 to `vercel.com/sso-api`) rather than
+  reaching the function. Same underlying `fetchYahooSeries()` code path is
+  already proven working in production for the `etf`/`SPY` category
+  series request, so confidence is high this also works — but a fresh
+  session should re-attempt `web_fetch_vercel_url` on that exact URL (or
+  ask the repo owner to open it in their own logged-in browser) before
+  calling this fully closed.
+  **Also outstanding, unrelated to this feature**: the repo owner pasted
+  a real Neon DATABASE_URL with a plaintext password into chat during the
+  DB-setup phase. They should be reminded to rotate that password via the
+  Neon dashboard if they haven't already — not yet confirmed done.
+
 - **2026-07-04 (scope extension)** — The repo owner asked why the crypto
   *catalog list* (BTC/ETH/BNB/... cards on the "Kripto aktivlar" page)
   still showed static demo numbers — the original Phase 2 scope only
