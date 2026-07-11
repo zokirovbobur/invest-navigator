@@ -2281,6 +2281,110 @@ function renderLanding() {
   );
 
   grid.append(hero, stats, features, portfolio, finalCta);
+
+  initLandingMotion();
+}
+
+/* ============================================================
+   LANDING MOTION LAYER
+   Scroll reveal, staged hero entrance, counting stats, pointer
+   tilt on feature/portfolio cards. Enhancement only — safe to
+   call on every renderLanding() (route change or lang switch).
+============================================================ */
+const LAND_STAT_RE = /^(\$)?(\d+)(\+)?$/;
+
+function animateLandStat(node) {
+  const m = node.textContent.trim().match(LAND_STAT_RE);
+  if (!m) return;
+  const prefix = m[1] || "", target = parseInt(m[2], 10), suffix = m[3] || "";
+  const dur = 1100;
+  let t0 = null;
+  function step(now) {
+    if (t0 === null) t0 = now;
+    const p = Math.min((now - t0) / dur, 1);
+    const eased = 1 - Math.pow(1 - p, 4);
+    node.textContent = prefix + Math.round(target * eased) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function initLandingMotion() {
+  const landing = document.querySelector(".landing-page");
+  if (!landing) return;
+
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) return;
+  document.documentElement.classList.add("motion");
+
+  // Staged hero entrance — plays once per render, no scroll required.
+  const hero = landing.querySelector(".land-hero");
+  if (hero) {
+    requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add("played")));
+  }
+
+  // Mark reveal targets with a light stagger.
+  const revealTargets = landing.querySelectorAll(
+    ".land-stat, .land-feat, .land-pf-text, .land-pf-visual, .land-final-inner > *"
+  );
+  revealTargets.forEach((elm, i) => {
+    elm.classList.add("reveal");
+    elm.style.transitionDelay = (Math.min(i % 6, 5) * 0.07) + "s";
+  });
+
+  if (window.__landingIO) window.__landingIO.disconnect();
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) {
+        en.target.classList.add("in");
+        io.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" });
+  window.__landingIO = io;
+  landing.querySelectorAll(".reveal, .land-sect-hd").forEach((elm) => io.observe(elm));
+
+  // Stat counters
+  if (window.__landingStatIO) window.__landingStatIO.disconnect();
+  const statIO = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) {
+        animateLandStat(en.target);
+        statIO.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.6 });
+  window.__landingStatIO = statIO;
+  landing.querySelectorAll(".land-sv").forEach((elm) => {
+    if (LAND_STAT_RE.test(elm.textContent.trim())) statIO.observe(elm);
+  });
+
+  // 3D pointer tilt for feature / portfolio-visual cards (bound once, delegated).
+  const finePointer = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+  if (finePointer && !window.__landingTiltBound) {
+    window.__landingTiltBound = true;
+    const TILT_SEL = ".land-feat, .land-pf-visual";
+    let tilted = null;
+    document.addEventListener("pointermove", (e) => {
+      const card = e.target.closest && e.target.closest(TILT_SEL);
+      if (tilted && tilted !== card) { tilted.style.transform = ""; tilted = null; }
+      if (!card) return;
+      tilted = card;
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const rx = (0.5 - py) * 6;
+      const ry = (px - 0.5) * 8;
+      card.style.transform = "perspective(1000px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(-2px)";
+      card.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
+      card.style.setProperty("--my", (py * 100).toFixed(1) + "%");
+    }, { passive: true });
+    document.addEventListener("pointerout", (e) => {
+      if (!tilted) return;
+      const to = e.relatedTarget;
+      if (!to || !(to.closest && to.closest(TILT_SEL) === tilted)) { tilted.style.transform = ""; tilted = null; }
+    }, { passive: true });
+  }
 }
 
 /* ---------- Home rendering (directions grid) ---------- */
