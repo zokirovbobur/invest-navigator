@@ -1580,6 +1580,7 @@ function filterAndSortGaming(items) {
 ============================================================ */
 function render() {
   syncTogglesPressed();
+  document.body.classList.toggle("route-landing", state.route === "landing");
   if (state.route !== "landing" && typeof LandingNetwork !== "undefined") LandingNetwork.unmount();
   if (state.route === "landing") renderLanding();
   else if (state.route === "home") renderHome();

@@ -1256,8 +1256,11 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 .landing-page {
   display: flex;
   flex-direction: column;
-  /* zoboto-style navy/blue accent, scoped to the landing page only —
-     catalog, portfolio and instrument pages keep the gold accent. */
+}
+/* zoboto-style navy/blue accent — active only while the landing route is
+   showing (topbar brand mark + language switch included), so catalog,
+   portfolio and instrument pages keep the original gold accent. */
+body.route-landing {
   --accent: #5F8FE0;
   --accent-soft: #93B8F2;
   --accent-deep: #3F6BC4;
