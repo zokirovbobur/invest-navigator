@@ -1580,6 +1580,7 @@ function filterAndSortGaming(items) {
 ============================================================ */
 function render() {
   syncTogglesPressed();
+  if (state.route !== "landing" && typeof LandingNetwork !== "undefined") LandingNetwork.unmount();
   if (state.route === "landing") renderLanding();
   else if (state.route === "home") renderHome();
   else if (state.route === "portfolio") renderPortfolio();
@@ -2281,7 +2282,320 @@ function renderLanding() {
   );
 
   grid.append(hero, stats, features, portfolio, finalCta);
+
+  initLandingMotion();
+  LandingNetwork.mount(hero);
 }
+
+/* ============================================================
+   LANDING MOTION LAYER
+   Scroll reveal, staged hero entrance, counting stats, pointer
+   tilt on feature/portfolio cards. Enhancement only — safe to
+   call on every renderLanding() (route change or lang switch).
+============================================================ */
+const LAND_STAT_RE = /^(\$)?(\d+)(\+)?$/;
+
+function animateLandStat(node) {
+  const m = node.textContent.trim().match(LAND_STAT_RE);
+  if (!m) return;
+  const prefix = m[1] || "", target = parseInt(m[2], 10), suffix = m[3] || "";
+  const dur = 1100;
+  let t0 = null;
+  function step(now) {
+    if (t0 === null) t0 = now;
+    const p = Math.min((now - t0) / dur, 1);
+    const eased = 1 - Math.pow(1 - p, 4);
+    node.textContent = prefix + Math.round(target * eased) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+function initLandingMotion() {
+  const landing = document.querySelector(".landing-page");
+  if (!landing) return;
+
+  const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduced) return;
+  document.documentElement.classList.add("motion");
+
+  // Staged hero entrance — plays once per render, no scroll required.
+  const hero = landing.querySelector(".land-hero");
+  if (hero) {
+    requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add("played")));
+  }
+
+  // Mark reveal targets with a light stagger.
+  const revealTargets = landing.querySelectorAll(
+    ".land-stat, .land-feat, .land-pf-text, .land-pf-visual, .land-final-inner > *"
+  );
+  revealTargets.forEach((elm, i) => {
+    elm.classList.add("reveal");
+    elm.style.transitionDelay = (Math.min(i % 6, 5) * 0.07) + "s";
+  });
+
+  if (window.__landingIO) window.__landingIO.disconnect();
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) {
+        en.target.classList.add("in");
+        io.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: "0px 0px -8% 0px" });
+  window.__landingIO = io;
+  landing.querySelectorAll(".reveal, .land-sect-hd").forEach((elm) => io.observe(elm));
+
+  // Stat counters
+  if (window.__landingStatIO) window.__landingStatIO.disconnect();
+  const statIO = new IntersectionObserver((entries) => {
+    entries.forEach((en) => {
+      if (en.isIntersecting) {
+        animateLandStat(en.target);
+        statIO.unobserve(en.target);
+      }
+    });
+  }, { threshold: 0.6 });
+  window.__landingStatIO = statIO;
+  landing.querySelectorAll(".land-sv").forEach((elm) => {
+    if (LAND_STAT_RE.test(elm.textContent.trim())) statIO.observe(elm);
+  });
+
+  // 3D pointer tilt for feature / portfolio-visual cards (bound once, delegated).
+  const finePointer = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+  if (finePointer && !window.__landingTiltBound) {
+    window.__landingTiltBound = true;
+    const TILT_SEL = ".land-feat, .land-pf-visual";
+    let tilted = null;
+    document.addEventListener("pointermove", (e) => {
+      const card = e.target.closest && e.target.closest(TILT_SEL);
+      if (tilted && tilted !== card) { tilted.style.transform = ""; tilted = null; }
+      if (!card) return;
+      tilted = card;
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const rx = (0.5 - py) * 6;
+      const ry = (px - 0.5) * 8;
+      card.style.transform = "perspective(1000px) rotateX(" + rx.toFixed(2) + "deg) rotateY(" + ry.toFixed(2) + "deg) translateY(-2px)";
+      card.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
+      card.style.setProperty("--my", (py * 100).toFixed(1) + "%");
+    }, { passive: true });
+    document.addEventListener("pointerout", (e) => {
+      if (!tilted) return;
+      const to = e.relatedTarget;
+      if (!to || !(to.closest && to.closest(TILT_SEL) === tilted)) { tilted.style.transform = ""; tilted = null; }
+    }, { passive: true });
+  }
+}
+
+/* ============================================================
+   LANDING HERO NETWORK
+   Lightweight Three.js particle field scoped to the hero
+   section only — ported from zoboto's neural-network-style
+   background, recolored to finport's gold/dark palette.
+   No-op without Three.js / WebGL / on prefers-reduced-motion.
+============================================================ */
+const LandingNetwork = (function () {
+  let renderer = null, scene = null, camera = null, network = null, dust = null;
+  let container = null, canvas = null, ro = null;
+  let rafId = 0, lastT = 0;
+
+  function makeSprite() {
+    const c = document.createElement("canvas");
+    c.width = c.height = 64;
+    const ctx = c.getContext("2d");
+    const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, "rgba(255,255,255,1)");
+    g.addColorStop(0.35, "rgba(255,255,255,.55)");
+    g.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+  }
+
+  function build(el) {
+    if (typeof THREE === "undefined") return false;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+
+    const w = el.clientWidth, h = el.clientHeight;
+    if (!w || !h) return false;
+
+    canvas = document.createElement("canvas");
+    canvas.className = "land-hero-net";
+    canvas.setAttribute("aria-hidden", "true");
+    el.insertBefore(canvas, el.firstChild);
+
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false, powerPreference: "high-performance" });
+    } catch (e) {
+      canvas.remove();
+      canvas = null;
+      return false;
+    }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+    renderer.setSize(w, h);
+
+    scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x0e1014, 0.02);
+    camera = new THREE.PerspectiveCamera(56, w / h, 0.1, 200);
+    camera.position.set(0, 1, 40);
+
+    const ACCENT = new THREE.Color(0xd9b871); // finport gold, not zoboto's blue
+    const CREAM  = new THREE.Color(0xf4f1ea);
+    const STEEL  = new THREE.Color(0x5c5953);
+
+    const isMobile = w < 700;
+    const NODE_COUNT = isMobile ? 260 : 700;
+    const DUST_COUNT = isMobile ? 90 : 240;
+    const LINK_DIST = 7.6;
+    const MAX_LINKS = isMobile ? 140 : 420;
+
+    const sprite = makeSprite();
+    const positions = new Float32Array(NODE_COUNT * 3);
+    const colors = new Float32Array(NODE_COUNT * 3);
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const r = Math.sqrt(Math.random()) * 26;
+      const a = Math.random() * Math.PI * 2;
+      const y = (Math.random() - 0.5) * (30 - r * 0.3);
+      positions[i * 3] = Math.cos(a) * r;
+      positions[i * 3 + 1] = y;
+      positions[i * 3 + 2] = Math.sin(a) * r * 0.7 - 6;
+      const t = Math.random();
+      const col = t < 0.16 ? ACCENT : (t < 0.4 ? CREAM : STEEL);
+      colors[i * 3] = col.r; colors[i * 3 + 1] = col.g; colors[i * 3 + 2] = col.b;
+    }
+    const nodeGeo = new THREE.BufferGeometry();
+    nodeGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    nodeGeo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+    const nodeMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.3 : 0.24, map: sprite, vertexColors: true,
+      transparent: true, opacity: 0.8, depthWrite: false,
+      blending: THREE.AdditiveBlending, sizeAttenuation: true
+    });
+    const nodes = new THREE.Points(nodeGeo, nodeMat);
+
+    // Spatial hash keeps neighbour pairing close to O(n).
+    const cell = LINK_DIST, grid = {};
+    function cellKey(x, yy, z) { return Math.floor(x / cell) + "_" + Math.floor(yy / cell) + "_" + Math.floor(z / cell); }
+    for (let i = 0; i < NODE_COUNT; i++) {
+      const k = cellKey(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+      (grid[k] = grid[k] || []).push(i);
+    }
+    const linePos = [];
+    let linkCount = 0;
+    const maxD2 = LINK_DIST * LINK_DIST;
+    outer:
+    for (let i = 0; i < NODE_COUNT && linkCount < MAX_LINKS; i++) {
+      const cx = Math.floor(positions[i * 3] / cell), cy = Math.floor(positions[i * 3 + 1] / cell), cz = Math.floor(positions[i * 3 + 2] / cell);
+      for (let ox = -1; ox <= 1; ox++) for (let oy = -1; oy <= 1; oy++) for (let oz = -1; oz <= 1; oz++) {
+        const bucket = grid[(cx + ox) + "_" + (cy + oy) + "_" + (cz + oz)];
+        if (!bucket) continue;
+        for (let b = 0; b < bucket.length; b++) {
+          const j = bucket[b];
+          if (j <= i) continue;
+          const dx = positions[i * 3] - positions[j * 3], dy = positions[i * 3 + 1] - positions[j * 3 + 1], dz = positions[i * 3 + 2] - positions[j * 3 + 2];
+          const d2 = dx * dx + dy * dy + dz * dz;
+          if (d2 < maxD2 && Math.random() < 0.2) {
+            linePos.push(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2], positions[j * 3], positions[j * 3 + 1], positions[j * 3 + 2]);
+            if (++linkCount >= MAX_LINKS) continue outer;
+          }
+        }
+      }
+    }
+    const lineGeo = new THREE.BufferGeometry();
+    lineGeo.setAttribute("position", new THREE.Float32BufferAttribute(linePos, 3));
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xc9a45f, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending });
+    const links = new THREE.LineSegments(lineGeo, lineMat);
+
+    const dustPos = new Float32Array(DUST_COUNT * 3);
+    for (let i = 0; i < DUST_COUNT; i++) {
+      dustPos[i * 3] = (Math.random() - 0.5) * 120;
+      dustPos[i * 3 + 1] = (Math.random() - 0.5) * 70;
+      dustPos[i * 3 + 2] = -20 - Math.random() * 60;
+    }
+    const dustGeo = new THREE.BufferGeometry();
+    dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
+    const dustMat = new THREE.PointsMaterial({ size: 0.42, map: sprite, color: 0x40382a, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending });
+    dust = new THREE.Points(dustGeo, dustMat);
+
+    network = new THREE.Group();
+    network.add(nodes);
+    network.add(links);
+    scene.add(network);
+    scene.add(dust);
+
+    let mouseX = 0, mouseY = 0, camX = 0, camY = 0;
+    function onMove(e) {
+      const r = el.getBoundingClientRect();
+      mouseX = ((e.clientX - r.left) / r.width) * 2 - 1;
+      mouseY = ((e.clientY - r.top) / r.height) * 2 - 1;
+    }
+    el.addEventListener("pointermove", onMove, { passive: true });
+    el.__landNetMove = onMove;
+
+    function frame(now) {
+      rafId = requestAnimationFrame(frame);
+      const dt = Math.min((now - lastT) / 1000, 0.05) || 0.016;
+      lastT = now;
+      const elapsed = now / 1000;
+      network.rotation.y += dt * 0.05;
+      network.rotation.x = Math.sin(elapsed * 0.11) * 0.05 - 0.08;
+      dust.rotation.y -= dt * 0.006;
+      camX += ((mouseX * 2) - camX) * (1 - Math.pow(0.001, dt));
+      camY += ((-mouseY * 1.3) - camY) * (1 - Math.pow(0.001, dt));
+      camera.position.x = camX;
+      camera.position.y = 1 + camY;
+      camera.lookAt(0, 0, -4);
+      renderer.render(scene, camera);
+    }
+
+    function onResize() {
+      const ww = el.clientWidth, hh = el.clientHeight;
+      if (!ww || !hh) return;
+      camera.aspect = ww / hh;
+      camera.updateProjectionMatrix();
+      renderer.setSize(ww, hh);
+    }
+    if ("ResizeObserver" in window) {
+      ro = new ResizeObserver(onResize);
+      ro.observe(el);
+    } else {
+      window.addEventListener("resize", onResize);
+    }
+
+    container = el;
+    lastT = performance.now();
+    rafId = requestAnimationFrame(frame);
+    return true;
+  }
+
+  function unmount() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = 0;
+    if (container && container.__landNetMove) {
+      container.removeEventListener("pointermove", container.__landNetMove);
+      delete container.__landNetMove;
+    }
+    if (ro) { ro.disconnect(); ro = null; }
+    if (renderer) { renderer.dispose(); renderer = null; }
+    if (canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+    canvas = null; container = null; scene = null; camera = null; network = null; dust = null;
+  }
+
+  function mount(el) {
+    unmount();
+    if (!el) return;
+    // Three.js may still be executing as a deferred script on first paint.
+    if (typeof THREE === "undefined") {
+      window.addEventListener("load", () => { if (state.route === "landing") build(el); }, { once: true });
+      return;
+    }
+    build(el);
+  }
+
+  return { mount, unmount };
+})();
 
 /* ---------- Home rendering (directions grid) ---------- */
 function renderHome() {
