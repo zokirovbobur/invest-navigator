@@ -1580,7 +1580,6 @@ function filterAndSortGaming(items) {
 ============================================================ */
 function render() {
   syncTogglesPressed();
-  document.body.classList.toggle("route-landing", state.route === "landing");
   if (state.route !== "landing" && typeof LandingNetwork !== "undefined") LandingNetwork.unmount();
   if (state.route === "landing") renderLanding();
   else if (state.route === "home") renderHome();
@@ -1805,7 +1804,7 @@ function buildPortfolioStackedChart() {
   // Today marker
   const todayX = xAt(PAST);
   svg.appendChild(svgEl("line", { x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b, stroke: "rgba(255,255,255,0.30)", "stroke-width": 1, "stroke-dasharray": "3 4" }));
-  svg.appendChild(svgEl("circle", { cx: todayX, cy: yAt(totalAt(PAST)), r: 5, fill: "#D9B871", stroke: "rgba(217,184,113,0.25)", "stroke-width": 4 }));
+  svg.appendChild(svgEl("circle", { cx: todayX, cy: yAt(totalAt(PAST)), r: 5, fill: "#5F8FE0", stroke: "rgba(95,143,224,0.25)", "stroke-width": 4 }));
 
   // X-axis labels
   [{ i: 0, text: "−24oy" }, { i: PAST / 2, text: "−12oy" }, { i: PAST, text: t("expand.axis.today") }, { i: N, text: "+12oy" }]
@@ -1860,7 +1859,7 @@ function buildPortfolioStackedChart() {
         const sep = el("div", { style: "height:1px;background:rgba(255,255,255,0.08);margin:4px 0" });
         tooltipEl.appendChild(sep);
         tooltipEl.appendChild(el("div", { class: "ep-tip-row" },
-          el("span", { class: "ep-tip-dot", style: "background:#D9B871" }),
+          el("span", { class: "ep-tip-dot", style: "background:#5F8FE0" }),
           el("span", { class: "ep-tip-name", style: "color:var(--fg-0);font-weight:600" }, t("pf.stat.total")),
           el("span", { class: "ep-tip-val" }, fmtUSDExact(total))
         ));
@@ -2834,11 +2833,11 @@ function buildChart(inst, chartParams) {
   const todayX = xAt(PAST);
   const todayLine = svgEl("line", {
     x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b,
-    stroke: "rgba(217,184,113,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4",
+    stroke: "rgba(95,143,224,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4",
   });
   const todayDot = svgEl("circle", {
     cx: todayX, cy: yAt(valueAt(PAST)), r: 4.5,
-    fill: "#D9B871", stroke: "rgba(217,184,113,0.25)", "stroke-width": 4,
+    fill: "#5F8FE0", stroke: "rgba(95,143,224,0.25)", "stroke-width": 4,
   });
 
   // Entry marker (green dot + line when entry ≠ today)
@@ -2864,15 +2863,15 @@ function buildChart(inst, chartParams) {
   });
   const hoverDot = svgEl("circle", {
     cx: 0, cy: 0, r: 4,
-    fill: "#D9B871", stroke: "#0E1014", "stroke-width": 2,
+    fill: "#5F8FE0", stroke: "#0E1014", "stroke-width": 2,
     visibility: "hidden",
   });
 
   // Gradient def
   const defs = svgEl("defs");
   defs.appendChild(svgEl("linearGradient", { id: "ep-grad-" + inst.id, x1: 0, y1: 0, x2: 0, y2: 1 },
-    svgEl("stop", { offset: "0%",   "stop-color": "#D9B871", "stop-opacity": 0.28 }),
-    svgEl("stop", { offset: "100%", "stop-color": "#D9B871", "stop-opacity": 0 })
+    svgEl("stop", { offset: "0%",   "stop-color": "#5F8FE0", "stop-opacity": 0.28 }),
+    svgEl("stop", { offset: "100%", "stop-color": "#5F8FE0", "stop-opacity": 0 })
   ));
 
   const svg = svgEl("svg", {
@@ -2890,11 +2889,11 @@ function buildChart(inst, chartParams) {
   }));
   svg.appendChild(svgEl("path", { d: areaPath, fill: "url(#ep-grad-" + inst.id + ")" }));
   svg.appendChild(svgEl("path", {
-    d: histPath, fill: "none", stroke: "#D9B871", "stroke-width": 2,
+    d: histPath, fill: "none", stroke: "#5F8FE0", "stroke-width": 2,
     "stroke-linejoin": "round", "stroke-linecap": "round",
   }));
   svg.appendChild(svgEl("path", {
-    d: futPath, fill: "none", stroke: "#D9B871", "stroke-width": 2,
+    d: futPath, fill: "none", stroke: "#5F8FE0", "stroke-width": 2,
     "stroke-dasharray": "5 5", "stroke-linejoin": "round", "stroke-linecap": "round",
     opacity: 0.85,
   }));
@@ -3146,7 +3145,7 @@ function buildExpandedPanel(inst) {
    COMPARE PANEL — multi-direction overlay chart
 ============================================================ */
 const COMPARE_COLORS = [
-  "#D9B871",                 // gold (accent)
+  "#5F8FE0",                 // blue (accent)
   "oklch(0.78 0.10 200)",    // teal
   "oklch(0.78 0.10 320)",    // magenta
   "oklch(0.78 0.10 140)",    // green
@@ -4207,7 +4206,7 @@ function buildStockCard(o) {
   const tags = el("div", { class: "otags" });
   tags.appendChild(el("span", { class: "tag" }, t("sec." + o.sector)));
   tags.appendChild(el("span", { class: "tag" }, t("stk.liq") + ": " + t("liq." + o.liq)));
-  if (o.ipo) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(217,184,113,0.30); background: rgba(217,184,113,0.08)" }, "★ " + t("stk.ipo")));
+  if (o.ipo) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(95,143,224,0.30); background: rgba(95,143,224,0.08)" }, "★ " + t("stk.ipo")));
 
   const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
@@ -4301,7 +4300,7 @@ function buildCryptoCard(o) {
   const tags = el("div", { class: "otags" });
   tags.appendChild(el("span", { class: "tag" }, t("crypt.network") + ": " + (t("net." + o.network) || o.network)));
   tags.appendChild(el("span", { class: "tag" }, "#" + o.rank));
-  if (o.stakingAPY > 0) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(217,184,113,0.30); background: rgba(217,184,113,0.08)" },
+  if (o.stakingAPY > 0) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(95,143,224,0.30); background: rgba(95,143,224,0.08)" },
     t("crypt.staking") + " " + o.stakingAPY.toFixed(1) + "%"
   ));
 
