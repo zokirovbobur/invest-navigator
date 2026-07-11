@@ -1256,6 +1256,12 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 .landing-page {
   display: flex;
   flex-direction: column;
+  /* zoboto-style navy/blue accent, scoped to the landing page only —
+     catalog, portfolio and instrument pages keep the gold accent. */
+  --accent: #5F8FE0;
+  --accent-soft: #93B8F2;
+  --accent-deep: #3F6BC4;
+  --accent-glow: rgba(95, 143, 224, 0.18);
 }
 
 .land-hero {
@@ -1263,8 +1269,8 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   overflow: hidden;
   padding: 88px 48px 80px;
   background:
-    radial-gradient(ellipse 80% 70% at 90% -5%, rgba(217,184,113,0.14) 0%, transparent 100%),
-    radial-gradient(ellipse 40% 50% at 5% 110%, rgba(217,184,113,0.07) 0%, transparent 100%);
+    radial-gradient(ellipse 80% 70% at 90% -5%, rgba(95,143,224,0.14) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 50% at 5% 110%, rgba(95,143,224,0.07) 0%, transparent 100%);
 }
 .land-hero-inner { max-width: 700px; position: relative; z-index: 1; }
 .land-hero-net {
@@ -1289,8 +1295,8 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   margin-bottom: 24px;
   padding: 6px 14px;
   border-radius: 99px;
-  background: rgba(217,184,113,0.08);
-  border: 1px solid rgba(217,184,113,0.22);
+  background: rgba(95,143,224,0.08);
+  border: 1px solid rgba(95,143,224,0.22);
 }
 
 .land-hero-title {
@@ -1332,12 +1338,12 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   border: none;
   font-family: var(--font-sans);
   transition: background 0.18s, transform 0.15s, box-shadow 0.18s;
-  box-shadow: 0 4px 20px -6px rgba(217,184,113,0.45);
+  box-shadow: 0 4px 20px -6px rgba(95,143,224,0.45);
 }
 .land-cta-btn:hover {
   background: var(--accent-soft);
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px -8px rgba(217,184,113,0.55);
+  box-shadow: 0 10px 30px -8px rgba(95,143,224,0.55);
 }
 .land-arr {
   font-family: var(--font-mono);
@@ -1414,12 +1420,12 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   -webkit-backdrop-filter: var(--card-backdrop);
   transition: border-color 0.2s, transform 0.2s;
 }
-.land-feat:hover { border-color: rgba(217,184,113,0.22); transform: translateY(-2px); }
+.land-feat:hover { border-color: rgba(95,143,224,0.22); transform: translateY(-2px); }
 .land-feat-icon {
   width: 40px; height: 40px;
   border-radius: 10px;
-  background: rgba(217,184,113,0.1);
-  border: 1px solid rgba(217,184,113,0.18);
+  background: rgba(95,143,224,0.1);
+  border: 1px solid rgba(95,143,224,0.18);
   display: grid; place-items: center;
   color: var(--accent);
   margin-bottom: 16px;
@@ -1431,7 +1437,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
 /* Portfolio section */
 .land-pf-section {
   padding: 80px 0;
-  background: rgba(217,184,113,0.025);
+  background: rgba(95,143,224,0.025);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -1481,7 +1487,7 @@ h3 { font-size: clamp(18px, 1.8vw, 22px); }
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(217,184,113,0.07) 0%, transparent 70%);
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(95,143,224,0.07) 0%, transparent 70%);
   pointer-events: none;
 }
 .land-final-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 16px; }
@@ -1548,7 +1554,7 @@ html.motion .land-hero.played .land-cta-row    { transition-delay: .42s; }
 .land-feat::before, .land-pf-visual::before {
   content: "";
   position: absolute; inset: 0; border-radius: inherit;
-  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(217,184,113,0.12), transparent 60%);
+  background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(95,143,224,0.12), transparent 60%);
   opacity: 0;
   transition: opacity .5s ease;
   pointer-events: none;

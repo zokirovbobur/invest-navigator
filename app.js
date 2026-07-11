@@ -2227,11 +2227,11 @@ function renderLanding() {
   const pfChartSvg = `<svg viewBox="0 0 280 90" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="lpfg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#D9B871" stop-opacity="0.35"/>
-        <stop offset="100%" stop-color="#D9B871" stop-opacity="0.02"/>
+        <stop offset="0%" stop-color="#5F8FE0" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#5F8FE0" stop-opacity="0.02"/>
       </linearGradient>
     </defs>
-    <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5" stroke="#D9B871" stroke-width="2" fill="none"/>
+    <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5" stroke="#5F8FE0" stroke-width="2" fill="none"/>
     <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5 L280 90 L0 90 Z" fill="url(#lpfg)"/>
     <path d="M0 82 C40 80 80 76 120 70 C160 64 200 52 240 38 L280 28" stroke="#6FCF97" stroke-width="1.5" stroke-dasharray="4 3" fill="none" opacity="0.55"/>
   </svg>`;
@@ -2441,9 +2441,9 @@ const LandingNetwork = (function () {
     camera = new THREE.PerspectiveCamera(56, w / h, 0.1, 200);
     camera.position.set(0, 1, 40);
 
-    const ACCENT = new THREE.Color(0xd9b871); // finport gold, not zoboto's blue
+    const ACCENT = new THREE.Color(0x5f8fe0); // zoboto-style navy/blue, landing-scoped only
     const CREAM  = new THREE.Color(0xf4f1ea);
-    const STEEL  = new THREE.Color(0x5c5953);
+    const STEEL  = new THREE.Color(0x5a6b96);
 
     const isMobile = w < 700;
     const NODE_COUNT = isMobile ? 260 : 700;
@@ -2505,7 +2505,7 @@ const LandingNetwork = (function () {
     }
     const lineGeo = new THREE.BufferGeometry();
     lineGeo.setAttribute("position", new THREE.Float32BufferAttribute(linePos, 3));
-    const lineMat = new THREE.LineBasicMaterial({ color: 0xc9a45f, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending });
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x9fb0d8, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending });
     const links = new THREE.LineSegments(lineGeo, lineMat);
 
     const dustPos = new Float32Array(DUST_COUNT * 3);
@@ -2516,7 +2516,7 @@ const LandingNetwork = (function () {
     }
     const dustGeo = new THREE.BufferGeometry();
     dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
-    const dustMat = new THREE.PointsMaterial({ size: 0.42, map: sprite, color: 0x40382a, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending });
+    const dustMat = new THREE.PointsMaterial({ size: 0.42, map: sprite, color: 0x39466b, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending });
     dust = new THREE.Points(dustGeo, dustMat);
 
     network = new THREE.Group();
