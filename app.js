@@ -1804,7 +1804,7 @@ function buildPortfolioStackedChart() {
   // Today marker
   const todayX = xAt(PAST);
   svg.appendChild(svgEl("line", { x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b, stroke: "rgba(255,255,255,0.30)", "stroke-width": 1, "stroke-dasharray": "3 4" }));
-  svg.appendChild(svgEl("circle", { cx: todayX, cy: yAt(totalAt(PAST)), r: 5, fill: "#D9B871", stroke: "rgba(217,184,113,0.25)", "stroke-width": 4 }));
+  svg.appendChild(svgEl("circle", { cx: todayX, cy: yAt(totalAt(PAST)), r: 5, fill: "#5F8FE0", stroke: "rgba(95,143,224,0.25)", "stroke-width": 4 }));
 
   // X-axis labels
   [{ i: 0, text: "−24oy" }, { i: PAST / 2, text: "−12oy" }, { i: PAST, text: t("expand.axis.today") }, { i: N, text: "+12oy" }]
@@ -1859,7 +1859,7 @@ function buildPortfolioStackedChart() {
         const sep = el("div", { style: "height:1px;background:rgba(255,255,255,0.08);margin:4px 0" });
         tooltipEl.appendChild(sep);
         tooltipEl.appendChild(el("div", { class: "ep-tip-row" },
-          el("span", { class: "ep-tip-dot", style: "background:#D9B871" }),
+          el("span", { class: "ep-tip-dot", style: "background:#5F8FE0" }),
           el("span", { class: "ep-tip-name", style: "color:var(--fg-0);font-weight:600" }, t("pf.stat.total")),
           el("span", { class: "ep-tip-val" }, fmtUSDExact(total))
         ));
@@ -2227,11 +2227,11 @@ function renderLanding() {
   const pfChartSvg = `<svg viewBox="0 0 280 90" preserveAspectRatio="none" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="lpfg" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#D9B871" stop-opacity="0.35"/>
-        <stop offset="100%" stop-color="#D9B871" stop-opacity="0.02"/>
+        <stop offset="0%" stop-color="#5F8FE0" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#5F8FE0" stop-opacity="0.02"/>
       </linearGradient>
     </defs>
-    <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5" stroke="#D9B871" stroke-width="2" fill="none"/>
+    <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5" stroke="#5F8FE0" stroke-width="2" fill="none"/>
     <path d="M0 76 C40 70 80 60 120 48 C160 36 200 20 240 10 L280 5 L280 90 L0 90 Z" fill="url(#lpfg)"/>
     <path d="M0 82 C40 80 80 76 120 70 C160 64 200 52 240 38 L280 28" stroke="#6FCF97" stroke-width="1.5" stroke-dasharray="4 3" fill="none" opacity="0.55"/>
   </svg>`;
@@ -2441,9 +2441,9 @@ const LandingNetwork = (function () {
     camera = new THREE.PerspectiveCamera(56, w / h, 0.1, 200);
     camera.position.set(0, 1, 40);
 
-    const ACCENT = new THREE.Color(0xd9b871); // finport gold, not zoboto's blue
+    const ACCENT = new THREE.Color(0x5f8fe0); // zoboto-style navy/blue, landing-scoped only
     const CREAM  = new THREE.Color(0xf4f1ea);
-    const STEEL  = new THREE.Color(0x5c5953);
+    const STEEL  = new THREE.Color(0x5a6b96);
 
     const isMobile = w < 700;
     const NODE_COUNT = isMobile ? 260 : 700;
@@ -2505,7 +2505,7 @@ const LandingNetwork = (function () {
     }
     const lineGeo = new THREE.BufferGeometry();
     lineGeo.setAttribute("position", new THREE.Float32BufferAttribute(linePos, 3));
-    const lineMat = new THREE.LineBasicMaterial({ color: 0xc9a45f, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending });
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x9fb0d8, transparent: true, opacity: 0.1, depthWrite: false, blending: THREE.AdditiveBlending });
     const links = new THREE.LineSegments(lineGeo, lineMat);
 
     const dustPos = new Float32Array(DUST_COUNT * 3);
@@ -2516,7 +2516,7 @@ const LandingNetwork = (function () {
     }
     const dustGeo = new THREE.BufferGeometry();
     dustGeo.setAttribute("position", new THREE.BufferAttribute(dustPos, 3));
-    const dustMat = new THREE.PointsMaterial({ size: 0.42, map: sprite, color: 0x40382a, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending });
+    const dustMat = new THREE.PointsMaterial({ size: 0.42, map: sprite, color: 0x39466b, transparent: true, opacity: 0.35, depthWrite: false, blending: THREE.AdditiveBlending });
     dust = new THREE.Points(dustGeo, dustMat);
 
     network = new THREE.Group();
@@ -2833,11 +2833,11 @@ function buildChart(inst, chartParams) {
   const todayX = xAt(PAST);
   const todayLine = svgEl("line", {
     x1: todayX, x2: todayX, y1: pad.t, y2: H - pad.b,
-    stroke: "rgba(217,184,113,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4",
+    stroke: "rgba(95,143,224,0.45)", "stroke-width": 1, "stroke-dasharray": "3 4",
   });
   const todayDot = svgEl("circle", {
     cx: todayX, cy: yAt(valueAt(PAST)), r: 4.5,
-    fill: "#D9B871", stroke: "rgba(217,184,113,0.25)", "stroke-width": 4,
+    fill: "#5F8FE0", stroke: "rgba(95,143,224,0.25)", "stroke-width": 4,
   });
 
   // Entry marker (green dot + line when entry ≠ today)
@@ -2863,15 +2863,15 @@ function buildChart(inst, chartParams) {
   });
   const hoverDot = svgEl("circle", {
     cx: 0, cy: 0, r: 4,
-    fill: "#D9B871", stroke: "#0E1014", "stroke-width": 2,
+    fill: "#5F8FE0", stroke: "#0E1014", "stroke-width": 2,
     visibility: "hidden",
   });
 
   // Gradient def
   const defs = svgEl("defs");
   defs.appendChild(svgEl("linearGradient", { id: "ep-grad-" + inst.id, x1: 0, y1: 0, x2: 0, y2: 1 },
-    svgEl("stop", { offset: "0%",   "stop-color": "#D9B871", "stop-opacity": 0.28 }),
-    svgEl("stop", { offset: "100%", "stop-color": "#D9B871", "stop-opacity": 0 })
+    svgEl("stop", { offset: "0%",   "stop-color": "#5F8FE0", "stop-opacity": 0.28 }),
+    svgEl("stop", { offset: "100%", "stop-color": "#5F8FE0", "stop-opacity": 0 })
   ));
 
   const svg = svgEl("svg", {
@@ -2889,11 +2889,11 @@ function buildChart(inst, chartParams) {
   }));
   svg.appendChild(svgEl("path", { d: areaPath, fill: "url(#ep-grad-" + inst.id + ")" }));
   svg.appendChild(svgEl("path", {
-    d: histPath, fill: "none", stroke: "#D9B871", "stroke-width": 2,
+    d: histPath, fill: "none", stroke: "#5F8FE0", "stroke-width": 2,
     "stroke-linejoin": "round", "stroke-linecap": "round",
   }));
   svg.appendChild(svgEl("path", {
-    d: futPath, fill: "none", stroke: "#D9B871", "stroke-width": 2,
+    d: futPath, fill: "none", stroke: "#5F8FE0", "stroke-width": 2,
     "stroke-dasharray": "5 5", "stroke-linejoin": "round", "stroke-linecap": "round",
     opacity: 0.85,
   }));
@@ -3145,7 +3145,7 @@ function buildExpandedPanel(inst) {
    COMPARE PANEL — multi-direction overlay chart
 ============================================================ */
 const COMPARE_COLORS = [
-  "#D9B871",                 // gold (accent)
+  "#5F8FE0",                 // blue (accent)
   "oklch(0.78 0.10 200)",    // teal
   "oklch(0.78 0.10 320)",    // magenta
   "oklch(0.78 0.10 140)",    // green
@@ -4206,7 +4206,7 @@ function buildStockCard(o) {
   const tags = el("div", { class: "otags" });
   tags.appendChild(el("span", { class: "tag" }, t("sec." + o.sector)));
   tags.appendChild(el("span", { class: "tag" }, t("stk.liq") + ": " + t("liq." + o.liq)));
-  if (o.ipo) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(217,184,113,0.30); background: rgba(217,184,113,0.08)" }, "★ " + t("stk.ipo")));
+  if (o.ipo) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(95,143,224,0.30); background: rgba(95,143,224,0.08)" }, "★ " + t("stk.ipo")));
 
   const card = el("div", { class: "card offer-card interactive" },
     el("div", { class: "top" },
@@ -4300,7 +4300,7 @@ function buildCryptoCard(o) {
   const tags = el("div", { class: "otags" });
   tags.appendChild(el("span", { class: "tag" }, t("crypt.network") + ": " + (t("net." + o.network) || o.network)));
   tags.appendChild(el("span", { class: "tag" }, "#" + o.rank));
-  if (o.stakingAPY > 0) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(217,184,113,0.30); background: rgba(217,184,113,0.08)" },
+  if (o.stakingAPY > 0) tags.appendChild(el("span", { class: "tag", style: "color: var(--accent); border-color: rgba(95,143,224,0.30); background: rgba(95,143,224,0.08)" },
     t("crypt.staking") + " " + o.stakingAPY.toFixed(1) + "%"
   ));
 
